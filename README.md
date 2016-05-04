@@ -1,6 +1,6 @@
 # LS CORRIDORS
 
-The LSCorridors is a free and  open  source package developed in Python 
+LSCorridors is a free and open source package developed in Python 
 that simulates multiples functional ecological corridors.
 The software runs in a [GRASS GIS environment](https://grass.osgeo.org/).
 
