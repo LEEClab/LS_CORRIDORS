@@ -55,27 +55,9 @@ ID_ABOUT=101
 ID_IBMCFG=102
 ID_EXIT=110
 
+# LS Corridors Version:
 VERSION = 'v. 1.0'
 
-#def selecdirectori():
-  #mydocs_pidl = shell.SHGetFolderLocation (0, shellcon.CSIDL_DESKTOP, 0, 0)
-  #pidl, display_name, image_list = shell.SHBrowseForFolder (
-    #win32gui.GetDesktopWindow (),
-    #mydocs_pidl,
-    #"Select a file or folder",
-    #shellcon.BIF_BROWSEINCLUDEFILES,
-    #None,
-    #None
-  #)
-  
-  #if (pidl, display_name, image_list) == (None, None, None):
-    #print "Nothing selected"
-  #else:
-    #path = shell.SHGetPathFromIDList (pidl)
-    
-    #a=(path)
-  
-  #return a
 
 #----------------------------------------------------------------------------------
 # Auxiliary functions
@@ -409,14 +391,14 @@ class Form1(wx.Panel):
         self.quote.SetFont(font)
         
         #__________________________________________________________________________________________
-        self.quote = wx.StaticText(self, id=-1, label="Simulation Number:", pos=wx.Point(20,200))
+        self.quote = wx.StaticText(self, id=-1, label="Number of Simulations:", pos=wx.Point(20,203))
                 
         font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
         self.quote.SetForegroundColour("red")
         self.quote.SetFont(font)        
         
         #__________________________________________________________________________________________                
-        self.quote = wx.StaticText(self, id=-1, label="Using Maps Already Imported:", pos=wx.Point(20,90))
+        self.quote = wx.StaticText(self, id=-1, label="Using Maps Already Imported:", pos=wx.Point(20,85))
                       
         font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
         self.quote.SetForegroundColour("red")
@@ -433,25 +415,25 @@ class Form1(wx.Panel):
         self.button =wx.Button(self, 10, "START SIMULATIONS", wx.Point(20,379))
         wx.EVT_BUTTON(self, 10, self.OnClick)
   
-        self.button =wx.Button(self, 205, "RUN EXPORT FILES ", wx.Point(137,379))
+        self.button =wx.Button(self, 205, "RUN EXPORT FILES ", wx.Point(145,379))
         wx.EVT_BUTTON(self, 205, self.OnClick)
         
-        self.button =wx.Button(self, 210, "select files", wx.Point(230,55))#st
+        self.button =wx.Button(self, 210, "select files", wx.Point(280,55))#st
         wx.EVT_BUTTON(self, 210, self.OnClick)
         
-        self.button =wx.Button(self, 230, "select files", wx.Point(72,55)) #cost
+        self.button =wx.Button(self, 230, "select files", wx.Point(100,55)) #cost
         wx.EVT_BUTTON(self, 230, self.OnClick)
         
-        self.button =wx.Button(self, 240, "IMPORT FILES", wx.Point(308,55))
+        self.button =wx.Button(self, 240, "IMPORT FILES", wx.Point(358,55))
         wx.EVT_BUTTON(self, 240, self.OnClick)
         
-        self.button =wx.Button(self, 250, "READ LIST TXT", wx.Point(322,145))
+        self.button =wx.Button(self, 250, "READ LIST TXT", wx.Point(322,142))
         wx.EVT_BUTTON(self, 250, self.OnClick)
 
-        self.button =wx.Button(self, 260, "COMBINE ALL", wx.Point(418,145))
+        self.button =wx.Button(self, 260, "COMBINE ALL", wx.Point(418,142))
         wx.EVT_BUTTON(self, 260, self.OnClick)
         
-        self.button =wx.Button(self, 8, "EXIT", wx.Point(260, 379))
+        self.button =wx.Button(self, 8, "EXIT", wx.Point(265, 379))
         wx.EVT_BUTTON(self, 8, self.OnExit)
 
         #---------------------------------------------#
@@ -469,17 +451,17 @@ class Form1(wx.Panel):
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         
         self.lblname = wx.StaticText(self, -1, "Resistance Map:", wx.Point(20,58))
-        self.lblname2 = wx.StaticText(self, -1, "Source-Target Map:", wx.Point(155,60))
-        self.lblname2 = wx.StaticText(self, -1, "Variability:", wx.Point(400,60))
+        self.lblname2 = wx.StaticText(self, -1, "Source-Target Map:", wx.Point(180,60))
+        self.lblname2 = wx.StaticText(self, -1, "Variability:", wx.Point(450,60))
         self.lblname = wx.StaticText(self, -1, "Resistance:", wx.Point(20,115))
-        self.lblname = wx.StaticText(self, -1, "ST:", wx.Point(270,115))
-        self.lbllista = wx.StaticText(self, -1, "Enter a list manually:", wx.Point(20,150))
+        self.lblname = wx.StaticText(self, -1, "ST:", wx.Point(300,115))
+        self.lbllista = wx.StaticText(self, -1, "Enter a list manually:", wx.Point(20,147))
         self.lblname = wx.StaticText(self, -1, "M1:", wx.Point(70,230))
         self.lblname = wx.StaticText(self, -1, "M2:", wx.Point(130,230))
         self.lblname = wx.StaticText(self, -1, "M3:", wx.Point(190,230))
         self.lblname = wx.StaticText(self, -1, "M4:", wx.Point(250,230))
         self.lblname = wx.StaticText(self, -1, "Name of output corridor:", wx.Point(20,180))
-        self.lblname = wx.StaticText(self, -1, "Scale (meters):", wx.Point(330,180))
+        self.lblname = wx.StaticText(self, -1, "Scale (meters):", wx.Point(350,180))
         
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#        
@@ -491,15 +473,15 @@ class Form1(wx.Panel):
         #----------------------------------------------------------------TEXT CONTROLS----------------------------------------------------------------------------------------------------------#
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         
-        self.editname1 = wx.TextCtrl(self, 180, Form1.edtstart_list, wx.Point(126,146), wx.Size(195,-1))
-        self.editname2 = wx.TextCtrl(self, 185, 'Proposed name of the cost map', wx.Point(130,175), wx.Size(195,-1))
-        self.editname3 = wx.TextCtrl(self, 186, str(Form1.ruido_float), wx.Point(455,55), wx.Size(30,-1))
+        self.editname1 = wx.TextCtrl(self, 180, Form1.edtstart_list, wx.Point(126,143), wx.Size(195,-1))
+        self.editname2 = wx.TextCtrl(self, 185, 'Proposed name of the cost map', wx.Point(150,175), wx.Size(195,-1))
+        self.editname3 = wx.TextCtrl(self, 186, str(Form1.ruido_float), wx.Point(505,55), wx.Size(30,-1))
         self.editname4 = wx.TextCtrl(self, 190, str(Form1.Nsimulations1), wx.Point(90,228), wx.Size(35,-1))
         #### ADD MESSAGE HERE!!!!
         self.editname5 = wx.TextCtrl(self, 191, str(Form1.Nsimulations2), wx.Point(150,228), wx.Size(35,-1))
         self.editname6 = wx.TextCtrl(self, 192, str(Form1.Nsimulations3), wx.Point(210,228), wx.Size(35,-1))
         self.editname7 = wx.TextCtrl(self, 193, str(Form1.Nsimulations4), wx.Point(270,228), wx.Size(35,-1))
-        self.editname8 = wx.TextCtrl(self, 196, str(Form1.esc), wx.Point(405,175), wx.Size(50,-1))
+        self.editname8 = wx.TextCtrl(self, 196, str(Form1.esc), wx.Point(435,175), wx.Size(50,-1))
          
          
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -537,7 +519,7 @@ class Form1(wx.Panel):
 
         # RESISTANCE MAP
         # List of maps taken from GRASS GIS database, using the command "grass.list_grouped"
-        self.editspeciesList=wx.ComboBox(self, 93, 'Click to select', wx.Point(50, 112), wx.Size(215, -1),
+        self.editspeciesList=wx.ComboBox(self, 93, 'Click to select', wx.Point(80, 112), wx.Size(215, -1),
                                          self.listmaps, wx.CB_DROPDOWN)
         wx.EVT_COMBOBOX(self, 93, self.EvtComboBox)
         wx.EVT_TEXT(self, 93, self.EvtText)
@@ -545,7 +527,7 @@ class Form1(wx.Panel):
         
         # SOURCE TARGET MAP
         # List of maps taken from GRASS GIS database, using the command "grass.list_grouped"
-        self.editspeciesList=wx.ComboBox(self, 95, 'Click to select', wx.Point(290, 112), wx.Size(215, -1),
+        self.editspeciesList=wx.ComboBox(self, 95, 'Click to select', wx.Point(320, 112), wx.Size(215, -1),
                                          self.listmaps, wx.CB_DROPDOWN)
         wx.EVT_COMBOBOX(self, 95, self.EvtComboBox)
         wx.EVT_TEXT(self, 95, self.EvtText)        
