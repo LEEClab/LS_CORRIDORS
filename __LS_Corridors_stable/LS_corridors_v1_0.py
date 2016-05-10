@@ -12,6 +12,9 @@
  Universidade Estadual Paulista - UNESP
  Rio Claro - SP - Brasil
  
+ Contributors:
+ Bernardo Niebuhr - bernardo_brandaum@yahoo.com.br
+ 
  Description:
  LSCorridors is a free and open source package developed in Python 
  that simulates multiples functional ecological corridors.
@@ -19,10 +22,10 @@
  It can also be found at: https://github.com/LEEClab/LS_CORRIDORS
  
  To run LSCorridors:
- python Ls_corridors_v01.py
+ python LS_corridors_v1_0.py
  
  To run tests:
- python -m doctest [-v] Ls_corridors_v01.py
+ python -m doctest [-v] LS_corridors_v1_0.py
  
  Copyright (C) 2015-2016 by John W. Ribeiro and Milton C. Ribeiro.
 
@@ -37,7 +40,7 @@
  GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 #---------------------------------------------------------------------------------------
 
@@ -190,6 +193,7 @@ class Form1(wx.Panel):
         
         # List of possible resistance and ST maps (already loaded inside GRASS GIS DataBase)
         self.listmaps=grass.list_grouped('rast')['PERMANENT']
+        
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         #----------------------------------------------------------------BLOCK OF VARIABLE DESCRIPTION--------------------------------------------------------------------------------------------#
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -202,7 +206,7 @@ class Form1(wx.Panel):
         Form1.OutDir_files_TXT=''
         
         # Loads the name of the resistance matrix
-        Form1.InArqResist='Name of the file + ext '
+        Form1.InArqResist='Name of the file + ext'
         
         # Loads the name of the source-target map
         Form1.InArqST=''
@@ -228,17 +232,34 @@ class Form1(wx.Panel):
         Form1.patch_id_list_aux=''  # List of combination of STs in string format
         Form1.patch_id_list_aux_b='' # Aux list of combination of STs - list format, used to create all possible combinations
         
-        #Formulas
+        # For defining output corridor map name
+        Form1.NEXPER_AUX='MSP' # Prefix for output files
+        Form1.NEXPER_APOIO='' # Aux variable for defining output name
+        Form1.NEXPER_FINAL='' # Final output map name
+        
+        # GUI Parameters
+        Form1.ruido='2.0' # Variability scale for generating the noise map, in string format
+        Form1.ruido_float=2.0 # Variability scale for generating the noise map, in float format
+        
+        Form1.esc=100 # Animal movement scale, in meters
+        
+        Form1.Nsimulations=0 # Total number of simulations (independent of method)
+        Form1.Nsimulations1=15 # Number of simulation of method M1
+        Form1.Nsimulations2=15 # Number of simulation of method M2 (mode)
+        Form1.Nsimulations3=15 # Number of simulation of method M3 (average)
+        Form1.Nsimulations4=15 # Number of simulation of method M4 (maximum)
+        
+        Form1.influenceprocess=10000 # Distance to consider variability in corridors and ST points, in meters
+        Form1.influenceprocess_boll=False # Boolean - is the variability in the region around ST points to be considered?        
+        
+        # Auxiliary variables
         
         Form1.S1='' # Variable to select source points
         Form1.T1='' # Variable to select target points
         Form1.S1FORMAT='' # Variable to select source points, with zeros in front of it - for output files
         Form1.T1FORMAT='' # Variable to select target points, with zeros in front of it - for output files
         Form1.PAISAGEM='' # Prefix of the output text file with corridor information
-        Form1.ARQSAIDA='' # Output text file with corridor information
-        Form1.NEXPER_AUX='MSP' # Prefix for output files
-        Form1.NEXPER_APOIO='' # Aux variable for defining output name
-        Form1.NEXPER_FINAL='' # Final output map name
+        Form1.ARQSAIDA='' # Output text file with corridor information        
     
         # Variables used for mapcalc definition and calculation     
         Form1.form_02=''
@@ -259,47 +280,24 @@ class Form1(wx.Panel):
         Form1.form_17=""
         Form1.form_18=""
         
+        # Output
+        
         # Variable to check if output folder exists
         Form1.checkfolder=''
     
-    
-        Form1.a=''
-        Form1.b=''
-        Form1.c=''
-        Form1.d=''
-        Form1.listExport=[]
-        Form1.ap=0
-        Form1.ap2=0
-        Form1.ap3=0
-        Form1.ap4=0
-        Form1.ap5=0
-        Form1.ap6=0
-        
-        Form1.outline=''
-        Form1.outline1=''
-        Form1.outdir=''        
-    
-
-        Form1.arquivo=''
+        Form1.listExport=[] # List of corridor raster maps to be exported in the end of simulations
+        Form1.outline1='' # Aux variable for transforming each corridor in a vector map
+        Form1.outdir='' # Output dir for text files
+        Form1.arquivo='' # File where to write corridor information
         Form1.M='' # Methods string for recording it in output text files
         
-        Form1.var_cost_sum='' # Sum of cost map along LCP for one corridor, as float
-        Form1.var_dist_line=0.0 # Length of the LCP for one corridor, as float
-        
-        Form1.cabecalho='' # Variable with headers for output text corridor information 
-        Form1.linha='' # Variable with one line/simulation for output text corridor information 
+        Form1.txt_log='' # File where to write simulation log
+        Form1.cabecalho='' # Variable with headers for output text corridor information
+        Form1.linha='' # Variable with one line/simulation for output text corridor information
         
         Form1.readtxt='' # Variable to recieve the name of ST combination input file
         Form1.lenlist=0.0
         Form1.lenlist_b=0.0
-        Form1.Nsimulations=0 # Total number of simulations (independent of method)
-        Form1.Nsimulations1=15 # Number of simulation of method M1
-        Form1.Nsimulations2=15 # Number of simulation of method M2 (mode)
-        Form1.Nsimulations3=15 # Number of simulation of method M3 (average)
-        Form1.Nsimulations4=15 # Number of simulation of method M4 (maximum)
-        
-        Form1.escalafina=0
-        Form1.esc=100 # Animal movement scale, in meters
                 
         # Variables to calculate map resolution, to define the size of moving windows
         Form1.res='' # Aux variable
@@ -332,25 +330,19 @@ class Form1(wx.Panel):
         Form1.var_target_y_b_int=0.0 # y (lat) value for target point, as float        
         # Aux variables
         Form1.euclidean_a=0.0 # Aux variable for calculating euclidean distance
-        Form1.euclidean_b=0.0 # Aux variable for calculating euclidean distance        
+        Form1.euclidean_b=0.0 # Aux variable for calculating euclidean distance
         
+        # Variables where LCP cost and length are loaded
+        Form1.var_cost_sum='' # Sum of cost map along LCP for one corridor, as float
+        Form1.var_dist_line=0.0 # Length of the LCP for one corridor, as float        
         
+        # Other aux variables
         Form1.ChecktTry=True # Aux variable for using in loops        
 
-        Form1.ruido='2.0' # Variability scale for generating the noise map, in string format
-        Form1.ruido_float=2.0 # Variability scale for generating the noise map, in float format
         Form1.listafinal=[] # List of resistance maps to be simulated
-        Form1.escfinal=0
-        Form1.escE=''
-        Form1.escW=''
-        Form1.escfinal=0.0
-        Form1.frag=''
-        Form1.frag_list=''
-        Form1.frag_list2=''
-        Form1.selct=''   
+        Form1.frag_list2='' # Aux list variable for generating random source/target points
+        Form1.selct='' # Aux variable for generating random source/target points 
         Form1.defaultsize_moviwin_allcor=7 # Default moving window size to calculate resistance maps for methods M2, M3, M4
-        ###
-        Form1.txt_log=''
         
         # Start time
         Form1.time = 0 # INSTANCE
@@ -393,15 +385,6 @@ class Form1(wx.Panel):
         
         Form1.listErrorLog=[] # List of error messages to be written to the log file
         Form1.difference_time='' # Time lag for processing simulations
-        
-        Form1.n=''
-        Form1.s=''
-        Form1.e=''
-        Form1.w=''
-        Form1.dicregion=''
-        Form1.influenceprocess=10000 # Distance to consider variability in corridors and ST points, in meters
-        Form1.influenceprocess_boll=False # Boolean - is the variability in the region around ST points to be considered?
-        
         
         
         
