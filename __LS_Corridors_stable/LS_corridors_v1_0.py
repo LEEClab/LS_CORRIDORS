@@ -772,7 +772,7 @@ class Form1(wx.Panel):
           
           # Message in the Dialog box
           self.logger.AppendText('Selected File: \n'+Form1.OutArqST+'\n')
-          #self.logger.AppendText("Automatically Map ST Selected:\n")
+          #self.logger.AppendText("Automatically ST Map Selected:\n")
           #self.logger.AppendText(Form1.OutArqST+"\n")
          
          
@@ -813,7 +813,7 @@ class Form1(wx.Panel):
           
           # Updating output file name in the variable Form1.NEXPER_FINAL
           Form1.NEXPER_FINAL=Form1.NEXPER_AUX+'_'+Form1.OutArqResist
-          self.logger.AppendText("Automatically Map Cost Selected:\n")
+          self.logger.AppendText("Automatically Resistance Map Selected:\n")
           self.logger.AppendText(Form1.NEXPER_FINAL+"\n")
         
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -898,8 +898,8 @@ class Form1(wx.Panel):
             self.logger.AppendText("Waiting...\n")
             
             # Selects output directory for text files
-            d=wx.MessageDialog(self, "Select the output folder for\n"+
-                                "text files.\n", "", wx.OK) # Create a message dialog box
+            d=wx.MessageDialog(self, "Select the output folder\n"+
+                               "for text files.\n", "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
             Form1.OutDir_files_TXT = selectdirectory()
@@ -910,7 +910,7 @@ class Form1(wx.Panel):
             
           self.logger.AppendText("\nList of source-targets: \n"+`Form1.patch_id_list`+'\n') 
           d = wx.MessageDialog(self,"Click OK and wait for simulation processing;\n"+
-                              "A message will warn you at the end of simulations."+
+                              "A message will warn you at the end of simulations.\n"+
                               "Thank you.","", wx.OK)
           retCode=d.ShowModal() # Shows 
           d.Close(True) # Finally destroy it when finished.
@@ -1113,12 +1113,12 @@ class Form1(wx.Panel):
             # If not, creates it.
             Form1.checkfolder=os.path.exists('Line_'+Form1.mapa_corredores_sem0)
             
-            if Form1.chekfolder==False:
+            if Form1.checkfolder==False:
               os.mkdir('Line_'+str(Form1.mapa_corredores_sem0))
               if platform.system() == 'Windows':
                 Form1.outdir=Form1.OutDir_files_TXT+'\Line_'+Form1.mapa_corredores_sem0
               elif platform.system() == 'Linux':
-                Form1.outdir=Form1.OutDir_files_TXT+'Line_'+Form1.mapa_corredores_sem0
+                Form1.outdir=Form1.OutDir_files_TXT+'/Line_'+Form1.mapa_corredores_sem0
               else:
                 # Improve it to Mac OS - how does it work?
                 raise Exception("What platform is yours?? It's not Windows or Linux...")
@@ -1482,8 +1482,8 @@ class Form1(wx.Panel):
             Form1.txt_log.write(logERR+"\n")
           
           Form1.txt_log.close() 
-          d = wx.MessageDialog(self,"Corridor simulation finished!"+
-                              "Thanks for simulating using LSCorridors "+VERSION+"!", "", wx.OK)
+          d = wx.MessageDialog(self,"Corridor simulation finished!\n"+
+                              "Thanks for simulating using\n LSCorridors "+VERSION+"!", "", wx.OK)
           retCode = d.ShowModal() # Shows 
           d.Close(True) # Closes
                 
@@ -1536,7 +1536,7 @@ class Form1(wx.Panel):
     #############################################
     def OnExit(self, event):
         d= wx.MessageDialog(self, " Thanks for simulating using\n"
-                            " LSCorridors "+ VERSION +" R.R", "Good bye", wx.OK) # Create a message dialog box
+                            " LSCorridors "+ VERSION +" R.R.", "Good bye", wx.OK) # Create a message dialog box
         d.ShowModal() # Shows it
         d.Destroy() # finally destroy it when finished.
         frame.Close(True)  # Close the frame. 
@@ -1548,7 +1548,7 @@ class Form1(wx.Panel):
 if __name__ == "__main__":
   
     app = wx.PySimpleApp()
-    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(530,450))
+    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(580,450))
     Form1(frame,-1)
     frame.Show(1)
     
