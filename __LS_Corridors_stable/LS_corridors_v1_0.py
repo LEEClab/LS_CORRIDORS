@@ -58,7 +58,6 @@ ID_EXIT=110
 # LS Corridors Version:
 VERSION = 'v. 1.0'
 
-
 #----------------------------------------------------------------------------------
 # Auxiliary functions
   
@@ -866,7 +865,7 @@ class Form1(wx.Panel):
           # Tests if the length of the ST list is even
           elif Form1.lenlist > 1 and int (Form1.lenlist)%2 == 1:
             
-            d= wx.MessageDialog(self, "Incorrect list\n"+
+            d= wx.MessageDialog(self, "Incorrect list.\n"+
                                 "List length cannot be odd,"+
                                 "please check the list.\n", "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
@@ -1119,7 +1118,7 @@ class Form1(wx.Panel):
             
             # Open output text file and writes headers      
             Form1.arquivo = open(Form1.mapa_corredores_sem0+'.txt','w')
-            Form1.cabecalho='EXPERIMENT'','+'M'+','+'SIMULATION'+','+'LENGTHVECT'+','+'COST'+','+'Coord_source_x'+','+'Coord_source_y'+','+'Coord_target_x'+','+'Coord_target_y'+','+'Euclidean_Distance' '\n'
+            Form1.cabecalho='EXPERIMENT'','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'LCP_LENGTH'+','+'LCP_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
             Form1.arquivo.write(Form1.cabecalho)
             
             #---------------------------------------------#
@@ -1346,14 +1345,10 @@ class Form1(wx.Panel):
                 if Form1.listafinal[cont]=='M3_MAXIMUM':
                   Form1.M="M3"              
                 if Form1.listafinal[cont]=='M4_AVERAGE':
-                  Form1.M="M4"              
-                if Form1.listafinal[cont]=='M5_AVERAGE_VIEW': ##### ?????????????????????????
-                  Form1.M="M5"                
-                if Form1.listafinal[cont]=='M6_Unikon': ###### ?????????????????
-                  Form1.M="M6"                
+                  Form1.M="M4"         
                      
                 # Produces information for one corridor - to be appended to the output text file
-                Form1.linha=Form1.listafinal[cont].replace("@PERMANENT",'')+','+Form1.M+','+`c`+','+ `Form1.var_dist_line`+','+ `Form1.var_cost_sum`+','+ `Form1.var_source_x`+','+ `Form1.var_source_y`+','+ `Form1.var_target_x`+','+ `Form1.var_target_y`+','+ `Form1.euclidean_b`+ "\n"
+                Form1.linha=Form1.listafinal[cont].replace("@PERMANENT",'')+','+Form1.M+','+`c`+','+ `Form1.var_dist_line`+','+ `Form1.var_cost_sum`+','+ `Form1.euclidean_b`+','+ `Form1.var_source_x`+','+ `Form1.var_source_y`+','+ `Form1.var_target_x`+','+ `Form1.var_target_y`+ "\n"
                 Form1.linha=Form1.linha.replace('\'','')
                 
                 # Writes corridor information on output text file
@@ -1515,10 +1510,10 @@ class Form1(wx.Panel):
         if event.GetId() == 193: #193=number of simulations
           Form1.Nsimulations4=int(event.GetString())  
         
-    #############################################
     def OnExit(self, event):
+      
         d= wx.MessageDialog(self, " Thanks for simulating using\n"
-                            " LSCorridors "+ VERSION +" R.R.", "Good bye", wx.OK) # Create a message dialog box
+                            " LSCorridors "+ VERSION, "Good bye", wx.OK) # Create a message dialog box
         d.ShowModal() # Shows it
         d.Destroy() # finally destroy it when finished.
         frame.Close(True)  # Close the frame. 
@@ -1530,7 +1525,7 @@ class Form1(wx.Panel):
 if __name__ == "__main__":
   
     app = wx.PySimpleApp()
-    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(580,450))
+    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(570,450))
     Form1(frame,-1)
     frame.Show(1)
     
