@@ -14,6 +14,9 @@
  
  Contributors:
  Bernardo Niebuhr - bernardo_brandaum@yahoo.com.br
+ Juliana Silveira dos Santos - juliana.silveiradossantos@gmail.com
+ Felipe Martello - felipemartello@gmail.com
+ Pavel Dodonov - pdodonov@gmail.com
  
  Description:
  LSCorridors is a free and open source package developed in Python 
@@ -44,16 +47,13 @@
 """
 #---------------------------------------------------------------------------------------
 
+# Import modules
 import grass.script as grass
 from PIL import Image
 import wx
 import random, math
 import os, re, platform
 from datetime import datetime
-
-ID_ABOUT=101
-ID_IBMCFG=102
-ID_EXIT=110
 
 # LS Corridors Version:
 VERSION = 'v. 1.0'
