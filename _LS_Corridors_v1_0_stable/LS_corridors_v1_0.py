@@ -475,12 +475,30 @@ class Form1(wx.Panel):
         self.editname1 = wx.TextCtrl(self, 180, Form1.edtstart_list, wx.Point(126,143), wx.Size(195,-1))
         self.editname2 = wx.TextCtrl(self, 185, 'Proposed name of the cost map', wx.Point(150,175), wx.Size(195,-1))
         self.editname3 = wx.TextCtrl(self, 186, str(Form1.ruido_float), wx.Point(505,55), wx.Size(30,-1))
+        self.editname3.SetToolTip(wx.ToolTip("Variability factor, x: in each simulation, "+
+                                             "resistance value for each pixel in the resistance surface map is multiplied "+
+                                             "by a uniformly randomly distributed number in the interval [0.1*x, x)."))
         self.editname4 = wx.TextCtrl(self, 190, str(Form1.Nsimulations1), wx.Point(90,228), wx.Size(35,-1))
-        #### ADD MESSAGE HERE!!!!
+        self.editname4.SetToolTip(wx.ToolTip("Method M1: no spatial influence"))
         self.editname5 = wx.TextCtrl(self, 191, str(Form1.Nsimulations2), wx.Point(150,228), wx.Size(35,-1))
+        self.editname5.SetToolTip(wx.ToolTip("Method M2: mode\n\n"+
+                                             "Each resistance surface pixel is replaced by the mode of pixel values "+
+                                             "inside a window around it; this window represents the spatial context "+
+                                             "influence and is controled by the scale parameter."))
         self.editname6 = wx.TextCtrl(self, 192, str(Form1.Nsimulations3), wx.Point(210,228), wx.Size(35,-1))
+        self.editname6.SetToolTip(wx.ToolTip("Method M3: maximum\n\n"+
+                                             "Each resistance surface pixel is replaced by the maximum pixel value "+
+                                             "inside a window around it; this window represents the spatial context "+
+                                             "influence and is controled by the scale parameter."))        
         self.editname7 = wx.TextCtrl(self, 193, str(Form1.Nsimulations4), wx.Point(270,228), wx.Size(35,-1))
+        self.editname7.SetToolTip(wx.ToolTip("Method M4: average\n\n"+
+                                             "Each resistance surface pixel is replaced by the mean pixel value "+
+                                             "inside a window around it; this window represents the spatial context "+
+                                             "influence and is controled by the scale parameter."))        
         self.editname8 = wx.TextCtrl(self, 196, str(Form1.esc), wx.Point(435,175), wx.Size(50,-1))
+        self.editname8.SetToolTip(wx.ToolTip("This parameters controls the scale of landscape influence on local "+
+                                             "resistance (the size of the window around each pixel).\n"+
+                                             "E.g., it may be related to the species' landscape perception."))                
          
          
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
