@@ -1543,7 +1543,7 @@ class Form1(wx.Panel):
 if __name__ == "__main__":
   
     app = wx.PySimpleApp()
-    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(570,450))
+    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(560,450))
     Form1(frame,-1)
     frame.Show(1)
     
