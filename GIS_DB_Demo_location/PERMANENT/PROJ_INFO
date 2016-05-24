@@ -1,0 +1,7 @@
+name: SAD_1969_UTM_Zone_23S
+datum: sam69
+ellps: sam69
+proj: utm
+zone: 23
+south: defined
+no_defs: defined

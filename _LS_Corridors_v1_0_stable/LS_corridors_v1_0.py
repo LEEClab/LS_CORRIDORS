@@ -28,7 +28,7 @@
  python LS_corridors_v1_0.py
  
  To run tests:
- python -m doctest [-v] LS_corridors_v1_0.py
+ python test_LS_corridors.py
  
  Copyright (C) 2015-2016 by John W. Ribeiro and Milton C. Ribeiro.
 
@@ -128,18 +128,6 @@ def combine_st(st_map):
   Output:
   - patchid_list_output: string with all possible combinations of STs. The list
     has a 'plain' form. E.g.: 1,2,5,7 shows two combinations of points: 1-2 and 5-7
-    
-  Testing function
-  
-  Test 1)
-  >>> grass.run_command('r.in.gdal', flags='o', input='../DB_demo/ST_map1.img', output='test1_rast', overwrite=True, verbose = False)
-  0
-  >>> combine_st('test1_rast')
-  ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19']
-  '1,2,1,3,1,4,1,5,1,6,1,7,1,8,1,9,1,10,1,11,1,12,1,13,1,14,1,15,1,16,1,17,1,18,1,19,2,3,2,4,2,5,2,6,2,7,2,8,2,9,2,10,2,11,2,12,2,13,2,14,2,15,2,16,2,17,2,18,2,19,3,4,3,5,3,6,3,7,3,8,3,9,3,10,3,11,3,12,3,13,3,14,3,15,3,16,3,17,3,18,3,19,4,5,4,6,4,7,4,8,4,9,4,10,4,11,4,12,4,13,4,14,4,15,4,16,4,17,4,18,4,19,5,6,5,7,5,8,5,9,5,10,5,11,5,12,5,13,5,14,5,15,5,16,5,17,5,18,5,19,6,7,6,8,6,9,6,10,6,11,6,12,6,13,6,14,6,15,6,16,6,17,6,18,6,19,7,8,7,9,7,10,7,11,7,12,7,13,7,14,7,15,7,16,7,17,7,18,7,19,8,9,8,10,8,11,8,12,8,13,8,14,8,15,8,16,8,17,8,18,8,19,9,10,9,11,9,12,9,13,9,14,9,15,9,16,9,17,9,18,9,19,10,11,10,12,10,13,10,14,10,15,10,16,10,17,10,18,10,19,11,12,11,13,11,14,11,15,11,16,11,17,11,18,11,19,12,13,12,14,12,15,12,16,12,17,12,18,12,19,13,14,13,15,13,16,13,17,13,18,13,19,14,15,14,16,14,17,14,18,14,19,15,16,15,17,15,18,15,19,16,17,16,18,16,19,17,18,17,19,18,19'
-  >>> grass.run_command('g.remove', flags='f', type='raster', pattern='test1_rast')
-  0
-  
   '''
   
   listRstats=grass.read_command('r.stats', input=st_map, flags='n', separator='space')
@@ -163,12 +151,12 @@ def combine_st(st_map):
   patchid_list_output=','.join(patchid_list_output_b)
   
   return patchid_list_output
-  
+   
 
 #----------------------------------------------------------------------------------
-# Form1 is the main class, in which the software is initialized and runs
+# Corridors is the main class, in which the software is initialized and runs
    
-class Form1(wx.Panel):
+class Corridors(wx.Panel):
     def __init__(self, parent, id):
         wx.Panel.__init__(self, parent, id)
         
@@ -179,193 +167,198 @@ class Form1(wx.Panel):
         #----------------------------------------------------------------BLOCK OF VARIABLE DESCRIPTION--------------------------------------------------------------------------------------------#
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         
+        # Remove aux maps in the end?
+        self.remove_aux_maps = True
+        
+        # Performing tests on the code?
+        self.perform_tests = False
         
         # Loads the output directory
-        Form1.OutDir_files='Path of the files'
+        self.OutDir_files='Path of the files'
 
         # Loads the path to the txt output files
-        Form1.OutDir_files_TXT=''
+        self.OutDir_files_TXT=''
         
         # Loads the name of the resistance matrix
-        Form1.InArqResist='Name of the file + ext'
+        self.InArqResist='Name of the file + ext'
         
         # Loads the name of the source-target map
-        Form1.InArqST=''
+        self.InArqST=''
         
         # Loads the name of a map to be imported into GRASS GIS and used for simulations
-        Form1.OutArqResist=''
+        self.OutArqResist=''
         
         # Variables with 'C' are used to generate output names for auxiliary maps M2,M3,M4
         # Name of mode map (M2)
-        Form1.C2='M2_MODE'
+        self.C2='M2_MODE'
         
         # Name of maximum map (M3)
-        Form1.C3='M3_MAXIMUM'
+        self.C3='M3_MAXIMUM'
         
         # Name of average map (M4)
-        Form1.C4='M4_AVERAGE'
+        self.C4='M4_AVERAGE'
         
         # String to show an example of how the ST list should look like
-        Form1.edtstart_list='Ex:1,2,3,4,...'
+        self.edtstart_list='Ex:1,2,3,4,...'
         
         # List of combinations of STs used in the simulation
-        Form1.patch_id_list='' # List of combination of STs in list format
-        Form1.patch_id_list_aux=''  # List of combination of STs in string format
-        Form1.patch_id_list_aux_b='' # Aux list of combination of STs - list format, used to create all possible combinations
+        self.patch_id_list='' # List of combination of STs in list format
+        self.patch_id_list_aux=''  # List of combination of STs in string format
+        self.patch_id_list_aux_b='' # Aux list of combination of STs - list format, used to create all possible combinations
         
         # For defining output corridor map name
-        Form1.NEXPER_AUX='MSP' # Prefix for output files
-        Form1.NEXPER_APOIO='' # Aux variable for defining output name
-        Form1.NEXPER_FINAL='' # Final output map name
+        self.NEXPER_AUX='MSP' # Prefix for output files
+        self.NEXPER_APOIO='' # Aux variable for defining output name
+        self.NEXPER_FINAL='' # Final output map name
         
         # GUI Parameters
-        Form1.ruido='2.0' # Variability scale for generating the noise map, in string format
-        Form1.ruido_float=2.0 # Variability scale for generating the noise map, in float format
+        self.ruido='2.0' # Variability scale for generating the noise map, in string format
+        self.ruido_float=2.0 # Variability scale for generating the noise map, in float format
         
-        Form1.esc=100 # Animal movement scale, in meters
+        self.esc=100 # Animal movement scale, in meters
         
-        Form1.Nsimulations=0 # Total number of simulations (independent of method)
-        Form1.Nsimulations1=15 # Number of simulation of method M1
-        Form1.Nsimulations2=15 # Number of simulation of method M2 (mode)
-        Form1.Nsimulations3=15 # Number of simulation of method M3 (average)
-        Form1.Nsimulations4=15 # Number of simulation of method M4 (maximum)
+        self.Nsimulations=0 # Total number of simulations (independent of method)
+        self.Nsimulations1=15 # Number of simulation of method M1
+        self.Nsimulations2=15 # Number of simulation of method M2 (mode)
+        self.Nsimulations3=15 # Number of simulation of method M3 (average)
+        self.Nsimulations4=15 # Number of simulation of method M4 (maximum)
         
-        Form1.influenceprocess=10000 # Distance to consider variability in corridors and ST points, in meters
-        Form1.influenceprocess_boll=False # Boolean - is the variability in the region around ST points to be considered?        
+        self.influenceprocess=10000 # Distance to consider variability in corridors and ST points, in meters
+        self.influenceprocess_boll=False # Boolean - is the variability in the region around ST points to be considered?        
         
         # Auxiliary variables
         
-        Form1.S1='' # Variable to select source points
-        Form1.T1='' # Variable to select target points
-        Form1.S1FORMAT='' # Variable to select source points, with zeros in front of it - for output files
-        Form1.T1FORMAT='' # Variable to select target points, with zeros in front of it - for output files
-        Form1.PAISAGEM='' # Prefix of the output text file with corridor information
-        Form1.ARQSAIDA='' # Output text file with corridor information        
+        self.S1='' # Variable to select source points
+        self.T1='' # Variable to select target points
+        self.S1FORMAT='' # Variable to select source points, with zeros in front of it - for output files
+        self.T1FORMAT='' # Variable to select target points, with zeros in front of it - for output files
+        self.PAISAGEM='' # Prefix of the output text file with corridor information
+        self.ARQSAIDA='' # Output text file with corridor information        
     
         # Variables used for mapcalc definition and calculation     
-        Form1.form_02=''
-        Form1.form_03=''
-        Form1.form_04=''
-        Form1.form_05=''
-        Form1.form_06=''
-        Form1.form_07=''
-        Form1.form_08=''
-        Form1.form_09=''
-        Form1.form_10=''
-        Form1.form_11=''
-        Form1.form_12=""
-        Form1.form_13=''
-        Form1.form_14=""
-        Form1.form_15=''
-        Form1.form_16=''
-        Form1.form_17=""
-        Form1.form_18=""
+        self.form_02=''
+        self.form_03=''
+        self.form_04=''
+        self.form_05=''
+        self.form_06=''
+        self.form_07=''
+        self.form_08=''
+        self.form_09=''
+        self.form_10=''
+        self.form_11=''
+        self.form_12=""
+        self.form_13=''
+        self.form_14=""
+        self.form_15=''
+        self.form_16=''
+        self.form_17=""
+        self.form_18=""
         
         # Output
         
         # Variable to check if output folder exists
-        Form1.checkfolder=''
+        self.checkfolder=''
     
-        Form1.listExport=[] # List of corridor raster maps to be exported in the end of simulations
-        Form1.outline1='' # Aux variable for transforming each corridor in a vector map
-        Form1.outdir='' # Output dir for text files
-        Form1.arquivo='' # File where to write corridor information
-        Form1.M='' # Methods string for recording it in output text files
+        self.listExport=[] # List of corridor raster maps to be exported in the end of simulations
+        self.outline1='' # Aux variable for transforming each corridor in a vector map
+        self.outdir='' # Output dir for text files
+        self.arquivo='' # File where to write corridor information
+        self.M='' # Methods string for recording it in output text files
         
-        Form1.txt_log='' # File where to write simulation log
-        Form1.cabecalho='' # Variable with headers for output text corridor information
-        Form1.linha='' # Variable with one line/simulation for output text corridor information
+        self.txt_log='' # File where to write simulation log
+        self.cabecalho='' # Variable with headers for output text corridor information
+        self.linha='' # Variable with one line/simulation for output text corridor information
         
-        Form1.readtxt='' # Variable to recieve the name of ST combination input file
-        Form1.lenlist=0.0
-        Form1.lenlist_b=0.0
+        self.readtxt='' # Variable to recieve the name of ST combination input file
+        self.lenlist=0.0
+        self.lenlist_b=0.0
                 
         # Variables to calculate map resolution, to define the size of moving windows
-        Form1.res='' # Aux variable
-        Form1.res2=[] # Aux variable2
-        Form1.res3='' # Final resolution of the map
+        self.res='' # Aux variable
+        self.res2=[] # Aux variable2
+        self.res3='' # Final resolution of the map
         
         # Variables used to calculate the cost of LCP corridor
-        Form1.x='' # Cost map statistics for one corridor, string format
-        Form1.x_b='' # Cost map statistics for one corridor, list format
-        Form1.x_c='' # Sum of cost map along LCP for one corridor, as string                
+        self.x='' # Cost map statistics for one corridor, string format
+        self.x_b='' # Cost map statistics for one corridor, list format
+        self.x_c='' # Sum of cost map along LCP for one corridor, as string                
         
         # Variables for calculating length of the LCP
-        Form1.length='' # Statistics for corridor
-        Form1.length_b='' # String element for sum of number of pixels of the corridor
-        Form1.length_c='' # Final LCP length value, string format
-        Form1.length_d='' # Final LCP length value, in pixels
-        Form1.length_e=0.0 # Final LCP length value, in meters
+        self.length='' # Statistics for corridor
+        self.length_b='' # String element for sum of number of pixels of the corridor
+        self.length_c='' # Final LCP length value, string format
+        self.length_d='' # Final LCP length value, in pixels
+        self.length_e=0.0 # Final LCP length value, in meters
         
         # Variables for calculating Euclidean distance between points
 
         # Variables for position of ST points - string
-        Form1.var_source_x='' # x (long) value for source point, as string
-        Form1.var_source_y='' # y (lat) value for source point, as string
-        Form1.var_target_x='' # x (long) value for target point, as string
-        Form1.var_target_y='' # y (lat) value for target point, as string
+        self.var_source_x='' # x (long) value for source point, as string
+        self.var_source_y='' # y (lat) value for source point, as string
+        self.var_target_x='' # x (long) value for target point, as string
+        self.var_target_y='' # y (lat) value for target point, as string
         # Variables for position of ST points - float
-        Form1.var_source_x_b_int=0.0 # x (long) value for source point, as float
-        Form1.var_source_y_b_int=0.0 # y (lat) value for source point, as float
-        Form1.var_target_x_b_int=0.0 # x (long) value for target point, as float
-        Form1.var_target_y_b_int=0.0 # y (lat) value for target point, as float        
+        self.var_source_x_b_int=0.0 # x (long) value for source point, as float
+        self.var_source_y_b_int=0.0 # y (lat) value for source point, as float
+        self.var_target_x_b_int=0.0 # x (long) value for target point, as float
+        self.var_target_y_b_int=0.0 # y (lat) value for target point, as float        
         # Aux variables
-        Form1.euclidean_a=0.0 # Aux variable for calculating euclidean distance
-        Form1.euclidean_b=0.0 # Aux variable for calculating euclidean distance
+        self.euclidean_a=0.0 # Aux variable for calculating euclidean distance
+        self.euclidean_b=0.0 # Aux variable for calculating euclidean distance
         
         # Variables where LCP cost and length are loaded
-        Form1.var_cost_sum='' # Sum of cost map along LCP for one corridor, as float
-        Form1.var_dist_line=0.0 # Length of the LCP for one corridor, as float        
+        self.var_cost_sum='' # Sum of cost map along LCP for one corridor, as float
+        self.var_dist_line=0.0 # Length of the LCP for one corridor, as float        
         
         # Other aux variables
-        Form1.ChecktTry=True # Aux variable for using in loops        
+        self.ChecktTry=True # Aux variable for using in loops        
 
-        Form1.listafinal=[] # List of resistance maps to be simulated
-        Form1.frag_list2='' # Aux list variable for generating random source/target points
-        Form1.selct='' # Aux variable for generating random source/target points 
-        Form1.defaultsize_moviwin_allcor=7 # Default moving window size to calculate resistance maps for methods M2, M3, M4
+        self.listafinal=[] # List of resistance maps to be simulated
+        self.frag_list2='' # Aux list variable for generating random source/target points
+        self.selct='' # Aux variable for generating random source/target points 
+        self.defaultsize_moviwin_allcor=7 # Default moving window size to calculate resistance maps for methods M2, M3, M4
         
         # Start time
-        Form1.time = 0 # INSTANCE
-        Form1.day_start=0 # Start day
-        Form1.month_start=0 # Start month
-        Form1.year_start=0 # Start year
-        Form1.hour_start=0 # Start hour
-        Form1.minuts_start=0 # Start minutes
-        Form1.second_start=0 # Start seconds
+        self.time = 0 # INSTANCE
+        self.day_start=0 # Start day
+        self.month_start=0 # Start month
+        self.year_start=0 # Start year
+        self.hour_start=0 # Start hour
+        self.minuts_start=0 # Start minutes
+        self.second_start=0 # Start seconds
        
         # End time
-        Form1.time = '' # INSTANCE
-        Form1.day_end=0 # End day
-        Form1.month_end=0 # End month
-        Form1.year_end=0 # End year
-        Form1.hour_end=0 # # End hour
-        Form1.minuts_end=0 # End minutes
-        Form1.second_end=0 # End seconds  
+        self.time = '' # INSTANCE
+        self.day_end=0 # End day
+        self.month_end=0 # End month
+        self.year_end=0 # End year
+        self.hour_end=0 # # End hour
+        self.minuts_end=0 # End minutes
+        self.second_end=0 # End seconds  
         
         # Header for log file
-        Form1.header_log=''
+        self.header_log=''
         
         # Time for log file name
-        Form1.time = 0 # INSTANCE
-        Form1.day=0 # Day
-        Form1.month=0 # Month
-        Form1.year=0 # Year
-        Form1.hour=0 # Hour
-        Form1.minuts=0 # Minutes
-        Form1.second=0 # Second             
+        self.time = 0 # INSTANCE
+        self.day=0 # Day
+        self.month=0 # Month
+        self.year=0 # Year
+        self.hour=0 # Hour
+        self.minuts=0 # Minutes
+        self.second=0 # Second             
         
         # Current time - to be used while simulations are performed
-        Form1.time = 0 # INSTANCE
-        Form1.day_now=0 # Current day
-        Form1.month_now=0 # Current month
-        Form1.year_now=0 # Current year
-        Form1.hour_now=0 # Current hour
-        Form1.minuts_now=0 # Current minute
-        Form1.second_now=0 # Current second
+        self.time = 0 # INSTANCE
+        self.day_now=0 # Current day
+        self.month_now=0 # Current month
+        self.year_now=0 # Current year
+        self.hour_now=0 # Current hour
+        self.minuts_now=0 # Current minute
+        self.second_now=0 # Current second
         
-        Form1.listErrorLog=[] # List of error messages to be written to the log file
-        Form1.difference_time='' # Time lag for processing simulations
+        self.listErrorLog=[] # List of error messages to be written to the log file
+        self.difference_time='' # Time lag for processing simulations
         
         
         
@@ -439,9 +432,10 @@ class Form1(wx.Panel):
         #----------------- LAB LOGO ------------------#
         #---------------------------------------------#
 
-        imageFile = 'logo_lab.png'
-        im1 = Image.open(imageFile)
-        jpg1 = wx.Image(imageFile, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        #if not self.perform_tests:
+        self.imageFile = 'logo_lab.png'
+        im1 = Image.open(self.imageFile)
+        jpg1 = wx.Image(self.imageFile, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.StaticBitmap(self, -1, jpg1, (348,270), (jpg1.GetWidth(), jpg1.GetHeight()), style=wx.SUNKEN_BORDER)
         
         
@@ -472,33 +466,34 @@ class Form1(wx.Panel):
         #----------------------------------------------------------------TEXT CONTROLS----------------------------------------------------------------------------------------------------------#
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         
-        self.editname1 = wx.TextCtrl(self, 180, Form1.edtstart_list, wx.Point(126,143), wx.Size(195,-1))
+        self.editname1 = wx.TextCtrl(self, 180, self.edtstart_list, wx.Point(126,143), wx.Size(195,-1))
         self.editname2 = wx.TextCtrl(self, 185, 'Proposed name of the cost map', wx.Point(150,175), wx.Size(195,-1))
-        self.editname3 = wx.TextCtrl(self, 186, str(Form1.ruido_float), wx.Point(505,55), wx.Size(30,-1))
+        self.editname3 = wx.TextCtrl(self, 186, str(self.ruido_float), wx.Point(505,55), wx.Size(30,-1))
         self.editname3.SetToolTip(wx.ToolTip("Variability factor, x: in each simulation, "+
                                              "resistance value for each pixel in the resistance surface map is multiplied "+
                                              "by a uniformly randomly distributed number in the interval [0.1*x, x)."))
-        self.editname4 = wx.TextCtrl(self, 190, str(Form1.Nsimulations1), wx.Point(90,228), wx.Size(35,-1))
+        self.editname4 = wx.TextCtrl(self, 190, str(self.Nsimulations1), wx.Point(90,228), wx.Size(35,-1))
         self.editname4.SetToolTip(wx.ToolTip("Method M1: no spatial influence"))
-        self.editname5 = wx.TextCtrl(self, 191, str(Form1.Nsimulations2), wx.Point(150,228), wx.Size(35,-1))
+        self.editname5 = wx.TextCtrl(self, 191, str(self.Nsimulations2), wx.Point(150,228), wx.Size(35,-1))
         self.editname5.SetToolTip(wx.ToolTip("Method M2: mode\n\n"+
                                              "Each resistance surface pixel is replaced by the mode of pixel values "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controled by the scale parameter."))
-        self.editname6 = wx.TextCtrl(self, 192, str(Form1.Nsimulations3), wx.Point(210,228), wx.Size(35,-1))
+        self.editname6 = wx.TextCtrl(self, 192, str(self.Nsimulations3), wx.Point(210,228), wx.Size(35,-1))
         self.editname6.SetToolTip(wx.ToolTip("Method M3: maximum\n\n"+
                                              "Each resistance surface pixel is replaced by the maximum pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controled by the scale parameter."))        
-        self.editname7 = wx.TextCtrl(self, 193, str(Form1.Nsimulations4), wx.Point(270,228), wx.Size(35,-1))
+        self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(270,228), wx.Size(35,-1))
         self.editname7.SetToolTip(wx.ToolTip("Method M4: average\n\n"+
                                              "Each resistance surface pixel is replaced by the mean pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controled by the scale parameter."))        
-        self.editname8 = wx.TextCtrl(self, 196, str(Form1.esc), wx.Point(435,175), wx.Size(50,-1))
+        self.editname8 = wx.TextCtrl(self, 196, str(self.esc), wx.Point(435,175), wx.Size(50,-1))
         self.editname8.SetToolTip(wx.ToolTip("This parameters controls the scale of landscape influence on local "+
-                                             "resistance (the size of the window around each pixel).\n"+
-                                             "E.g., it may be related to the species' landscape perception."))                
+                                             "resistance (the size of the window around each pixel). It affects only the "+
+                                             "results of simulations using methods M2, M3, and M4.\n"+
+                                             "Scale may be related to the species' landscape perception, for example."))
          
          
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -561,19 +556,22 @@ class Form1(wx.Panel):
         """
         SELECT RESISTANCE MAP
         ID 93: event performed by a combobox, from a list of raster maps already in GRASS GIS DataBase
-        Resistance Map name is stored in a variable called Form1.OutArqResist
-        Variable Form1.NEXPER_FINAL also stores resistance map name; if the user does not inform 
+        Resistance Map name is stored in a variable called self.OutArqResist
+        Variable self.NEXPER_FINAL also stores resistance map name; if the user does not inform 
         an output name for the simulation, corridor output names will have the same name as the input 
         resistance map
         """
         
-        if event.GetId()==93:   
-            # Gets resistance map name and stores it in Form1.OutArqResist
-            Form1.OutArqResist=event.GetString()
+        if event.GetId()==93:
+          
+            #select_resistance_map()
             
-            # Gets resistance map name and stores it in Form1.NEXPER_FINAL (in case the user does not provide an output file name)
-            Form1.NEXPER_FINAL=event.GetString()
-            Form1.NEXPER_FINAL=Form1.NEXPER_AUX+'_'+Form1.NEXPER_FINAL
+            # Gets resistance map name and stores it in self.OutArqResist
+            self.OutArqResist=event.GetString()
+            
+            # Gets resistance map name and stores it in self.NEXPER_FINAL (in case the user does not provide an output file name)
+            self.NEXPER_FINAL=event.GetString()
+            self.NEXPER_FINAL=self.NEXPER_AUX+'_'+self.NEXPER_FINAL
             
             # Shows selection in the Dialog Box
             self.logger.AppendText('Resistance Map Selected:\n')
@@ -584,13 +582,13 @@ class Form1(wx.Panel):
         """
         ST MAP
         ID 95: event performed by a combobox, from a list of raster maps already in GRASS GIS DataBase
-        Source-Target Map is stored in a variable called Form1.OutArqST
+        Source-Target Map is stored in a variable called self.OutArqST
         """
         
         if event.GetId()==95: 
           
-          # Gets source target map name and stores it in Form1.OutArqST
-          Form1.OutArqST=event.GetString()
+          # Gets source target map name and stores it in self.OutArqST
+          self.OutArqST=event.GetString()
           
           # Shows selection in the Dialog Box
           self.logger.AppendText('Map Souce Targetd:\n')
@@ -605,17 +603,6 @@ class Form1(wx.Panel):
     def OnClick(self, event):
         '''
         This function controls what happens when a button of the GUI is pressed
-        
-        Testing BUTTON ID 260 (Create ST combination list)
-        >>> app = wx.PySimpleApp()
-        >>> frame = wx.Frame(None, -1, "LSCorridors v. 1.0", pos=(0,0), size=(530,450))
-        >>> f1 = Form1(frame,-1)
-        >>> f1.OutArqST = 'STs_img'
-        >>> 
-        f1.OnClick(260)
-        
-        wx.EVT_BUTTON(self, 260, self.OnClick)
-         Form1.OnClick(self, 260)
         '''
         
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -634,13 +621,13 @@ class Form1(wx.Panel):
         
         if event.GetId()==240: #Run import
           # Imports a resistance map, ignoring projections
-          grass.run_command ('r.in.gdal', flags='o', input=Form1.InArqResist, output=Form1.OutArqResist, overwrite=True, verbose = False)
+          grass.run_command ('r.in.gdal', flags='o', input=self.InArqResist, output=self.OutArqResist, overwrite=True, verbose = False)
           
           # Imports a ST map, ignoring projections
-          grass.run_command ('r.in.gdal', flags='o', input=Form1.InArqST, output= Form1.OutArqST, overwrite=True, verbose = False)
+          grass.run_command ('r.in.gdal', flags='o', input=self.InArqST, output= self.OutArqST, overwrite=True, verbose = False)
           
           # Setting GRASS GIS region to the largest (resistance) map
-          grass.run_command('g.region', rast=Form1.OutArqResist, verbose=False)
+          grass.run_command('g.region', rast=self.OutArqResist, verbose=False)
           
           # Shows procedure in the Diolog Box
           self.logger.AppendText('\nImporting rasters... \n')
@@ -659,7 +646,7 @@ class Form1(wx.Panel):
         """
         ID 260: This event uses information contained inside ST map to create a list
         with all possible combination ST combinations, assigns this list to the 
-        variable Form1.patch_id_list, which is then used to generate simulations
+        variable self.patch_id_list, which is then used to generate simulations
         """
         
         if event.GetId()==260: #combine list
@@ -669,30 +656,30 @@ class Form1(wx.Panel):
           
           # Creating ST combination list based on information of ST map
           # The result is a string with combinations; e.g.: 1,2,1,3,1,4...
-          Form1.patch_id_list_aux = combine_st(st_map = Form1.OutArqST)
+          self.patch_id_list_aux = combine_st(st_map = self.OutArqST)
           
           # Transforms the string into a list, using comma as separator
-          Form1.patch_id_list_aux_b=Form1.patch_id_list_aux.split(',')
+          self.patch_id_list_aux_b=self.patch_id_list_aux.split(',')
           
           # Length of the list
-          Form1.lenlist=len(Form1.patch_id_list_aux_b)
+          self.lenlist=len(self.patch_id_list_aux_b)
           
           # Number of combination pairs
-          Form1.lenlist_b=Form1.lenlist/2
+          self.lenlist_b=self.lenlist/2
           
           # Sends confirmation message
           self.logger.AppendText('Waiting... \n')
           
-          d = wx.MessageDialog(self, "Simulate all possible ("+`Form1.lenlist_b`+") combinations?\n", "", wx.YES_NO)
+          d = wx.MessageDialog(self, "Simulate all possible ("+`self.lenlist_b`+") combinations?\n", "", wx.YES_NO)
           retCode = d.ShowModal() # Shows
           d.Close(True)  # Close the frame. 
           
           # If the user choses "yes", it meand that it was chosen to simulate all ST possible combinations;
           # otherwise, the process is simply canceled
           if (retCode == wx.ID_YES):
-            Form1.patch_id_list=Form1.patch_id_list_aux_b
+            self.patch_id_list=self.patch_id_list_aux_b
             self.logger.AppendText('\nCreated list. \n')
-            #print Form1.patch_id_list
+            #print self.patch_id_list
           else:
               print ""
               self.logger.AppendText('\nList not created. \n')
@@ -728,8 +715,8 @@ class Form1(wx.Panel):
             
             # Select output directory
             self.logger.AppendText('Please select the directory... \n')
-            Form1.OutDir_files=selectdirectory()
-            os.chdir(Form1.OutDir_files)
+            self.OutDir_files=selectdirectory()
+            os.chdir(self.OutDir_files)
             
             for i in p:
               grass.run_command('g.region', rast=i,verbose=False)
@@ -756,23 +743,23 @@ class Form1(wx.Panel):
           # Message in the Dialog box
           self.logger.AppendText("Waiting ... :\n")
           
-          # Calls selectfile function, that returns the file name in the variable Form1.InArqST
-          Form1.InArqST=selectfile()
+          # Calls selectfile function, that returns the file name in the variable self.InArqST
+          self.InArqST=selectfile()
           
           # Removing file name extension 
           if platform.system() == 'Windows':
-            Form1.OutArqST=Form1.InArqST.split('\\')
+            self.OutArqST=self.InArqST.split('\\')
           elif platform.system() == 'Linux':
-            Form1.OutArqST=Form1.InArqST.split('/')
+            self.OutArqST=self.InArqST.split('/')
           else:
             # Improve it to Mac OS - how does it work?
             raise Exception("What platform is yours?? It's not Windows or Linux...")
-          Form1.OutArqST=Form1.OutArqST[-1].replace('.','_')
+          self.OutArqST=self.OutArqST[-1].replace('.','_')
           
           # Message in the Dialog box
-          self.logger.AppendText('Selected File: \n'+Form1.OutArqST+'\n')
+          self.logger.AppendText('Selected File: \n'+self.OutArqST+'\n')
           #self.logger.AppendText("Automatically ST Map Selected:\n")
-          #self.logger.AppendText(Form1.OutArqST+"\n")
+          #self.logger.AppendText(self.OutArqST+"\n")
          
          
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -794,26 +781,26 @@ class Form1(wx.Panel):
           # Message in the Dialog box
           self.logger.AppendText("Waiting ... :\n")
           
-          # Calls selectfile function, that returns the file name in the variable Form1.InArqST
-          Form1.InArqResist=selectfile()
+          # Calls selectfile function, that returns the file name in the variable self.InArqST
+          self.InArqResist=selectfile()
           
           # Removing file name extension 
           if platform.system() == 'Windows':
-            Form1.OutArqResist=Form1.InArqResist.split('\\')
+            self.OutArqResist=self.InArqResist.split('\\')
           elif platform.system() == 'Linux':
-            Form1.OutArqResist=Form1.InArqResist.split('/')
+            self.OutArqResist=self.InArqResist.split('/')
           else:
             # Improve it to Mac OS - how does it work?
             raise Exception("What platform is yours?? It's not Windows or Linux...")            
-          Form1.OutArqResist=Form1.OutArqResist[-1].replace('.','_')
+          self.OutArqResist=self.OutArqResist[-1].replace('.','_')
           
           # Messages in the Dialog box
-          self.logger.AppendText('Selected File: \n'+Form1.OutArqResist+'\n')
+          self.logger.AppendText('Selected File: \n'+self.OutArqResist+'\n')
           
-          # Updating output file name in the variable Form1.NEXPER_FINAL
-          Form1.NEXPER_FINAL=Form1.NEXPER_AUX+'_'+Form1.OutArqResist
+          # Updating output file name in the variable self.NEXPER_FINAL
+          self.NEXPER_FINAL=self.NEXPER_AUX+'_'+self.OutArqResist
           self.logger.AppendText("Automatically Resistance Map Selected:\n")
-          self.logger.AppendText(Form1.NEXPER_FINAL+"\n")
+          self.logger.AppendText(self.NEXPER_FINAL+"\n")
         
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -832,18 +819,18 @@ class Form1(wx.Panel):
           # Message in the Dialog box
           self.logger.AppendText("Waiting ... :\n")
           
-          # Calls selectfile function, that returns the file name in the variable Form1.readtxt
-          Form1.readtxt=selectfile()
+          # Calls selectfile function, that returns the file name in the variable self.readtxt
+          self.readtxt=selectfile()
           
           # Opens and reads the list as a string and transforms it into a list
-          Form1.fileHandle = open(Form1.readtxt, 'r')
-          Form1.patch_id_list_aux=Form1.fileHandle.read()
-          Form1.fileHandle.close()
-          Form1.patch_id_list=Form1.patch_id_list_aux.split(',')
+          self.fileHandle = open(self.readtxt, 'r')
+          self.patch_id_list_aux=self.fileHandle.read()
+          self.fileHandle.close()
+          self.patch_id_list=self.patch_id_list_aux.split(',')
           
           # Prints list of ST combinations
-          print Form1.patch_id_list
-          self.logger.AppendText("TXT Combinations:\n"+`Form1.patch_id_list`+"\n")
+          print self.patch_id_list
+          self.logger.AppendText("TXT Combinations:\n"+`self.patch_id_list`+"\n")
           
 
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -869,10 +856,10 @@ class Form1(wx.Panel):
           self.logger.AppendText("Checking the list \n")
           
           # Size of the ST list
-          Form1.lenlist=len(Form1.patch_id_list)
+          self.lenlist=len(self.patch_id_list)
          
           # Tests if the length of the ST list is > 1
-          if  Form1.lenlist <= 1: 
+          if  self.lenlist <= 1: 
             d= wx.MessageDialog(self, "Incorrect list\n"+
                                 "List length is smaller than 1!\n"+
                                 "Please check the list.\n", "", wx.OK) # Create a message dialog box
@@ -881,7 +868,7 @@ class Form1(wx.Panel):
             self.logger.AppendText()
           
           # Tests if the length of the ST list is even
-          elif Form1.lenlist > 1 and int (Form1.lenlist)%2 == 1:
+          elif self.lenlist > 1 and int (self.lenlist)%2 == 1:
             
             d= wx.MessageDialog(self, "Incorrect list.\n"+
                                 "List length cannot be odd,"+
@@ -892,27 +879,32 @@ class Form1(wx.Panel):
           # If everything ok with list length, go on
           else:
             
-            # List of STs: Form1.patch_id_list
+            # List of STs: self.patch_id_list
             self.logger.AppendText("List ok.\n")
             self.logger.AppendText("Waiting...\n")
             
             # Selects output directory for text files
             d=wx.MessageDialog(self, "Select the output folder\n"+
                                "for text files.\n", "", wx.OK) # Create a message dialog box
-            d.ShowModal() # Shows it
-            d.Destroy() # Finally destroy it when finished.
-            Form1.OutDir_files_TXT = selectdirectory()
-            self.logger.AppendText("Selected output folder: \n"+Form1.OutDir_files_TXT)
+            if not self.perform_tests:
+              d.ShowModal() # Shows it
+              d.Destroy() # Finally destroy it when finished.
+              
+            if self.OutDir_files_TXT == '':
+              self.OutDir_files_TXT = selectdirectory()
+            self.logger.AppendText("Selected output folder: \n"+self.OutDir_files_TXT)
           
             # Start running
             self.logger.AppendText("Running...:\n")
             
-          self.logger.AppendText("\nList of source-targets: \n"+`Form1.patch_id_list`+'\n') 
+          self.logger.AppendText("\nList of source-targets: \n"+`self.patch_id_list`+'\n') 
           d = wx.MessageDialog(self,"Click OK and wait for simulation processing;\n"+
                               "A message will warn you at the end of simulations.\n"+
                               "Thank you.","", wx.OK)
-          retCode=d.ShowModal() # Shows 
-          d.Close(True) # Finally destroy it when finished.
+          
+          if not self.perform_tests:
+            retCode=d.ShowModal() # Shows 
+            d.Close(True) # Finally destroy it when finished.
           
           #---------------------------------------------#
           #--------------- PREPARE SIMULATIONS ---------#
@@ -920,136 +912,136 @@ class Form1(wx.Panel):
           # Simulation settings
           
           # Start time
-          Form1.time = datetime.now() # INSTANCE
-          Form1.day_start=Form1.time.day # Start day
-          Form1.month_start=Form1.time.month # Start month
-          Form1.year_start=Form1.time.year # Start year
-          Form1.hour_start=Form1.time.hour # Start hour
-          Form1.minuts_start=Form1.time.minute # Start minute
-          Form1.second_start=Form1.time.second # Start second
+          self.time = datetime.now() # INSTANCE
+          self.day_start=self.time.day # Start day
+          self.month_start=self.time.month # Start month
+          self.year_start=self.time.year # Start year
+          self.hour_start=self.time.hour # Start hour
+          self.minuts_start=self.time.minute # Start minute
+          self.second_start=self.time.second # Start second
           
           # Current time
-          Form1.time = datetime.now() # INSTANCE
-          Form1.day=Form1.time.day # Current day
-          Form1.month=Form1.time.month # Current month
-          Form1.year=Form1.time.year # Current year
-          Form1.hour=Form1.time.hour # Current hour
-          Form1.minuts=Form1.time.minute # Current minute
-          Form1.second=Form1.time.second # Current second
+          self.time = datetime.now() # INSTANCE
+          self.day=self.time.day # Current day
+          self.month=self.time.month # Current month
+          self.year=self.time.year # Current year
+          self.hour=self.time.hour # Current hour
+          self.minuts=self.time.minute # Current minute
+          self.second=self.time.second # Current second
           
           # Change to output directory
-          os.chdir(Form1.OutDir_files_TXT)
+          os.chdir(self.OutDir_files_TXT)
           
           # Starting log file
-          Form1.header_log="___Log_Year_"+`Form1.year`+"-Month"+`Form1.month`+"-Day_"+`Form1.day`+"_Time_"+`Form1.hour`+"_"+`Form1.minuts`+"_"+`Form1.second`
-          Form1.txt_log=open(Form1.header_log+".txt","w")       
-          Form1.txt_log.write("Start time       : Year "+`Form1.year_start`+"-Month "+`Form1.month_start`+"-Day "+`Form1.day_start`+" ---- time: "+`Form1.hour_start`+":"+`Form1.minuts_start`+":"+`Form1.second_start`+"\n")
+          self.header_log="___Log_Year_"+`self.year`+"-Month"+`self.month`+"-Day_"+`self.day`+"_Time_"+`self.hour`+"_"+`self.minuts`+"_"+`self.second`
+          self.txt_log=open(self.header_log+".txt","w")       
+          self.txt_log.write("Start time       : Year "+`self.year_start`+"-Month "+`self.month_start`+"-Day "+`self.day_start`+" ---- time: "+`self.hour_start`+":"+`self.minuts_start`+":"+`self.second_start`+"\n")
           
           #######################################3
-          Form1.S1="" # Variable to select a source point
-          Form1.T1="" # Variable to select a target point
-          Form1.C2=Form1.C2+''
-          Form1.C3=Form1.C3+''
-          Form1.C4=Form1.C4+''
+          self.S1="" # Variable to select a source point
+          self.T1="" # Variable to select a target point
+          self.C2=self.C2+''
+          self.C3=self.C3+''
+          self.C4=self.C4+''
           
           # Defining GRASS GIS region as output map region
-          grass.run_command('g.region', rast=Form1.OutArqResist)#, res=Form1.res3)
+          grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)
           
           # Reading map resolution
-          Form1.res = grass.read_command('g.region', flags='m')
-          Form1.res2 = Form1.res.split('\n')
-          Form1.res3 = Form1.res2[5]
-          Form1.res3 = float(Form1.res3.replace('ewres=',''))
+          self.res = grass.read_command('g.region', flags='m')
+          self.res2 = self.res.split('\n')
+          self.res3 = self.res2[5]
+          self.res3 = float(self.res3.replace('ewres=',''))
           
           # Defining the size of the moving windows, in pixels
           # It is defined given the animal movement scale (user defined parameter)
           #  and the resolution of the map (map grain or pixel size) 
-          Form1.escfina1=(Form1.esc*2)/Form1.res3
+          self.escfina1=(self.esc*2)/self.res3
           
           # Checking if number of pixels of moving window is integer
           #  and correcting it if necessary
-          if Form1.escfina1%2==0:
-            Form1.escfina1=int(Form1.escfina1)
-            Form1.escfina1=Form1.escfina1+1
+          if self.escfina1%2==0:
+            self.escfina1=int(self.escfina1)
+            self.escfina1=self.escfina1+1
           else:
-            Form1.escfina1=int(round(Form1.escfina1, ndigits=0))
+            self.escfina1=int(round(self.escfina1, ndigits=0))
           
           # Defining GRASS GIS region as output map region
-          # grass.run_command('g.region', rast=Form1.OutArqResist)#, res=Form1.res3)          
+          # grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)          
           
           # If methods M2, M3, M4 are going to be simulated, this command prepares
           # the resistance map tanking into consider these methods
-          if Form1.Nsimulations2 > 0: # mode
-            Form1.defaultsize_moviwin_allcor=Form1.escfina1
-            grass.run_command('r.neighbors', input=Form1.OutArqResist, output=Form1.C2, method='mode', size=Form1.escfina1, overwrite = True)
+          if self.Nsimulations2 > 0: # mode
+            self.defaultsize_moviwin_allcor=self.escfina1
+            grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C2, method='mode', size=self.escfina1, overwrite = True)
             
-          if Form1.Nsimulations3 > 0: # average
-            Form1.defaultsize_moviwin_allcor=Form1.escfina1
-            grass.run_command('r.neighbors', input=Form1.OutArqResist, output=Form1.C3, method='average', size=Form1.escfina1, overwrite = True)
+          if self.Nsimulations3 > 0: # average
+            self.defaultsize_moviwin_allcor=self.escfina1
+            grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C3, method='average', size=self.escfina1, overwrite = True)
           
-          if Form1.Nsimulations4 > 0: # maximum
-            Form1.defaultsize_moviwin_allcor=Form1.escfina1
-            grass.run_command('r.neighbors', input=Form1.OutArqResist, output=Form1.C4, method='maximum', size=Form1.escfina1, overwrite = True)
+          if self.Nsimulations4 > 0: # maximum
+            self.defaultsize_moviwin_allcor=self.escfina1
+            grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C4, method='maximum', size=self.escfina1, overwrite = True)
           
           # Organizes names of resistance maps to be used in simulations
-          Form1.listafinal=[]
+          self.listafinal=[]
           
-          for i in range(Form1.Nsimulations1):
-            Form1.listafinal.append(Form1.OutArqResist)
-          for i in range(Form1.Nsimulations2):
-            Form1.listafinal.append(Form1.C2)
-          for i in range(Form1.Nsimulations3):
-            Form1.listafinal.append(Form1.C3)
-          for i in range(Form1.Nsimulations4):
-            Form1.listafinal.append(Form1.C4)
+          for i in range(self.Nsimulations1):
+            self.listafinal.append(self.OutArqResist)
+          for i in range(self.Nsimulations2):
+            self.listafinal.append(self.C2)
+          for i in range(self.Nsimulations3):
+            self.listafinal.append(self.C3)
+          for i in range(self.Nsimulations4):
+            self.listafinal.append(self.C4)
           
           # Not necessary
-          #grass.run_command('g.region', rast=Form1.OutArqResist, res=Form1.res3)
+          #grass.run_command('g.region', rast=self.OutArqResist, res=self.res3)
           
           # Total number of simulations (M! + M2 + M3 + M4)
-          Form1.Nsimulations = Form1.Nsimulations1 + Form1.Nsimulations2 + Form1.Nsimulations3 + Form1.Nsimulations4
+          self.Nsimulations = self.Nsimulations1 + self.Nsimulations2 + self.Nsimulations3 + self.Nsimulations4
           
           # Transforming list of STs in integers (for recongnizing them in the map)       
-          Form1.patch_id_list=map(int,Form1.patch_id_list)
+          self.patch_id_list=map(int,self.patch_id_list)
           
           #---------------------------------------------#
           #--------------- START SIMULATIONS -----------#
           #---------------------------------------------#
           
           # For each ST pair in the list:
-          while (len(Form1.patch_id_list)>1):
+          while (len(self.patch_id_list)>1):
             
-            Form1.ChecktTry=True
+            self.ChecktTry=True
             # Change to output dir
-            os.chdir(Form1.OutDir_files_TXT)
+            os.chdir(self.OutDir_files_TXT)
             
             # Select a pair from the list and prepare vectors for processing
-            while Form1.ChecktTry==True:
+            while self.ChecktTry==True:
               try:
                 # Selects from the beginning to the end of the list
-                Form1.S1=Form1.patch_id_list[0]
-                Form1.T1=Form1.patch_id_list[1]
-                Form1.S1FORMAT='000000'+`Form1.S1`
-                Form1.S1FORMAT=Form1.S1FORMAT[-5:]
-                Form1.T1FORMAT='000000'+`Form1.T1`
-                Form1.T1FORMAT=Form1.T1FORMAT[-5:]
+                self.S1=self.patch_id_list[0]
+                self.T1=self.patch_id_list[1]
+                self.S1FORMAT='000000'+`self.S1`
+                self.S1FORMAT=self.S1FORMAT[-5:]
+                self.T1FORMAT='000000'+`self.T1`
+                self.T1FORMAT=self.T1FORMAT[-5:]
                 
                 # Selects pair and delete it from the original ST combination list
-                del Form1.patch_id_list[0:2]
-                Form1.PAISAGEM='EXPERIMENT'
-                Form1.ARQSAIDA=Form1.PAISAGEM+'_s'+Form1.S1FORMAT+'_t'+Form1.T1FORMAT # Name of ouput text file                  
-                self.logger.AppendText("Processing ST pair: \n"+Form1.S1FORMAT+' & '+Form1.T1FORMAT+ '\n')  
-                Form1.S1=(int(str(Form1.S1)))
-                Form1.T1=(int(str(Form1.T1)))
+                del self.patch_id_list[0:2]
+                self.PAISAGEM='EXPERIMENT'
+                self.ARQSAIDA=self.PAISAGEM+'_s'+self.S1FORMAT+'_t'+self.T1FORMAT # Name of ouput text file                  
+                self.logger.AppendText("Processing ST pair: \n"+self.S1FORMAT+' & '+self.T1FORMAT+ '\n')  
+                self.S1=(int(str(self.S1)))
+                self.T1=(int(str(self.T1)))
                 
                 # Generates rasters with only the region of the source and terget points
-                Form1.form_02='source = if('+Form1.OutArqST+' != '+`Form1.S1`+', null(), '+`Form1.S1`+ ')'
-                grass.mapcalc(Form1.form_02, overwrite = True, quiet = True)
-                Form1.form_03='target = if('+Form1.OutArqST+' != '+`Form1.T1`+', null(), '+`Form1.T1`+ ')'
-                grass.mapcalc(Form1.form_03, overwrite = True, quiet = True)
+                self.form_02='source = if('+self.OutArqST+' != '+`self.S1`+', null(), '+`self.S1`+ ')'
+                grass.mapcalc(self.form_02, overwrite = True, quiet = True)
+                self.form_03='target = if('+self.OutArqST+' != '+`self.T1`+', null(), '+`self.T1`+ ')'
+                grass.mapcalc(self.form_03, overwrite = True, quiet = True)
                 
                 # Transform source and target rasters into vectors
-                grass.run_command('g.region', rast=Form1.OutArqST, verbose=False)
+                grass.run_command('g.region', rast=self.OutArqST, verbose=False)
                 grass.run_command('r.to.vect', input='source', out='source_shp', type='area', verbose=False, overwrite = True ) 
                 grass.run_command('r.to.vect', input='target', out='target_shp', type='area', verbose=False, overwrite = True ) 
                 # Adds x and y coordinates as columns to the vectors attribute
@@ -1060,64 +1052,64 @@ class Form1(wx.Panel):
                 grass.read_command ('v.to.db', map='target_shp', option='coor', columns="x,y", overwrite = True)
                 
                 # Selects x,y coordinates of source point
-                Form1.var_source_x=grass.vector_db_select('source_shp', columns = 'x')['values'][1][0]
-                Form1.var_source_y=grass.vector_db_select('source_shp', columns = 'y')['values'][1][0]
+                self.var_source_x=grass.vector_db_select('source_shp', columns = 'x')['values'][1][0]
+                self.var_source_y=grass.vector_db_select('source_shp', columns = 'y')['values'][1][0]
                 # Selects x,y coordinates of source point
-                Form1.var_target_x=grass.vector_db_select('target_shp', columns = 'x')['values'][1][0]
-                Form1.var_target_y=grass.vector_db_select('target_shp', columns = 'y')['values'][1][0]
-                Form1.ChecktTry=False
+                self.var_target_x=grass.vector_db_select('target_shp', columns = 'x')['values'][1][0]
+                self.var_target_y=grass.vector_db_select('target_shp', columns = 'y')['values'][1][0]
+                self.ChecktTry=False
                 
               # In case the list of x,y is invalid, skips the simulation pair of STs with Error message, and keeps on simulating other pairs
               except:
-                Form1.ChecktTry=True
+                self.ChecktTry=True
                 # Error message on GRASS GIS console
                 print ("Error def Rasterize ST, Add cols, Get x,y cords...")
-                Form1.time = datetime.now() # INSTANCE
-                Form1.day_now=Form1.time.day # Error day
-                Form1.month_now=Form1.time.month # Error month
-                Form1.year_now=Form1.time.year # Error year
-                Form1.hour_now=Form1.time.hour # Error hour
-                Form1.minuts_now=Form1.time.minute # Error minute
-                Form1.second_now=Form1.time.second # Error second
+                self.time = datetime.now() # INSTANCE
+                self.day_now=self.time.day # Error day
+                self.month_now=self.time.month # Error month
+                self.year_now=self.time.year # Error year
+                self.hour_now=self.time.hour # Error hour
+                self.minuts_now=self.time.minute # Error minute
+                self.second_now=self.time.second # Error second
                 
                 # Updates Log file
-                Form1.listErrorLog.append("[Error ->-> :] <- Rasterize ST, Add cols, Get x,y corrd : "+Form1.ARQSAIDA+" -> ---"+`Form1.year_now`+"-"+ `Form1.month_now` + "-"+ `Form1.day_now`+" --- time : "+`Form1.hour_now `+":"+`Form1.second_now`)
-                Form1.listErrorLog.append("[Error ->-> :] <- Skip STS: " + Form1.ARQSAIDA)
+                self.listErrorLog.append("[Error ->-> :] <- Rasterize ST, Add cols, Get x,y corrd : "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
+                self.listErrorLog.append("[Error ->-> :] <- Skip STS: " + self.ARQSAIDA)
                 
                 # Finishes the simulation process if there are no more ST pairs
-                if len(Form1.patch_id_list)==0:
+                if len(self.patch_id_list)==0:
                   
-                  Form1.txt_log.close() 
+                  self.txt_log.close() 
                   d= wx.MessageDialog( self,"Error: STs invalid, please check them!", "", wx.OK)
                   retCode=d.ShowModal() # Shows
                   d.Close(True) # Closes
                   break                
             
             # Transforms ST coordinates in float
-            Form1.var_source_x_b_int=float(Form1.var_source_x)
-            Form1.var_source_y_b_int=float(Form1.var_source_y)
-            Form1.var_target_x_b_int=float(Form1.var_target_x)
-            Form1.var_target_y_b_int=float(Form1.var_target_y)
+            self.var_source_x_b_int=float(self.var_source_x)
+            self.var_source_y_b_int=float(self.var_source_y)
+            self.var_target_x_b_int=float(self.var_target_x)
+            self.var_target_y_b_int=float(self.var_target_y)
             
            
-            # Set region defined by the limits of source and target points + fixed distance (Form1.influenceprocess)
+            # Set region defined by the limits of source and target points + fixed distance (self.influenceprocess)
             #  This reduces simulation time, since map processing may be restricted to 
             #  the region where points are located
-            defineregion("source_shp", "target_shp", Form1.influenceprocess) 
+            defineregion("source_shp", "target_shp", self.influenceprocess) 
             
             # Name of the corridor output map
-            Form1.mapa_corredores_sem0=Form1.NEXPER_FINAL+'_'+'S_'+Form1.S1FORMAT+"_T_"+Form1.T1FORMAT
+            self.mapa_corredores_sem0=self.NEXPER_FINAL+'_'+'S_'+self.S1FORMAT+"_T_"+self.T1FORMAT
             
             # Checks if the output folder for text files exists; 
             # If not, creates it.
-            Form1.checkfolder=os.path.exists('Line_'+Form1.mapa_corredores_sem0)
+            self.checkfolder=os.path.exists('Line_'+self.mapa_corredores_sem0)
             
-            if Form1.checkfolder==False:
-              os.mkdir('Line_'+str(Form1.mapa_corredores_sem0))
+            if self.checkfolder==False:
+              os.mkdir('Line_'+str(self.mapa_corredores_sem0))
               if platform.system() == 'Windows':
-                Form1.outdir=Form1.OutDir_files_TXT+'\Line_'+Form1.mapa_corredores_sem0
+                self.outdir=self.OutDir_files_TXT+'\Line_'+self.mapa_corredores_sem0
               elif platform.system() == 'Linux':
-                Form1.outdir=Form1.OutDir_files_TXT+'/Line_'+Form1.mapa_corredores_sem0
+                self.outdir=self.OutDir_files_TXT+'/Line_'+self.mapa_corredores_sem0
               else:
                 # Improve it to Mac OS - how does it work?
                 raise Exception("What platform is yours?? It's not Windows or Linux...")
@@ -1126,30 +1118,30 @@ class Form1(wx.Panel):
                                    "Please select another directory to save the output.\n", "", wx.OK) # Create a message dialog box
               d.ShowModal() # Shows it
               d.Destroy() # Closes
-              Form1.outdir=selectdirectory() # Choose output folder, if the previous one already exists
+              self.outdir=selectdirectory() # Choose output folder, if the previous one already exists
               
             # Initializes corridor and auxiliary map
-            Form1.form_04='mapa_corredores = 0'
-            grass.mapcalc(Form1.form_04, overwrite = True, quiet = True)
-            Form1.form_16='corredores_aux = 0'
-            grass.mapcalc(Form1.form_16, overwrite = True, quiet = True)
+            self.form_04='mapa_corredores = 0'
+            grass.mapcalc(self.form_04, overwrite = True, quiet = True)
+            self.form_16='corredores_aux = 0'
+            grass.mapcalc(self.form_16, overwrite = True, quiet = True)
             
             # Open output text file and writes headers      
-            Form1.arquivo = open(Form1.mapa_corredores_sem0+'.txt','w')
-            Form1.cabecalho='EXPERIMENT'','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'LCP_LENGTH'+','+'LCP_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
-            Form1.arquivo.write(Form1.cabecalho)
+            self.arquivo = open(self.mapa_corredores_sem0+'.txt','w')
+            self.cabecalho='EXPERIMENT'','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'LCP_LENGTH'+','+'LCP_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
+            self.arquivo.write(self.cabecalho)
             
             #---------------------------------------------#
             #-------- PERFORMS EACH SIMULATION -----------#
             #---------------------------------------------#
             cont=0
-            for i in range(Form1.Nsimulations):
-                # Set region defined by the limits of source and target points + fixed distance (Form1.influenceprocess)
-                defineregion("source_shp","target_shp", Form1.influenceprocess)
+            for i in range(self.Nsimulations):
+                # Set region defined by the limits of source and target points + fixed distance (self.influenceprocess)
+                defineregion("source_shp","target_shp", self.influenceprocess)
                 
                 # Selecting resistance map
-                Form1.form_08='mapa_resist = '+Form1.listafinal[cont]
-                grass.mapcalc(Form1.form_08, overwrite = True, quiet = True)  
+                self.form_08='mapa_resist = '+self.listafinal[cont]
+                grass.mapcalc(self.form_08, overwrite = True, quiet = True)  
                 
                 # Number of simulation   
                 c=i+1
@@ -1163,8 +1155,8 @@ class Form1(wx.Panel):
                 grass.run_command('g.region', vect='source_shp', verbose=False, overwrite = True)
                 
                 # Select a random source point
-                Form1.ChecktTry=True
-                while Form1.ChecktTry==True:
+                self.ChecktTry=True
+                while self.ChecktTry==True:
                   try:
                     # Generates random points
                     grass.run_command('v.random', output='temp_point1_s', n=30, overwrite = True)
@@ -1174,31 +1166,31 @@ class Form1(wx.Panel):
                     grass.run_command('v.db.addtable', map='temp_point2_s', columns="temp double precision")
                     grass.run_command('v.db.connect', flags='p', map='temp_point2_s')
                     # List of such random points inside Python
-                    Form1.frag_list2=grass.vector_db_select('temp_point2_s', columns = 'cat')['values']
-                    Form1.frag_list2=list(Form1.frag_list2)
+                    self.frag_list2=grass.vector_db_select('temp_point2_s', columns = 'cat')['values']
+                    self.frag_list2=list(self.frag_list2)
                     # Selects the first (a random) point of the list
-                    Form1.selct="cat="+`Form1.frag_list2[0]`
-                    grass.run_command('v.extract', input='temp_point2_s', output='pnts_aleat_S', where=Form1.selct, overwrite = True)
+                    self.selct="cat="+`self.frag_list2[0]`
+                    grass.run_command('v.extract', input='temp_point2_s', output='pnts_aleat_S', where=self.selct, overwrite = True)
                     
-                    if len(Form1.frag_list2)>0:
-                      Form1.ChecktTry=False
+                    if len(self.frag_list2)>0:
+                      self.ChecktTry=False
                     else:
-                      Form1.ChecktTry=True
+                      self.ChecktTry=True
                       
                   # If an error in selecting a random source point occurs, this is registered here and a new random point is selected
                   except:
-                    Form1.ChecktTry=True
+                    self.ChecktTry=True
                     # Error message on GRASS GIS console
                     print ("Error Randomize source points...")                    
                     # Registering error in logfile
-                    Form1.time = datetime.now() # INSTANCE
-                    Form1.day_now=Form1.time.day # Error day
-                    Form1.month_now=Form1.time.month # Error month
-                    Form1.year_now=Form1.time.year # Error year
-                    Form1.hour_now=Form1.time.hour # Error hour
-                    Form1.minuts_now=Form1.time.minute # Error minute
-                    Form1.second_now=Form1.time.second # Error second
-                    Form1.listErrorLog.append("[Error ->-> :] <- Randomize source points: "+Form1.ARQSAIDA+" -> ---"+`Form1.year_now`+"-"+ `Form1.month_now` + "-"+ `Form1.day_now`+" --- time : "+`Form1.hour_now `+":"+`Form1.second_now`)
+                    self.time = datetime.now() # INSTANCE
+                    self.day_now=self.time.day # Error day
+                    self.month_now=self.time.month # Error month
+                    self.year_now=self.time.year # Error year
+                    self.hour_now=self.time.hour # Error hour
+                    self.minuts_now=self.time.minute # Error minute
+                    self.second_now=self.time.second # Error second
+                    self.listErrorLog.append("[Error ->-> :] <- Randomize source points: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
                     
                 
                 # Removing mask
@@ -1209,8 +1201,8 @@ class Form1(wx.Panel):
                 grass.run_command('r.mask',raster='target')
                 grass.run_command('g.region', vect='target_shp',verbose=False,overwrite = True)
                 # Select a random target point
-                Form1.ChecktTry=True
-                while Form1.ChecktTry==True:
+                self.ChecktTry=True
+                while self.ChecktTry==True:
                   try:
                     # Generates random points
                     grass.run_command('v.random', output='temp_point1_t',n=30 ,overwrite = True)
@@ -1221,32 +1213,32 @@ class Form1(wx.Panel):
                     grass.run_command('v.db.connect',flags='p',map='temp_point2_t')
                     
                     # List of such random points inside Python
-                    Form1.frag_list2=grass.vector_db_select('temp_point2_t', columns = 'cat')['values']
-                    Form1.frag_list2=list(Form1.frag_list2)
+                    self.frag_list2=grass.vector_db_select('temp_point2_t', columns = 'cat')['values']
+                    self.frag_list2=list(self.frag_list2)
 
                     # Selects the first (a random) point of the list
-                    Form1.selct="cat="+`Form1.frag_list2[0]`                
-                    grass.run_command('v.extract',input='temp_point2_t',output='pnts_aleat_T',where=Form1.selct,overwrite = True)  
+                    self.selct="cat="+`self.frag_list2[0]`                
+                    grass.run_command('v.extract',input='temp_point2_t',output='pnts_aleat_T',where=self.selct,overwrite = True)  
                     
-                    if len(Form1.frag_list2)>0:
-                      Form1.ChecktTry=False
+                    if len(self.frag_list2)>0:
+                      self.ChecktTry=False
                     else:
-                      Form1.ChecktTry=True
+                      self.ChecktTry=True
                       
                   # If an error in selecting a random target point occurs, this is registered here and a new random point is selected
                   except:
-                    Form1.ChecktTry=True
+                    self.ChecktTry=True
                     # Error message on GRASS GIS console
                     print ("Error Randomize target points...")                     
                     # Registering error in logfile
-                    Form1.time = datetime.now() # INSTANCE
-                    Form1.day_now=Form1.time.day # Error day
-                    Form1.month_now=Form1.time.month # Error month
-                    Form1.year_now=Form1.time.year # Error year
-                    Form1.hour_now=Form1.time.hour # Error hour
-                    Form1.minuts_now=Form1.time.minute # Error minute
-                    Form1.second_now=Form1.time.second # Error second
-                    Form1.listErrorLog.append("[Error ->-> :] <- Randomize target points: "+Form1.ARQSAIDA+" -> ---"+`Form1.year_now`+"-"+ `Form1.month_now` + "-"+ `Form1.day_now`+" --- time : "+`Form1.hour_now `+":"+`Form1.second_now`)
+                    self.time = datetime.now() # INSTANCE
+                    self.day_now=self.time.day # Error day
+                    self.month_now=self.time.month # Error month
+                    self.year_now=self.time.year # Error year
+                    self.hour_now=self.time.hour # Error hour
+                    self.minuts_now=self.time.minute # Error minute
+                    self.second_now=self.time.second # Error second
+                    self.listErrorLog.append("[Error ->-> :] <- Randomize target points: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
 
                 # Removing mask
                 grass.run_command('r.mask',flags='r')
@@ -1255,40 +1247,40 @@ class Form1(wx.Panel):
                 # If the user wants to consider only the region around ST points, this region
                 #  is selected as GRASS region; otherwise, the whole resistance map region is set
                 #  as GRASS region
-                if Form1.influenceprocess_boll:
-                  defineregion("source_shp","target_shp", Form1.influenceprocess)  
+                if self.influenceprocess_boll:
+                  defineregion("source_shp","target_shp", self.influenceprocess)  
                 else:
-                  grass.run_command('g.region', rast=Form1.OutArqResist,verbose=False)
+                  grass.run_command('g.region', rast=self.OutArqResist,verbose=False)
                 
                 #---------- GENERATE CORRIDOR -------#
-                Form1.ChecktTry=True  
-                while Form1.ChecktTry==True:
+                self.ChecktTry=True  
+                while self.ChecktTry==True:
                   try:
-                    Form1.form_05='corredores_aux = mapa_corredores'
-                    grass.mapcalc(Form1.form_05, overwrite = True, quiet = True)
-                    Form1.ChecktTry=False
+                    self.form_05='corredores_aux = mapa_corredores'
+                    grass.mapcalc(self.form_05, overwrite = True, quiet = True)
+                    self.ChecktTry=False
                   except:
-                    Form1.ChecktTry=True
+                    self.ChecktTry=True
                     
-                  Form1.ChecktTry=True
-                  while Form1.ChecktTry==True:
+                  self.ChecktTry=True
+                  while self.ChecktTry==True:
                     try:
                       # Creates a raster of uniformely distributed random values in the interval [1,100)
-                      Form1.form_06="aleat = rand(1,100)"
-                      grass.mapcalc(Form1.form_06, seed=random.randint(1, 10000), overwrite = True, quiet = True)
+                      self.form_06="aleat = rand(1,100)"
+                      grass.mapcalc(self.form_06, seed=random.randint(1, 10000), overwrite = True, quiet = True)
                       # Transforms raster map of random values to the range [0.1*noise, noise), where "noise" is
-                      #  the variability factor defined by the user (variable Form1.ruido_float)
-                      Form1.form_06="aleat2 = aleat/100.0 * "+`Form1.ruido_float`
-                      grass.mapcalc(Form1.form_06, overwrite = True, quiet = True)
+                      #  the variability factor defined by the user (variable self.ruido_float)
+                      self.form_06="aleat2 = aleat/100.0 * "+`self.ruido_float`
+                      grass.mapcalc(self.form_06, overwrite = True, quiet = True)
                       # Multiply resistance map by random noise map
-                      Form1.form_07='resist_aux = mapa_resist * aleat2'
-                      grass.mapcalc(Form1.form_07, overwrite = True, quiet = True)
+                      self.form_07='resist_aux = mapa_resist * aleat2'
+                      grass.mapcalc(self.form_07, overwrite = True, quiet = True)
                       # Sets null cells as vistually infinite resistance
-                      Form1.form_07='resist_aux2 = if(isnull(resist_aux), 10000000, resist_aux)'
-                      grass.mapcalc(Form1.form_07, overwrite = True, quiet = True)
+                      self.form_07='resist_aux2 = if(isnull(resist_aux), 10000000, resist_aux)'
+                      grass.mapcalc(self.form_07, overwrite = True, quiet = True)
                       
                       # Sets GRASS region
-                      defineregion("source_shp","target_shp", Form1.influenceprocess)
+                      defineregion("source_shp","target_shp", self.influenceprocess)
                       
                       # Generating cumulative cost raster map for linking S and T points
                       grass.run_command('r.cost', flags='k', input='resist_aux2', output='custo_aux_cost', start_points='pnts_aleat_S', stop_points='pnts_aleat_T', overwrite = True)
@@ -1297,119 +1289,116 @@ class Form1(wx.Panel):
                       # Transforms null cells (no corridor) in zeros
                       # Now we have a corridor map
                       grass.run_command('r.series', input='corredores_aux,custo_aux_cost_drain', output='mapa_corredores', method='sum', overwrite = True)
-                      Form1.ChecktTry=False
+                      self.ChecktTry=False
                       
                     # If an error in generating corridors, this is registered here and the algoeithm tries to generate the corridor again
                     except:
-                      Form1.ChecktTry=True
+                      self.ChecktTry=True
                       # Error message on GRASS GIS console
                       print ("Error Corridor methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series...")
                       # Registering error in logfile
-                      Form1.time = datetime.now() # INSTANCE
-                      Form1.day_now=Form1.time.day # Error day
-                      Form1.month_now=Form1.time.month # Error month
-                      Form1.year_now=Form1.time.year # Error year
-                      Form1.hour_now=Form1.time.hour # Error hour
-                      Form1.minuts_now=Form1.time.minute # Error minute
-                      Form1.second_now=Form1.time.second # Error second
-                      Form1.listErrorLog.append("[Error ->-> :] <- Methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series: "+Form1.ARQSAIDA+" -> ---"+`Form1.year_now`+"-"+ `Form1.month_now` + "-"+ `Form1.day_now`+" --- Time : "+`Form1.hour_now `+":"+`Form1.second_now`)
+                      self.time = datetime.now() # INSTANCE
+                      self.day_now=self.time.day # Error day
+                      self.month_now=self.time.month # Error month
+                      self.year_now=self.time.year # Error year
+                      self.hour_now=self.time.hour # Error hour
+                      self.minuts_now=self.time.minute # Error minute
+                      self.second_now=self.time.second # Error second
+                      self.listErrorLog.append("[Error ->-> :] <- Methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- Time : "+`self.hour_now `+":"+`self.second_now`)
                       
                 # Multiply corridor map (binary - 0/1) by the original resistance map
                 # Now we get a raster with the cost of each pixel along the LCP
-                Form1.form_09='custo_aux_cost_drain_sum = custo_aux_cost_drain * '+Form1.listafinal[0]
-                grass.mapcalc(Form1.form_09, overwrite = True, quiet = True)  
+                self.form_09='custo_aux_cost_drain_sum = custo_aux_cost_drain * '+self.listafinal[0]
+                grass.mapcalc(self.form_09, overwrite = True, quiet = True)  
                
                 # CALCULATES COST
-                Form1.x = grass.read_command('r.univar', map='custo_aux_cost_drain_sum')
+                self.x = grass.read_command('r.univar', map='custo_aux_cost_drain_sum')
                 # List of corridor statistics
-                Form1.x_b = Form1.x.split('\n')
+                self.x_b = self.x.split('\n')
                 # Sum of the cost of each pixel along the LCP, string format
-                Form1.x_c = str(Form1.x_b[14])
+                self.x_c = str(self.x_b[14])
                 # Value of the LCP total cost, float format
-                Form1.var_cost_sum = float(Form1.x_c.replace("sum: ",""))
+                self.var_cost_sum = float(self.x_c.replace("sum: ",""))
                 
                 
                 # Defining GRASS region
-                if Form1.influenceprocess_boll:
-                  defineregion("source_shp", "target_shp", Form1.influenceprocess)  
+                if self.influenceprocess_boll:
+                  defineregion("source_shp", "target_shp", self.influenceprocess)  
                 else:
-                  grass.run_command('g.region', rast=Form1.OutArqResist, verbose=False)
+                  grass.run_command('g.region', rast=self.OutArqResist, verbose=False)
                 
                 # Corridor map with NULL cells instead of zeros
-                Form1.form_10=Form1.mapa_corredores_sem0+' = if(mapa_corredores == 0, null(), mapa_corredores)'
-                grass.mapcalc(Form1.form_10, overwrite = True, quiet = True)
+                self.form_10=self.mapa_corredores_sem0+' = if(mapa_corredores == 0, null(), mapa_corredores)'
+                grass.mapcalc(self.form_10, overwrite = True, quiet = True)
                 
                 # CALCULATES LCP LENGTH using corridor map (with NULL values)
-                Form1.length = grass.read_command('r.univar', map='custo_aux_cost_drain')
+                self.length = grass.read_command('r.univar', map='custo_aux_cost_drain')
                 # List of statistics
-                Form1.length_b=Form1.length.split('\n')
+                self.length_b=self.length.split('\n')
                 # Sum of pixels (value 1) of the corridor, string format
-                Form1.length_c=str(Form1.length_b[14])
+                self.length_c=str(self.length_b[14])
                 # Sum of pixels of the corridor, float format
-                Form1.length_d=Form1.length_c[5:9]
-                Form1.length_e=float(Form1.length_d)
+                self.length_d=self.length_c[5:9]
+                self.length_e=float(self.length_d)
                 # Distance in meters (multiply map resolution by distance in pixels)
-                Form1.var_dist_line=Form1.res3*Form1.length_e
+                self.var_dist_line=self.res3*self.length_e
                
                 # CALCULATES EUCLIDEAN DISTANCE between S and T points
-                Form1.euclidean_a = float((Form1.var_source_x_b_int-Form1.var_target_x_b_int)**2 + (Form1.var_source_y_b_int-Form1.var_target_y_b_int)**2)
-                Form1.euclidean_b = Form1.euclidean_a**0.5
+                self.euclidean_a = float((self.var_source_x_b_int-self.var_target_x_b_int)**2 + (self.var_source_y_b_int-self.var_target_y_b_int)**2)
+                self.euclidean_b = self.euclidean_a**0.5
                 
                 # Recording corridor method in output text files
-                if Form1.listafinal[cont]==Form1.OutArqResist:
-                  Form1.M="M1"
-                if Form1.listafinal[cont]=='M2_MODE':
-                  Form1.M="M2"
-                if Form1.listafinal[cont]=='M3_MAXIMUM':
-                  Form1.M="M3"              
-                if Form1.listafinal[cont]=='M4_AVERAGE':
-                  Form1.M="M4"         
+                if self.listafinal[cont]==self.OutArqResist:
+                  self.M="M1"
+                if self.listafinal[cont]=='M2_MODE':
+                  self.M="M2"
+                if self.listafinal[cont]=='M3_MAXIMUM':
+                  self.M="M3"              
+                if self.listafinal[cont]=='M4_AVERAGE':
+                  self.M="M4"         
                      
                 # Produces information for one corridor - to be appended to the output text file
-                Form1.linha=Form1.listafinal[cont].replace("@PERMANENT",'')+','+Form1.M+','+`c`+','+ `Form1.var_dist_line`+','+ `Form1.var_cost_sum`+','+ `Form1.euclidean_b`+','+ `Form1.var_source_x`+','+ `Form1.var_source_y`+','+ `Form1.var_target_x`+','+ `Form1.var_target_y`+ "\n"
-                Form1.linha=Form1.linha.replace('\'','')
+                self.linha=self.listafinal[cont].replace("@PERMANENT",'')+','+self.M+','+`c`+','+ `self.var_dist_line`+','+ `self.var_cost_sum`+','+ `self.euclidean_b`+','+ `self.var_source_x`+','+ `self.var_source_y`+','+ `self.var_target_x`+','+ `self.var_target_y`+ "\n"
+                self.linha=self.linha.replace('\'','')
                 
                 # Writes corridor information on output text file
-                Form1.arquivo.write(Form1.linha)
+                self.arquivo.write(self.linha)
                 
                 # Generates a vector line map for each corridor (vectorizing raster map)
-                Form1.outline1='000000'+`c`  
-                Form1.outline1=Form1.outline1[-3:]
-                Form1.outline1=Form1.mapa_corredores_sem0+"_SM_"+Form1.outline1
+                self.outline1='000000'+`c`  
+                self.outline1=self.outline1[-3:]
+                self.outline1=self.mapa_corredores_sem0+"_SM_"+self.outline1
                 
                 # Vectorizes corridor raster map
                 grass.run_command('g.region', rast='custo_aux_cost_drain')
-                grass.run_command('r.to.vect', input='custo_aux_cost_drain', output=Form1.outline1, type='line',verbose=False, overwrite = True)
+                grass.run_command('r.to.vect', input='custo_aux_cost_drain', output=self.outline1, type='line',verbose=False, overwrite = True)
                 # Add column with corridor (LCP) length, in meters
-                grass.run_command ('v.db.addcolumn', map=Form1.outline1, columns='dist double precision', overwrite = True)
-                grass.read_command ('v.to.db', map=Form1.outline1, option='length', type='line', col='dist', units='me', overwrite = True)
+                grass.run_command ('v.db.addcolumn', map=self.outline1, columns='dist double precision', overwrite = True)
+                grass.read_command ('v.to.db', map=self.outline1, option='length', type='line', col='dist', units='me', overwrite = True)
                 # Exports output vector
-                os.chdir(Form1.outdir)
-                grass.run_command('v.out.ogr', input=Form1.outline1,dsn=Form1.outline1+'.shp',verbose=False,type='line')              
-                grass.run_command('g.remove', type="vect", name=Form1.outline1, flags='f')              
+                os.chdir(self.outdir)
+                grass.run_command('v.out.ogr', input=self.outline1,dsn=self.outline1+'.shp',verbose=False,type='line')              
+                grass.run_command('g.remove', type="vect", name=self.outline1, flags='f')              
                 cont=cont+1
                 
                 # Re-initializes corridor variables
-                Form1.var_dist_line=0.0
-                Form1.var_cost_sum=0.0                
-                Form1.linha=""                
+                self.var_dist_line=0.0
+                self.var_cost_sum=0.0                
+                self.linha=""                
                 
                 # -------- HERE ENDS THE SIMULATION OF ONE CORRIDOR ------------------#
                 # -------- THE LOOPS CONTINUES UNTIL ALL CORRIDORS ARE SIMULATES -----#
                 
             # All corridors were simulated - close output text file    
-            Form1.arquivo.close()
+            self.arquivo.close()
             
             # Exports raster map with all corridors for the selected ST pair
-            Form1.listExport.append(Form1.mapa_corredores_sem0)
-            grass.run_command('g.region', rast=Form1.mapa_corredores_sem0)
+            self.listExport.append(self.mapa_corredores_sem0)
+            grass.run_command('g.region', rast=self.mapa_corredores_sem0)
             
-            os.chdir(Form1.OutDir_files_TXT)
-            grass.run_command('r.out.gdal', input=Form1.mapa_corredores_sem0, out=Form1.mapa_corredores_sem0+'.tif', nodata=-9999)
+            os.chdir(self.OutDir_files_TXT)
+            grass.run_command('r.out.gdal', input=self.mapa_corredores_sem0, out=self.mapa_corredores_sem0+'.tif', nodata=-9999)
             self.logger.AppendText("Removing auxiliary files... \n")  
-            
-            #grass.run_command('g.remove', type="vect", name='temp_point1_s,M2_MODE,M3_MAXIMUM,M4_AVERAGE,temp_point2_s,temp_point1_t,temp_point2_t,pnts_aleat_S,pnts_aleat_T,source_shp,target_shp,custo_aux_cost_drain_sem0_line', flags='f')
-            #grass.run_command('g.remove', type="rast", name='mapa_resist,resist_aux2,mapa_corredores,custo_aux_cost_drain,source,target,custo_aux_cost_drain_sum,custo_aux_cost_drain_sem0,custo_aux_cost,resist_aux,corredores_aux,aleat,aleat2,aleat2_Gros,aleat3,aleat_Gros', flags='f')
             
             
           #---------------------------------------------#
@@ -1419,68 +1408,77 @@ class Form1(wx.Panel):
           # If there is more than one combination of STs, two maps are generated:
           #  - CorrJoin, a map with the maximum frequency value for each pixel
           #  - LargeZone_Corridors, an average map of corridors, considering all simulations all STs
-          if len(Form1.listExport)>1:
+          if len(self.listExport)>1:
             
-            grass.run_command('r.series', input=Form1.listExport, out=Form1.NEXPER_FINAL+'CorrJoin', method="maximum")
-            grass.run_command('g.region', rast=Form1.NEXPER_FINAL+'CorrJoin', verbose=False)
-            grass.run_command('r.neighbors', input=Form1.NEXPER_FINAL+'CorrJoin', out=Form1.NEXPER_FINAL+"_LargeZone_Corridors", method='average', size=Form1.defaultsize_moviwin_allcor, overwrite = True)
-            grass.run_command('r.out.gdal', input=Form1.NEXPER_FINAL+"_LargeZone_Corridors", out=Form1.NEXPER_FINAL+"_LargeZone_Corridors.tif", nodata=-9999, overwrite = True)
-            grass.run_command('r.out.gdal', input=Form1.NEXPER_FINAL+'CorrJoin', out=Form1.NEXPER_FINAL+'CorrJoin.tif', nodata=-9999, overwrite = True)
+            grass.run_command('r.series', input=self.listExport, out=self.NEXPER_FINAL+'_CorrJoin', method="maximum", overwrite = True)
+            grass.run_command('g.region', rast=self.NEXPER_FINAL+'_CorrJoin', verbose=False)
+            grass.run_command('r.neighbors', input=self.NEXPER_FINAL+'_CorrJoin', out=self.NEXPER_FINAL+"_LargeZone_Corridors", method='average', size=self.defaultsize_moviwin_allcor, overwrite = True)
+            grass.run_command('r.out.gdal', input=self.NEXPER_FINAL+"_LargeZone_Corridors", out=self.NEXPER_FINAL+"_LargeZone_Corridors.tif", nodata=-9999, overwrite = True)
+            grass.run_command('r.out.gdal', input=self.NEXPER_FINAL+'_CorrJoin', out=self.NEXPER_FINAL+'_CorrJoin.tif', nodata=-9999, overwrite = True)
 
-            grass.run_command('g.region', rast=Form1.NEXPER_FINAL+"_LargeZone_Corridors")
+            grass.run_command('g.region', rast=self.NEXPER_FINAL+"_LargeZone_Corridors")
           
           # If there is only one combination of STs, one map is generated:
           #  - LargeZone_Corridors, an average map of corridors, considering all simulations all STs
           else:
-            grass.run_command('r.neighbors', input=Form1.mapa_corredores_sem0, out=Form1.NEXPER_FINAL+"_LargeZone_Corridors", method='average', size=Form1.defaultsize_moviwin_allcor, overwrite = True)
-            grass.run_command('r.out.gdal', input=Form1.NEXPER_FINAL+"_LargeZone_Corridors", out=Form1.NEXPER_FINAL+"_LargeZone_Corridors.tif", nodata=-9999, overwrite = True)
+            grass.run_command('r.neighbors', input=self.mapa_corredores_sem0, out=self.NEXPER_FINAL+"_LargeZone_Corridors", method='average', size=self.defaultsize_moviwin_allcor, overwrite = True)
+            grass.run_command('r.out.gdal', input=self.NEXPER_FINAL+"_LargeZone_Corridors", out=self.NEXPER_FINAL+"_LargeZone_Corridors.tif", nodata=-9999, overwrite = True)
+            
+          #---------------------------------------------#
+          #---- REMOVE AUX MAPS FROM GRASS DATABASE ----#
+          #---------------------------------------------#          
+          if self.remove_aux_maps:
+            grass.run_command('g.remove', type="vect", name='temp_point1_s,temp_point2_s,temp_point1_t,temp_point2_t,pnts_aleat_S,pnts_aleat_T,source_shp,target_shp', flags='f')
+            grass.run_command('g.remove', type="rast", name='source,target,resist_aux,resist_aux2,mapa_resist,mapa_corredores,aleat,aleat2,custo_aux_cost,custo_aux_cost_drain,custo_aux_cost_drain_sum,corredores_aux,M2_MODE,M3_MAXIMUM,M4_AVERAGE', flags='f')          
                      
           #---------------------------------------------#
           #------------ WRITES LOG FILES ---------------#
           #---------------------------------------------#            
           
           # Output directory
-          os.chdir(Form1.OutDir_files_TXT)
+          os.chdir(self.OutDir_files_TXT)
           
           
           # Simulation end time
-          Form1.time = datetime.now() # INSTANCE
-          Form1.day_end=Form1.time.day # End day
-          Form1.month_end=Form1.time.month # End month
-          Form1.year_end=Form1.time.year # End year
-          Form1.hour_end=Form1.time.hour # End hour
-          Form1.minuts_end=Form1.time.minute # End minute
-          Form1.second_end=Form1.time.second # End second
+          self.time = datetime.now() # INSTANCE
+          self.day_end=self.time.day # End day
+          self.month_end=self.time.month # End month
+          self.year_end=self.time.year # End year
+          self.hour_end=self.time.hour # End hour
+          self.minuts_end=self.time.minute # End minute
+          self.second_end=self.time.second # End second
           
-          Form1.txt_log.write("End time         : Year "+`Form1.year_end`+"-Month "+`Form1.month_end`+"-Day "+`Form1.day_end`+" ---- Time: "+`Form1.hour_end`+":"+`Form1.minuts_end`+":"+`Form1.second_end`+"\n")
+          self.txt_log.write("End time         : Year "+`self.year_end`+"-Month "+`self.month_end`+"-Day "+`self.day_end`+" ---- Time: "+`self.hour_end`+":"+`self.minuts_end`+":"+`self.second_end`+"\n")
           
           # Simulation time
-          Form1.difference_time=`Form1.month_end - Form1.month_start`+" Month - "+`abs(Form1.day_end - Form1.day_start)`+" Day - "+" Time: "+`abs(Form1.hour_end - Form1.hour_start)`+":"+`abs(Form1.minuts_end - Form1.minuts_start)`+":"+`abs(Form1.second_end - Form1.second_start)`
+          self.difference_time=`self.month_end - self.month_start`+" Month - "+`abs(self.day_end - self.day_start)`+" Day - "+" Time: "+`abs(self.hour_end - self.hour_start)`+":"+`abs(self.minuts_end - self.minuts_start)`+":"+`abs(self.second_end - self.second_start)`
           
           # Writes log file
-          Form1.txt_log.write("Processing time  : "+Form1.difference_time+"\n\n")
+          self.txt_log.write("Processing time  : "+self.difference_time+"\n\n")
           
-          Form1.txt_log.write("Inputs : \n")
-          Form1.txt_log.write("	Resistance Map          : "+Form1.OutArqResist+" \n")
-          Form1.txt_log.write("	Source Target Map       : "+Form1.OutArqST+" \n")
-          Form1.txt_log.write("	Variability             : "+`Form1.ruido_float`+" \n")
-          Form1.txt_log.write("	Perception of scale (m) : "+`Form1.esc`+" \n")
-          Form1.txt_log.write("	Number of simulations M1: "+`Form1.Nsimulations1`+" \n")
-          Form1.txt_log.write("	Number of simulations M2: "+`Form1.Nsimulations2`+"\n")
-          Form1.txt_log.write("	Number of simulations M3: "+`Form1.Nsimulations3`+"\n")
-          Form1.txt_log.write("	Number of simulations M4: "+`Form1.Nsimulations4`+"\n")    
+          self.txt_log.write("Inputs : \n")
+          self.txt_log.write("	Resistance Map          : "+self.OutArqResist+" \n")
+          self.txt_log.write("	Source Target Map       : "+self.OutArqST+" \n")
+          self.txt_log.write("	Variability             : "+`self.ruido_float`+" \n")
+          self.txt_log.write("	Perception of scale (m) : "+`self.esc`+" \n")
+          self.txt_log.write("	Number of simulations M1: "+`self.Nsimulations1`+" \n")
+          self.txt_log.write("	Number of simulations M2: "+`self.Nsimulations2`+"\n")
+          self.txt_log.write("	Number of simulations M3: "+`self.Nsimulations3`+"\n")
+          self.txt_log.write("	Number of simulations M4: "+`self.Nsimulations4`+"\n")    
           
-          Form1.txt_log.write("Output location : \n")
-          Form1.txt_log.write("	"+Form1.OutDir_files_TXT+"\n\n")          
+          self.txt_log.write("Output location : \n")
+          self.txt_log.write("	"+self.OutDir_files_TXT+"\n\n")          
           
-          for logERR in Form1.listErrorLog:
-            Form1.txt_log.write(logERR+"\n")
+          for logERR in self.listErrorLog:
+            self.txt_log.write(logERR+"\n")
           
-          Form1.txt_log.close() 
+          self.txt_log.close() 
           d = wx.MessageDialog(self,"Corridor simulation finished!\n"+
                               "Thanks for simulating using\n LSCorridors "+VERSION+"!", "", wx.OK)
-          retCode = d.ShowModal() # Shows 
-          d.Close(True) # Closes
+          
+          if not self.perform_tests:
+            retCode = d.ShowModal() # Shows 
+            d.Close(True) # Closes
                 
 
     def EvtText(self, event):
@@ -1493,47 +1491,48 @@ class Form1(wx.Panel):
         ID 180: Reads list of ST points
         """
         if event.GetId() == 180: #180=list of STs
-          Form1.patch_id_list_aux=event.GetString()
-          Form1.patch_id_list=Form1.patch_id_list_aux.split(',')
+          self.patch_id_list_aux=event.GetString()
+          self.patch_id_list=self.patch_id_list_aux.split(',')
         
         """
         ID 186: Defines the variability of the map - noise factor
         """
         if event.GetId() == 186: #180=variability factor
-          Form1.ruido=event.GetString()
-          Form1.ruido_float=float(Form1.ruido)        
+          self.ruido=event.GetString()
+          self.ruido_float=float(self.ruido)        
 
         """
         ID 185: Reads output map name
         """
         if event.GetId() == 185: #185=base name
-          Form1.NEXPER_APOIO=event.GetString()
-          Form1.NEXPER_FINAL=Form1.NEXPER_AUX+"_"+Form1.NEXPER_APOIO
-          Form1.NEXPER_FINAL=Form1.NEXPER_FINAL.replace('@PERMANENT','')
-          self.logger.AppendText('Output map base name: \n'+Form1.NEXPER_FINAL+ '\n')
+          self.NEXPER_APOIO=event.GetString()
+          self.NEXPER_FINAL=self.NEXPER_AUX+"_"+self.NEXPER_APOIO
+          self.NEXPER_FINAL=self.NEXPER_FINAL.replace('@PERMANENT','')
+          self.logger.AppendText('Output map base name: \n'+self.NEXPER_FINAL+ '\n')
             
         """
         ID 190-193: Reads number of simulations for each method: M!, M2, M3, M4
         """
         # Method M!
         if event.GetId() == 190: #190=number of simulations
-          Form1.Nsimulations1=int(event.GetString())
+          self.Nsimulations1=int(event.GetString())
         # Method M2
         if event.GetId() == 191: #191=number of simulations
-          Form1.Nsimulations2=int(event.GetString())  
+          self.Nsimulations2=int(event.GetString())  
         # Method M3
         if event.GetId() == 192: #192=number of simulations
-          Form1.Nsimulations3=int(event.GetString())
+          self.Nsimulations3=int(event.GetString())
         # Method M4
         if event.GetId() == 193: #193=number of simulations
-          Form1.Nsimulations4=int(event.GetString())  
+          self.Nsimulations4=int(event.GetString())  
         
     def OnExit(self, event):
       
         d= wx.MessageDialog(self, " Thanks for simulating using\n"
                             " LSCorridors "+ VERSION, "Good bye", wx.OK) # Create a message dialog box
-        d.ShowModal() # Shows it
-        d.Destroy() # finally destroy it when finished.
+        if not self.perform_tests:
+          d.ShowModal() # Shows it
+          d.Destroy() # finally destroy it when finished.
         frame.Close(True)  # Close the frame. 
 
 
@@ -1544,7 +1543,7 @@ if __name__ == "__main__":
   
     app = wx.PySimpleApp()
     frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(560,450))
-    Form1(frame,-1)
+    Corridors(frame,-1)
     frame.Show(1)
     
     app.MainLoop()
