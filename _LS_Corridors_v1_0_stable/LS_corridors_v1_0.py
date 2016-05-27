@@ -52,7 +52,7 @@ import grass.script as grass
 from PIL import Image
 import wx
 import random, math
-import os, re, platform
+import os, sys, re, platform
 from datetime import datetime
 
 # LS Corridors Version:
@@ -478,17 +478,17 @@ class Corridors(wx.Panel):
         self.editname5.SetToolTip(wx.ToolTip("Method M2: mode\n\n"+
                                              "Each resistance surface pixel is replaced by the mode of pixel values "+
                                              "inside a window around it; this window represents the spatial context "+
-                                             "influence and is controled by the scale parameter."))
+                                             "influence and is controlled by the scale parameter."))
         self.editname6 = wx.TextCtrl(self, 192, str(self.Nsimulations3), wx.Point(210,228), wx.Size(35,-1))
         self.editname6.SetToolTip(wx.ToolTip("Method M3: maximum\n\n"+
                                              "Each resistance surface pixel is replaced by the maximum pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
-                                             "influence and is controled by the scale parameter."))        
+                                             "influence and is controlled by the scale parameter."))        
         self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(270,228), wx.Size(35,-1))
         self.editname7.SetToolTip(wx.ToolTip("Method M4: average\n\n"+
                                              "Each resistance surface pixel is replaced by the mean pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
-                                             "influence and is controled by the scale parameter."))        
+                                             "influence and is controlled by the scale parameter."))        
         self.editname8 = wx.TextCtrl(self, 196, str(self.esc), wx.Point(435,175), wx.Size(50,-1))
         self.editname8.SetToolTip(wx.ToolTip("This parameters controls the scale of landscape influence on local "+
                                              "resistance (the size of the window around each pixel). It affects only the "+
@@ -858,6 +858,48 @@ class Corridors(wx.Panel):
           # Size of the ST list
           self.lenlist=len(self.patch_id_list)
          
+          # Tests if variability parameter is greater than 1.0
+          if self.ruido_float < 1.0: 
+            d= wx.MessageDialog(self, "Incorrect variability parameter\n"+
+                                "Variability must be equal or greater than 1!\n"+
+                                "Please check the parameter.\n", "", wx.OK) # Create a message dialog box
+            d.ShowModal() # Shows it
+            d.Destroy() # Finally destroy it when finished.
+            self.logger.AppendText()
+            sys.exit()
+            
+          # Tests if scale parameter is greater than zero
+          #print 'esc = '+`self.esc`
+          if self.esc <= 0: 
+            d= wx.MessageDialog(self, "Incorrect scale parameter\n"+
+                                "Scale must be greater than 0!\n"+
+                                "Please check the parameter.\n", "", wx.OK) # Create a message dialog box
+            d.ShowModal() # Shows it
+            d.Destroy() # Finally destroy it when finished.
+            self.logger.AppendText()
+            sys.exit()
+            
+          # Tests if number of simulations is >= 0
+          if self.Nsimulations1 < 0 or self.Nsimulations2 < 0 or self.Nsimulations3 < 0 or self.Nsimulations4 < 0:
+            d= wx.MessageDialog(self, "Incorrect number of simulations\n"+
+                                "Number of simulations must be equal or greater than 0!\n"+
+                                "Please check the parameters.\n", "", wx.OK) # Create a message dialog box
+            d.ShowModal() # Shows it
+            d.Destroy() # Finally destroy it when finished.
+            self.logger.AppendText()
+            sys.exit()
+            
+          # Tests if number of simulations for at is > 0 for at least one simulation method
+          if (self.Nsimulations1 + self.Nsimulations2 + self.Nsimulations3 + self.Nsimulations4) <= 0:
+            d= wx.MessageDialog(self, "Incorrect number of simulations\n"+
+                                "Number of simulations must greater than 0 fot at least one simulation method!\n"+
+                                "Please check the parameters.\n", "", wx.OK) # Create a message dialog box
+            d.ShowModal() # Shows it
+            d.Destroy() # Finally destroy it when finished.
+            self.logger.AppendText()
+            sys.exit()
+          
+         
           # Tests if the length of the ST list is > 1
           if  self.lenlist <= 1: 
             d= wx.MessageDialog(self, "Incorrect list\n"+
@@ -866,6 +908,8 @@ class Corridors(wx.Panel):
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
             self.logger.AppendText()
+            sys.exit()
+            
           
           # Tests if the length of the ST list is even
           elif self.lenlist > 1 and int (self.lenlist)%2 == 1:
@@ -875,6 +919,8 @@ class Corridors(wx.Panel):
                                 "please check the list.\n", "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
+            sys.exit()
+            
           
           # If everything ok with list length, go on
           else:
@@ -1497,9 +1543,15 @@ class Corridors(wx.Panel):
         """
         ID 186: Defines the variability of the map - noise factor
         """
-        if event.GetId() == 186: #180=variability factor
+        if event.GetId() == 186: #186=variability factor
           self.ruido=event.GetString()
-          self.ruido_float=float(self.ruido)        
+          self.ruido_float=float(self.ruido)
+          
+        """
+        ID 186: Defines the variability of the map - noise factor
+        """
+        if event.GetId() == 196: #196=animal perception scale
+          self.esc=float(event.GetString())         
 
         """
         ID 185: Reads output map name
