@@ -1001,16 +1001,17 @@ class Corridors(wx.Panel):
           
           # Defining the size of the moving windows, in pixels
           # It is defined given the animal movement scale (user defined parameter)
-          #  and the resolution of the map (map grain or pixel size) 
+          #  and the resolution of the map (map grain or pixel size)
           self.escfina1=(self.esc*2)/self.res3
           
-          # Checking if number of pixels of moving window is integer
+          # Checking if number of pixels of moving window is integer and even
           #  and correcting it if necessary
-          if self.escfina1%2==0:
+          if int(self.escfina1)%2 == 0:
             self.escfina1=int(self.escfina1)
             self.escfina1=self.escfina1+1
           else:
-            self.escfina1=int(round(self.escfina1, ndigits=0))
+            self.escfina1=int(self.escfina1)
+            #self.escfina1=int(round(self.escfina1, ndigits=0))
           
           # Defining GRASS GIS region as output map region
           # grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)          
@@ -1119,7 +1120,7 @@ class Corridors(wx.Panel):
                 self.second_now=self.time.second # Error second
                 
                 # Updates Log file
-                self.listErrorLog.append("[Error ->-> :] <- Rasterize ST, Add cols, Get x,y corrd : "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
+                self.listErrorLog.append("[Error ->-> :] <- Rasterize ST, Add cols, Get x,y coord : "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
                 self.listErrorLog.append("[Error ->-> :] <- Skip STS: " + self.ARQSAIDA)
                 
                 # Finishes the simulation process if there are no more ST pairs
@@ -1459,8 +1460,8 @@ class Corridors(wx.Panel):
             grass.run_command('r.series', input=self.listExport, out=self.NEXPER_FINAL+'_CorrJoin', method="maximum", overwrite = True)
             grass.run_command('g.region', rast=self.NEXPER_FINAL+'_CorrJoin', verbose=False)
             grass.run_command('r.neighbors', input=self.NEXPER_FINAL+'_CorrJoin', out=self.NEXPER_FINAL+"_LargeZone_Corridors", method='average', size=self.defaultsize_moviwin_allcor, overwrite = True)
-            grass.run_command('r.out.gdal', input=self.NEXPER_FINAL+"_LargeZone_Corridors", out=self.NEXPER_FINAL+"_LargeZone_Corridors.tif", nodata=-9999, overwrite = True)
             grass.run_command('r.out.gdal', input=self.NEXPER_FINAL+'_CorrJoin', out=self.NEXPER_FINAL+'_CorrJoin.tif', nodata=-9999, overwrite = True)
+            grass.run_command('r.out.gdal', input=self.NEXPER_FINAL+"_LargeZone_Corridors", out=self.NEXPER_FINAL+"_LargeZone_Corridors.tif", nodata=-9999, overwrite = True)
 
             grass.run_command('g.region', rast=self.NEXPER_FINAL+"_LargeZone_Corridors")
           
