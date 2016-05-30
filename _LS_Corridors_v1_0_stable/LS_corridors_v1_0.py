@@ -1313,11 +1313,11 @@ class Corridors(wx.Panel):
                   while self.ChecktTry==True:
                     try:
                       # Creates a raster of uniformely distributed random values in the interval [1,100)
-                      self.form_06="aleat = rand(1,100)"
+                      self.form_06="aleat = rand(0,100)"
                       grass.mapcalc(self.form_06, seed=random.randint(1, 10000), overwrite = True, quiet = True)
                       # Transforms raster map of random values to the range [0.1*noise, noise), where "noise" is
                       #  the variability factor defined by the user (variable self.ruido_float)
-                      self.form_06="aleat2 = aleat/100.0 * "+`self.ruido_float`
+                      self.form_06="aleat2 = aleat/100.0 * "+`self.ruido_float`+" + 1.0"
                       grass.mapcalc(self.form_06, overwrite = True, quiet = True)
                       # Multiply resistance map by random noise map
                       self.form_07='resist_aux = mapa_resist * aleat2'
