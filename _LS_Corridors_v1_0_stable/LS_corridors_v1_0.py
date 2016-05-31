@@ -188,6 +188,9 @@ class Corridors(wx.Panel):
         # Loads the name of a map to be imported into GRASS GIS and used for simulations
         self.OutArqResist=''
         
+        # List of methods to be simulated
+        self.methods=[]
+        
         # Variables with 'C' are used to generate output names for auxiliary maps M2,M3,M4
         # Name of mode map (M2)
         self.C2='M2_MODE'
@@ -260,6 +263,8 @@ class Corridors(wx.Panel):
         self.checkfolder=''
     
         self.listExport=[] # List of corridor raster maps to be exported in the end of simulations
+        self.listExportMethod=[] # List of method for corridor raster maps to be exported in the end of simulations
+
         self.outline1='' # Aux variable for transforming each corridor in a vector map
         self.outdir='' # Output dir for text files
         self.arquivo='' # File where to write corridor information
@@ -857,11 +862,16 @@ class Corridors(wx.Panel):
           
           # Size of the ST list
           self.lenlist=len(self.patch_id_list)
+          
+          # Refreshing the list of methods to be simulated, and outputs
+          self.methods = []
+          self.listExport=[]
+          self.listExportMethod=[]          
          
           # Tests if variability parameter is greater than 1.0
-          if self.ruido_float < 1.0: 
+          if self.ruido_float < 0.0: 
             d= wx.MessageDialog(self, "Incorrect variability parameter\n"+
-                                "Variability must be equal or greater than 1!\n"+
+                                "Variability must be equal to or greater than zero!\n"+
                                 "Please check the parameter.\n", "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
@@ -872,7 +882,7 @@ class Corridors(wx.Panel):
           #print 'esc = '+`self.esc`
           if self.esc <= 0: 
             d= wx.MessageDialog(self, "Incorrect scale parameter\n"+
-                                "Scale must be greater than 0!\n"+
+                                "Scale must be greater than zero!\n"+
                                 "Please check the parameter.\n", "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
@@ -882,7 +892,7 @@ class Corridors(wx.Panel):
           # Tests if number of simulations is >= 0
           if self.Nsimulations1 < 0 or self.Nsimulations2 < 0 or self.Nsimulations3 < 0 or self.Nsimulations4 < 0:
             d= wx.MessageDialog(self, "Incorrect number of simulations\n"+
-                                "Number of simulations must be equal or greater than 0!\n"+
+                                "Number of simulations must be equal to or greater than zero!\n"+
                                 "Please check the parameters.\n", "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
@@ -892,7 +902,7 @@ class Corridors(wx.Panel):
           # Tests if number of simulations for at is > 0 for at least one simulation method
           if (self.Nsimulations1 + self.Nsimulations2 + self.Nsimulations3 + self.Nsimulations4) <= 0:
             d= wx.MessageDialog(self, "Incorrect number of simulations\n"+
-                                "Number of simulations must greater than 0 fot at least one simulation method!\n"+
+                                "Number of simulations must greater than zero fot at least one simulation method!\n"+
                                 "Please check the parameters.\n", "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
@@ -1017,30 +1027,42 @@ class Corridors(wx.Panel):
           # grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)          
           
           # If methods M2, M3, M4 are going to be simulated, this command prepares
-          # the resistance map tanking into consider these methods
+          # the resistance map taking into consider these methods
+          # Also, the list of methods to be simulated is defined
+          if self.Nsimulations1 > 0: # no influence of landscape
+            self.methods.append('M1')
+          
           if self.Nsimulations2 > 0: # mode
+            self.methods.append('M2')
             self.defaultsize_moviwin_allcor=self.escfina1
             grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C2, method='mode', size=self.escfina1, overwrite = True)
             
           if self.Nsimulations3 > 0: # average
+            self.methods.append('M3')
             self.defaultsize_moviwin_allcor=self.escfina1
             grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C3, method='average', size=self.escfina1, overwrite = True)
           
           if self.Nsimulations4 > 0: # maximum
+            self.methods.append('M4')
             self.defaultsize_moviwin_allcor=self.escfina1
             grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C4, method='maximum', size=self.escfina1, overwrite = True)
           
           # Organizes names of resistance maps to be used in simulations
           self.listafinal=[]
+          self.listamethods=[]
           
           for i in range(self.Nsimulations1):
             self.listafinal.append(self.OutArqResist)
+            self.listamethods.append('M1')
           for i in range(self.Nsimulations2):
             self.listafinal.append(self.C2)
+            self.listamethods.append('M2')
           for i in range(self.Nsimulations3):
             self.listafinal.append(self.C3)
+            self.listamethods.append('M3')
           for i in range(self.Nsimulations4):
             self.listafinal.append(self.C4)
+            self.listamethods.append('M4')
           
           # Not necessary
           #grass.run_command('g.region', rast=self.OutArqResist, res=self.res3)
@@ -1168,10 +1190,11 @@ class Corridors(wx.Panel):
               self.outdir=selectdirectory() # Choose output folder, if the previous one already exists
               
             # Initializes corridor and auxiliary map
-            self.form_04='mapa_corredores = 0'
-            grass.mapcalc(self.form_04, overwrite = True, quiet = True)
-            self.form_16='corredores_aux = 0'
-            grass.mapcalc(self.form_16, overwrite = True, quiet = True)
+            for method in self.methods:
+              self.form_04='mapa_corredores_'+method+' = 0'
+              grass.mapcalc(self.form_04, overwrite = True, quiet = True)
+              #self.form_16='corredores_aux = 0'
+              #grass.mapcalc(self.form_16, overwrite = True, quiet = True)
             
             # Open output text file and writes headers      
             self.arquivo = open(self.mapa_corredores_sem0+'.txt','w')
@@ -1188,7 +1211,8 @@ class Corridors(wx.Panel):
                 
                 # Selecting resistance map
                 self.form_08='mapa_resist = '+self.listafinal[cont]
-                grass.mapcalc(self.form_08, overwrite = True, quiet = True)  
+                grass.mapcalc(self.form_08, overwrite = True, quiet = True)
+                self.M = self.listamethods[cont]
                 
                 # Number of simulation   
                 c=i+1
@@ -1303,7 +1327,7 @@ class Corridors(wx.Panel):
                 self.ChecktTry=True  
                 while self.ChecktTry==True:
                   try:
-                    self.form_05='corredores_aux = mapa_corredores'
+                    self.form_05='corredores_aux = mapa_corredores_'+self.M
                     grass.mapcalc(self.form_05, overwrite = True, quiet = True)
                     self.ChecktTry=False
                   except:
@@ -1335,7 +1359,7 @@ class Corridors(wx.Panel):
                       grass.run_command('r.drain', input='custo_aux_cost', output='custo_aux_cost_drain', start_points='pnts_aleat_T', overwrite = True)
                       # Transforms null cells (no corridor) in zeros
                       # Now we have a corridor map
-                      grass.run_command('r.series', input='corredores_aux,custo_aux_cost_drain', output='mapa_corredores', method='sum', overwrite = True)
+                      grass.run_command('r.series', input='corredores_aux,custo_aux_cost_drain', output='mapa_corredores_'+self.M, method='sum', overwrite = True)
                       self.ChecktTry=False
                       
                     # If an error in generating corridors, this is registered here and the algoeithm tries to generate the corridor again
@@ -1375,7 +1399,7 @@ class Corridors(wx.Panel):
                   grass.run_command('g.region', rast=self.OutArqResist, verbose=False)
                 
                 # Corridor map with NULL cells instead of zeros
-                self.form_10=self.mapa_corredores_sem0+' = if(mapa_corredores == 0, null(), mapa_corredores)'
+                self.form_10=self.mapa_corredores_sem0+'_'+self.M+' = if(mapa_corredores_'+self.M+' == 0, null(), mapa_corredores_'+self.M+')'
                 grass.mapcalc(self.form_10, overwrite = True, quiet = True)
                 
                 # CALCULATES LCP LENGTH using corridor map (with NULL values)
@@ -1395,14 +1419,14 @@ class Corridors(wx.Panel):
                 self.euclidean_b = self.euclidean_a**0.5
                 
                 # Recording corridor method in output text files
-                if self.listafinal[cont]==self.OutArqResist:
-                  self.M="M1"
-                if self.listafinal[cont]=='M2_MODE':
-                  self.M="M2"
-                if self.listafinal[cont]=='M3_MAXIMUM':
-                  self.M="M3"              
-                if self.listafinal[cont]=='M4_AVERAGE':
-                  self.M="M4"         
+                #if self.listafinal[cont]==self.OutArqResist:
+                  #self.M="M1"
+                #if self.listafinal[cont]=='M2_MODE':
+                  #self.M="M2"
+                #if self.listafinal[cont]=='M3_MAXIMUM':
+                  #self.M="M3"              
+                #if self.listafinal[cont]=='M4_AVERAGE':
+                  #self.M="M4"         
                      
                 # Produces information for one corridor - to be appended to the output text file
                 self.linha=self.listafinal[cont].replace("@PERMANENT",'')+','+self.M+','+`c`+','+ `self.var_dist_line`+','+ `self.var_cost_sum`+','+ `self.euclidean_b`+','+ `self.var_source_x`+','+ `self.var_source_y`+','+ `self.var_target_x`+','+ `self.var_target_y`+ "\n"
@@ -1414,7 +1438,7 @@ class Corridors(wx.Panel):
                 # Generates a vector line map for each corridor (vectorizing raster map)
                 self.outline1='000000'+`c`  
                 self.outline1=self.outline1[-3:]
-                self.outline1=self.mapa_corredores_sem0+"_SM_"+self.outline1
+                self.outline1=self.mapa_corredores_sem0+'_'+self.M+"_SM_"+self.outline1
                 
                 # Vectorizes corridor raster map
                 grass.run_command('g.region', rast='custo_aux_cost_drain')
@@ -1424,7 +1448,7 @@ class Corridors(wx.Panel):
                 grass.read_command ('v.to.db', map=self.outline1, option='length', type='line', col='dist', units='me', overwrite = True)
                 # Exports output vector
                 os.chdir(self.outdir)
-                grass.run_command('v.out.ogr', input=self.outline1,dsn=self.outline1+'.shp',verbose=False,type='line')              
+                grass.run_command('v.out.ogr', input=self.outline1, dsn=self.outline1+'.shp',verbose=False,type='line')              
                 grass.run_command('g.remove', type="vect", name=self.outline1, flags='f')              
                 cont=cont+1
                 
@@ -1439,44 +1463,68 @@ class Corridors(wx.Panel):
             # All corridors were simulated - close output text file    
             self.arquivo.close()
             
-            # Exports raster map with all corridors for the selected ST pair
-            self.listExport.append(self.mapa_corredores_sem0)
-            grass.run_command('g.region', rast=self.mapa_corredores_sem0)
+            # Exports raster maps with all corridors for the selected ST pair, for each simulated method
+            for method in self.methods:
             
-            os.chdir(self.OutDir_files_TXT)
-            grass.run_command('r.out.gdal', input=self.mapa_corredores_sem0, out=self.mapa_corredores_sem0+'.tif', nodata=-9999)
-            self.logger.AppendText("Removing auxiliary files... \n")  
+              self.listExport.append(self.mapa_corredores_sem0+'_'+method)
+              self.listExportMethod.append(method)
+              
+              grass.run_command('g.region', rast=self.mapa_corredores_sem0+'_'+method)
+            
+              os.chdir(self.OutDir_files_TXT)
+              grass.run_command('r.out.gdal', input=self.mapa_corredores_sem0+'_'+method, out=self.mapa_corredores_sem0+'_'+method+'.tif', nodata=-9999)
             
             
           #---------------------------------------------#
           #-------- EXPORTS SYNTHESIS MAPS -------------#
           #---------------------------------------------#
           
-          # If there is more than one combination of STs, two maps are generated:
-          #  - CorrJoin, a map with the maximum frequency value for each pixel
+          # If the number of simulations for a given method is > 1 or there is more than um ST pair, two summary maps are generated, for each method:
+          #  - RSFI, a map with the route selection frequency index value for each pixel (the number of routes that passes by each pixel)
           #  - LargeZone_Corridors, an average map of corridors, considering all simulations all STs
-          if len(self.listExport)>1:
+          for method in self.methods:
             
-            grass.run_command('r.series', input=self.listExport, out=self.NEXPER_FINAL+'_CorrJoin', method="maximum", overwrite = True)
-            grass.run_command('g.region', rast=self.NEXPER_FINAL+'_CorrJoin', verbose=False)
-            grass.run_command('r.neighbors', input=self.NEXPER_FINAL+'_CorrJoin', out=self.NEXPER_FINAL+"_LargeZone_Corridors", method='average', size=self.defaultsize_moviwin_allcor, overwrite = True)
-            grass.run_command('r.out.gdal', input=self.NEXPER_FINAL+'_CorrJoin', out=self.NEXPER_FINAL+'_CorrJoin.tif', nodata=-9999, overwrite = True)
-            grass.run_command('r.out.gdal', input=self.NEXPER_FINAL+"_LargeZone_Corridors", out=self.NEXPER_FINAL+"_LargeZone_Corridors.tif", nodata=-9999, overwrite = True)
+            index = [i for i, v in enumerate(self.listExportMethod) if v == method] # get indexes of simulations that were each of method
+            export = [self.listExport[i] for i in index] # select map names simulated simulated for each 'method'
+            if method == 'M1':
+              Nsims = self.Nsimulations1
+            elif method == 'M2':
+              Nsims = self.Nsimulations2
+            elif method == 'M3':
+              Nsims = self.Nsimulations3            
+            elif method == 'M4':
+              Nsims = self.Nsimulations4
+            else:
+              print 'No method selected for generating synthesis maps!'
+              break
+              
+            self.listExport
+            if len(export) > 1:
+              
+              # Check this
+              grass.run_command('r.series', input=export, out=self.NEXPER_FINAL+'_'+method+'_RSFI', method="sum", overwrite = True)
+              #grass.run_command('r.series', input=export, out=self.NEXPER_FINAL+'_'+method+'_RSFI', method="maximum", overwrite = True)
 
-            grass.run_command('g.region', rast=self.NEXPER_FINAL+"_LargeZone_Corridors")
+              grass.run_command('g.region', rast=self.NEXPER_FINAL+'_'+method+'_RSFI', verbose=False)
+              #grass.run_command('r.neighbors', input=self.NEXPER_FINAL+'_RSFI', out=self.NEXPER_FINAL+"_LargeZone_Corridors", method='average', size=self.defaultsize_moviwin_allcor, overwrite = True)
+              grass.run_command('r.out.gdal', input=self.NEXPER_FINAL+'_'+method+'_RSFI', out=self.NEXPER_FINAL+'_'+method+'_RSFI.tif', nodata=-9999, overwrite = True)
+              #grass.run_command('r.out.gdal', input=self.NEXPER_FINAL+"_LargeZone_Corridors", out=self.NEXPER_FINAL+"_LargeZone_Corridors.tif", nodata=-9999, overwrite = True)
+  
+              #grass.run_command('g.region', rast=self.NEXPER_FINAL+"_LargeZone_Corridors")
           
-          # If there is only one combination of STs, one map is generated:
-          #  - LargeZone_Corridors, an average map of corridors, considering all simulations all STs
-          else:
-            grass.run_command('r.neighbors', input=self.mapa_corredores_sem0, out=self.NEXPER_FINAL+"_LargeZone_Corridors", method='average', size=self.defaultsize_moviwin_allcor, overwrite = True)
-            grass.run_command('r.out.gdal', input=self.NEXPER_FINAL+"_LargeZone_Corridors", out=self.NEXPER_FINAL+"_LargeZone_Corridors.tif", nodata=-9999, overwrite = True)
+            elif Nsims > 1 and len(export) == 1:
+              
+              grass.run_command('g.region', rast=export, verbose=False)
+              grass.run_command('r.out.gdal', input=export, out=self.NEXPER_FINAL+'_'+method+'_RSFI.tif', nodata=-9999, overwrite = True)
             
           #---------------------------------------------#
           #---- REMOVE AUX MAPS FROM GRASS DATABASE ----#
-          #---------------------------------------------#          
+          #---------------------------------------------#
+          self.logger.AppendText("Removing auxiliary files... \n")
+          
           if self.remove_aux_maps:
             grass.run_command('g.remove', type="vect", name='temp_point1_s,temp_point2_s,temp_point1_t,temp_point2_t,pnts_aleat_S,pnts_aleat_T,source_shp,target_shp', flags='f')
-            grass.run_command('g.remove', type="rast", name='source,target,resist_aux,resist_aux2,mapa_resist,mapa_corredores,aleat,aleat2,custo_aux_cost,custo_aux_cost_drain,custo_aux_cost_drain_sum,corredores_aux,M2_MODE,M3_MAXIMUM,M4_AVERAGE', flags='f')          
+            grass.run_command('g.remove', type="rast", name='source,target,resist_aux,resist_aux2,mapa_resist,mapa_corredores_M1,mapa_corredores_M2,mapa_corredores_M3,mapa_corredores_M4,aleat,aleat2,custo_aux_cost,custo_aux_cost_drain,custo_aux_cost_drain_sum,corredores_aux,M2_MODE,M3_MAXIMUM,M4_AVERAGE', flags='f')          
                      
           #---------------------------------------------#
           #------------ WRITES LOG FILES ---------------#

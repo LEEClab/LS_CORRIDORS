@@ -31,6 +31,8 @@ import os, shutil
 
 from LS_corridors_v1_0 import *
 
+PARENT_DIR = os.getcwd()
+
 #-----------------------------------------------------------#
 #------------------- Test class ----------------------------#
 #-----------------------------------------------------------#
@@ -48,7 +50,7 @@ class LS_corridors_test(unittest.TestCase):
                     
         self.path = os.getcwd()
         if self.path.split('/')[-1] == 'results_test':
-            os.chdir('..')            
+            os.chdir()            
                
         self.app = wx.PySimpleApp()
         self.frame = wx.Frame(None, -1, "LSCorridors", pos=(0,0), size=(560,450))
@@ -143,8 +145,8 @@ class LS_corridors_test(unittest.TestCase):
         out_files = os.listdir('.')
         self.assertTrue(len(list_rast), 9)
         
-        self.assertIn(self.corr.NEXPER_FINAL+'_CorrJoin.tif', out_files)
-        self.assertIn(self.corr.NEXPER_FINAL+'_LargeZone_Corridors.tif', out_files)
+        self.assertIn(self.corr.NEXPER_FINAL+'_RSFI.tif', out_files)
+        #self.assertIn(self.corr.NEXPER_FINAL+'_LargeZone_Corridors.tif', out_files)
         
         out_tif = []
         out_txt = []
