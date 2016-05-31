@@ -210,7 +210,7 @@ class Corridors(wx.Panel):
         self.patch_id_list_aux_b='' # Aux list of combination of STs - list format, used to create all possible combinations
         
         # For defining output corridor map name
-        self.NEXPER_AUX='MSP' # Prefix for output files
+        self.NEXPER_AUX='Results' # Prefix for output files
         self.NEXPER_APOIO='' # Aux variable for defining output name
         self.NEXPER_FINAL='' # Final output map name
         
@@ -865,8 +865,11 @@ class Corridors(wx.Panel):
           
           # Refreshing the list of methods to be simulated, and outputs
           self.methods = []
-          self.listExport=[]
-          self.listExportMethod=[]          
+          self.listExport = []
+          self.listExportMethod = []
+          
+          # List of number of corridors already simulated - to be updated as simulations run
+          self.simulated = [1, 1, 1, 1]
          
           # Tests if variability parameter is greater than 1.0
           if self.ruido_float < 0.0: 
@@ -940,13 +943,12 @@ class Corridors(wx.Panel):
             self.logger.AppendText("Waiting...\n")
             
             # Selects output directory for text files
-            d=wx.MessageDialog(self, "Select the output folder\n"+
-                               "for text files.\n", "", wx.OK) # Create a message dialog box
+            d=wx.MessageDialog(self, "Select the output folder for text files.\n", "", wx.OK) # Create a message dialog box
             if not self.perform_tests:
               d.ShowModal() # Shows it
               d.Destroy() # Finally destroy it when finished.
               
-            if self.OutDir_files_TXT == '':
+            if self.OutDir_files_TXT == '' and self.perform_tests == False:
               self.OutDir_files_TXT = selectdirectory()
             self.logger.AppendText("Selected output folder: \n"+self.OutDir_files_TXT)
           
@@ -1215,7 +1217,20 @@ class Corridors(wx.Panel):
                 self.M = self.listamethods[cont]
                 
                 # Number of simulation   
-                c=i+1
+                c = i+1
+                # Number of simulation for a given method
+                if self.M == "M1":
+                  c_method = self.simulated[0]
+                  self.simulated[0] = self.simulated[0] + 1
+                if self.M == "M2":
+                  c_method = self.simulated[1]
+                  self.simulated[1] = self.simulated[1] + 1
+                if self.M == "M3":
+                  c_method = self.simulated[2]             
+                  self.simulated[2] = self.simulated[2] + 1
+                if self.M == "M4":
+                  c_method = self.simulated[3]
+                  self.simulated[3] = self.simulated[3] + 1
                 
                 # Message in dialog box
                 self.logger.AppendText('=======> Running simulation '+`c`+ '\n')
@@ -1429,14 +1444,14 @@ class Corridors(wx.Panel):
                   #self.M="M4"         
                      
                 # Produces information for one corridor - to be appended to the output text file
-                self.linha=self.listafinal[cont].replace("@PERMANENT",'')+','+self.M+','+`c`+','+ `self.var_dist_line`+','+ `self.var_cost_sum`+','+ `self.euclidean_b`+','+ `self.var_source_x`+','+ `self.var_source_y`+','+ `self.var_target_x`+','+ `self.var_target_y`+ "\n"
+                self.linha=self.listafinal[cont].replace("@PERMANENT",'')+','+self.M+','+`c_method`+','+ `self.var_dist_line`+','+ `self.var_cost_sum`+','+ `self.euclidean_b`+','+ `self.var_source_x`+','+ `self.var_source_y`+','+ `self.var_target_x`+','+ `self.var_target_y`+ "\n"
                 self.linha=self.linha.replace('\'','')
                 
                 # Writes corridor information on output text file
                 self.arquivo.write(self.linha)
                 
                 # Generates a vector line map for each corridor (vectorizing raster map)
-                self.outline1='000000'+`c`  
+                self.outline1='000000'+`c_method`  
                 self.outline1=self.outline1[-3:]
                 self.outline1=self.mapa_corredores_sem0+'_'+self.M+"_SM_"+self.outline1
                 
@@ -1614,7 +1629,7 @@ class Corridors(wx.Panel):
         """
         ID 190-193: Reads number of simulations for each method: M!, M2, M3, M4
         """
-        # Method M!
+        # Method M1
         if event.GetId() == 190: #190=number of simulations
           self.Nsimulations1=int(event.GetString())
         # Method M2

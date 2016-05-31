@@ -141,7 +141,7 @@ class LS_corridors_test(unittest.TestCase):
         
         #raw_input()
         self.corr.OnClick(self.evt10)
-        list_rast = grass.list_grouped('raster', pattern = 'MSP*')['PERMANENT']
+        list_rast = grass.list_grouped('raster', pattern = 'Results*')['PERMANENT']
         
         # number of outputs = 4 methods * (length_of_list + 1_final_output)
         self.assertTrue(len(list_rast), (4*(len(self.corr.patch_id_list)/2 + 1)))
