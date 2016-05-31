@@ -48,9 +48,10 @@ class LS_corridors_test(unittest.TestCase):
         """ Setting up for the tests """
         print "\n\nLS Corridors test => setUp -> begin"
                     
+        #self.path = os.getcwd()
+        #if self.path.split('/')[-1] == 'results_test':
+        os.chdir(PARENT_DIR)
         self.path = os.getcwd()
-        if self.path.split('/')[-1] == 'results_test':
-            os.chdir()            
                
         self.app = wx.PySimpleApp()
         self.frame = wx.Frame(None, -1, "LSCorridors", pos=(0,0), size=(560,450))
@@ -73,10 +74,10 @@ class LS_corridors_test(unittest.TestCase):
         self.corr.OutDir_files_TXT = outdir
         self.corr.NEXPER_FINAL=self.corr.NEXPER_AUX+'_'+self.corr.OutArqResist
             
-        self.corr.Nsimulations1 = 1
-        self.corr.Nsimulations2 = 1
-        self.corr.Nsimulations3 = 1
-        self.corr.Nsimulations4 = 1
+        self.corr.Nsimulations1 = 2
+        self.corr.Nsimulations2 = 2
+        self.corr.Nsimulations3 = 2
+        self.corr.Nsimulations4 = 2
         self.corr.patch_id_list = ['1', '2', '5', '6']
         
         # Event to test IMPORT FILES
@@ -128,7 +129,9 @@ class LS_corridors_test(unittest.TestCase):
         self.assertTrue(combine_st(self.corr.OutArqST),
                         '1,2,1,3,1,4,1,5,1,6,1,7,1,8,1,9,1,10,1,11,1,12,1,13,1,14,1,15,1,16,1,17,1,18,1,19,2,3,2,4,2,5,2,6,2,7,2,8,2,9,2,10,2,11,2,12,2,13,2,14,2,15,2,16,2,17,2,18,2,19,3,4,3,5,3,6,3,7,3,8,3,9,3,10,3,11,3,12,3,13,3,14,3,15,3,16,3,17,3,18,3,19,4,5,4,6,4,7,4,8,4,9,4,10,4,11,4,12,4,13,4,14,4,15,4,16,4,17,4,18,4,19,5,6,5,7,5,8,5,9,5,10,5,11,5,12,5,13,5,14,5,15,5,16,5,17,5,18,5,19,6,7,6,8,6,9,6,10,6,11,6,12,6,13,6,14,6,15,6,16,6,17,6,18,6,19,7,8,7,9,7,10,7,11,7,12,7,13,7,14,7,15,7,16,7,17,7,18,7,19,8,9,8,10,8,11,8,12,8,13,8,14,8,15,8,16,8,17,8,18,8,19,9,10,9,11,9,12,9,13,9,14,9,15,9,16,9,17,9,18,9,19,10,11,10,12,10,13,10,14,10,15,10,16,10,17,10,18,10,19,11,12,11,13,11,14,11,15,11,16,11,17,11,18,11,19,12,13,12,14,12,15,12,16,12,17,12,18,12,19,13,14,13,15,13,16,13,17,13,18,13,19,14,15,14,16,14,17,14,18,14,19,15,16,15,17,15,18,15,19,16,17,16,18,16,19,17,18,17,19,18,19')
         
-
+    #-----------------------------------
+    # Test main algorithm - LSCorridors simulation; button 10 - OnClick Run
+    #-----------------------------------  
     def test_3Corridors_OnClick_run_simulation(self):
         '''test Corridors OnClick 10 run simulation'''
         print 'test Corridors OnClick 10 run simulation'
@@ -140,12 +143,16 @@ class LS_corridors_test(unittest.TestCase):
         self.corr.OnClick(self.evt10)
         list_rast = grass.list_grouped('raster', pattern = 'MSP*')['PERMANENT']
         
-        self.assertTrue(len(list_rast), (len(self.corr.patch_id_list)/2 + 2))
+        # number of outputs = 4 methods * (length_of_list + 1_final_output)
+        self.assertTrue(len(list_rast), (4*(len(self.corr.patch_id_list)/2 + 1)))
         
         out_files = os.listdir('.')
-        self.assertTrue(len(list_rast), 9)
+        self.assertTrue(len(out_files), (4*(len(self.corr.patch_id_list)/2 + 1) + len(self.corr.patch_id_list)/2 + 1))
         
-        self.assertIn(self.corr.NEXPER_FINAL+'_RSFI.tif', out_files)
+        self.assertIn(self.corr.NEXPER_FINAL+'_M1_RSFI.tif', out_files)
+        self.assertIn(self.corr.NEXPER_FINAL+'_M2_RSFI.tif', out_files)
+        self.assertIn(self.corr.NEXPER_FINAL+'_M3_RSFI.tif', out_files)
+        self.assertIn(self.corr.NEXPER_FINAL+'_M4_RSFI.tif', out_files)
         #self.assertIn(self.corr.NEXPER_FINAL+'_LargeZone_Corridors.tif', out_files)
         
         out_tif = []
@@ -156,10 +163,12 @@ class LS_corridors_test(unittest.TestCase):
             if '.txt' in i:
                 out_txt.append(i)
                 
-        self.assertTrue(len(out_tif), (len(self.corr.patch_id_list)/2 + 2))
+        self.assertTrue(len(out_tif), 4*(len(self.corr.patch_id_list)/2 + 1))
         self.assertTrue(len(out_txt), (len(self.corr.patch_id_list)/2 + 1))
 
-        
+    #-----------------------------------
+    # Test function Define_region
+    #-----------------------------------         
     def test_4Define_region(self):
         '''test Define region'''
         
@@ -177,6 +186,9 @@ class LS_corridors_test(unittest.TestCase):
         self.assertAlmostEqual(e, 763554.124316)
         self.assertAlmostEqual(w, 760014.124316)
         
+    #-----------------------------------
+    # Finishes tests, deletes temp dirs and files
+    #-----------------------------------      
     def test_finishes(self):
         '''finish'''
         print "Tests finished"
