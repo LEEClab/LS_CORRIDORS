@@ -210,9 +210,11 @@ class Corridors(wx.Panel):
         self.patch_id_list_aux_b='' # Aux list of combination of STs - list format, used to create all possible combinations
         
         # For defining output corridor map name
-        self.NEXPER_AUX='Results' # Prefix for output files
+        self.NEXPER_AUX='MSP' # Prefix for output files
+        self.NEXPER_AUX_txt='Results' # Prefix for output files
         self.NEXPER_APOIO='' # Aux variable for defining output name
         self.NEXPER_FINAL='' # Final output map name
+        self.NEXPER_FINAL_txt='' # Final output text name
         
         # GUI Parameters
         self.ruido='2.0' # Variability scale for generating the noise map, in string format
@@ -577,6 +579,7 @@ class Corridors(wx.Panel):
             # Gets resistance map name and stores it in self.NEXPER_FINAL (in case the user does not provide an output file name)
             self.NEXPER_FINAL=event.GetString()
             self.NEXPER_FINAL=self.NEXPER_AUX+'_'+self.NEXPER_FINAL
+            self.NEXPER_FINAL_txt=self.NEXPER_AUX_txt+'_'+self.NEXPER_FINAL
             
             # Shows selection in the Dialog Box
             self.logger.AppendText('Resistance Map Selected:\n')
@@ -804,6 +807,8 @@ class Corridors(wx.Panel):
           
           # Updating output file name in the variable self.NEXPER_FINAL
           self.NEXPER_FINAL=self.NEXPER_AUX+'_'+self.OutArqResist
+          self.NEXPER_FINAL_txt=self.NEXPER_AUX_txt+'_'+self.OutArqResist
+
           self.logger.AppendText("Automatically Resistance Map Selected:\n")
           self.logger.AppendText(self.NEXPER_FINAL+"\n")
         
@@ -1170,6 +1175,7 @@ class Corridors(wx.Panel):
             
             # Name of the corridor output map
             self.mapa_corredores_sem0=self.NEXPER_FINAL+'_'+'S_'+self.S1FORMAT+"_T_"+self.T1FORMAT
+            self.mapa_corredores_sem0_txt=self.NEXPER_FINAL_txt+'_'+'S_'+self.S1FORMAT+"_T_"+self.T1FORMAT
             
             # Checks if the output folder for text files exists; 
             # If not, creates it.
@@ -1199,7 +1205,7 @@ class Corridors(wx.Panel):
               #grass.mapcalc(self.form_16, overwrite = True, quiet = True)
             
             # Open output text file and writes headers      
-            self.arquivo = open(self.mapa_corredores_sem0+'.txt','w')
+            self.arquivo = open(self.mapa_corredores_sem0_txt+'.txt','w')
             self.cabecalho='EXPERIMENT'','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'LCP_LENGTH'+','+'LCP_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
             self.arquivo.write(self.cabecalho)
             
@@ -1624,6 +1630,8 @@ class Corridors(wx.Panel):
           self.NEXPER_APOIO=event.GetString()
           self.NEXPER_FINAL=self.NEXPER_AUX+"_"+self.NEXPER_APOIO
           self.NEXPER_FINAL=self.NEXPER_FINAL.replace('@PERMANENT','')
+          self.NEXPER_FINAL_txt=self.NEXPER_AUX_txt+"_"+self.NEXPER_APOIO
+          self.NEXPER_FINAL_txt=self.NEXPER_FINAL_txt.replace('@PERMANENT','')          
           self.logger.AppendText('Output map base name: \n'+self.NEXPER_FINAL+ '\n')
             
         """
