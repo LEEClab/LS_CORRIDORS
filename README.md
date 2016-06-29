@@ -13,3 +13,5 @@ The repository has 5 folders:
 - [DB_demo](https://github.com/LEEClab/LS_CORRIDORS/tree/master/DB_demo): raster maps for testing and tutorials.
 - [GIS_DB_Demo_location](https://github.com/LEEClab/LS_CORRIDORS/tree/master/GIS_DB_Demo_location): GRASS GIS project location for demonstration and testing.
 - [images](https://github.com/LEEClab/LS_CORRIDORS/tree/master/images): images for LSCorridors wiki.
+
+Furthermore, here you may find LSCorridors [license](https://github.com/LEEClab/LS_CORRIDORS/blob/master/LSCorridors_GNU_GPLv2_license.txt) and [PDF Tutorial](https://github.com/LEEClab/LS_CORRIDORS/blob/master/Tutorial_LSCorridors_v1_0_2016_06_d01.pdf).
