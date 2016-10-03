@@ -450,3 +450,163 @@ git status
 git add _LS_Corridors_v1_0_stable/*
 git status
 exit
+g.list rast
+g.list vect
+g.remove vect patt=* -f
+cd Github/LS_CORRIDORS/
+ls
+git status
+git add _LS_Corridors_v1_0_stable/*
+ls
+git status
+git add GIS_DB_Demo_location/*
+ls
+git rm _LS_Corridors_v1_0_stable/Ls_corridor_testing.py
+git status
+ls
+git status
+git add old_versions/*
+ls
+it status
+git status
+clear
+git commit -m "add test script; add old versions; add last LSCorridors version 1.0"
+git status
+git pull
+git push origin master
+ls
+clear
+ls
+cd GIS_DB_Demo_location/
+ls
+echo "" > .keep
+ls
+ls -ls
+ls -la
+git add .keep 
+ls
+git status
+cd ..
+ls
+rm .Rhistory 
+git status
+git commit -m "add .keep"
+git push origin master
+clear
+ls
+mv license.txt LSCorridors_GNU_GPLv2_license.txt
+ls
+git status
+git add LSCorridors_GNU_GPLv2_license.txt 
+git status
+git rm license.txt
+git commit -m "add license"
+git push origin master
+git pull
+git push origin master
+clear
+exit
+r.colors map=Resistance_map2_tif@PERMANENT color=random
+g.list rast
+cd Github/LS_CORRIDORS/
+ls
+cd _LS_Corridors_v1_0_stable/
+python LS_corridors_v1_0.py 
+cd Github/LS_CORRIDORS/
+python LS_corridors_v1_0.py 
+cd _LS_Corridors_v1_0_stable/
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+clear
+exi
+exit
+cd Github/LS_CORRIDORS/_LS_Corridors_v1_0_stable/
+ls
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+cd ..
+git status
+git add _LS_Corridors_v1_0_stable/*
+git add DB_demo/*
+git status
+git rm DB_demo/Resistance_map2_*
+git rm DB_demo/ST_map2_*
+git status
+git add images/*
+git status
+git commit -m "last changes - scale parameter"
+git pull
+git push origin master
+exit
+cd Github/LS_CORRIDORS/_LS_Corridors_v1_0_stable/
+python test_LS_corridors.py 
+clear
+exit
+ls
+cd Github/LS_CORRIDORS/_LS_Corridors_v1_0_stable/
+python test_LS_corridors.py 
+cd ..
+ls
+git status
+git add _LS_Corridors_v1_0_stable/*
+git status
+git commit -m "correct random map calculus"
+git pull
+git push origin master
+clear
+clear
+ls
+cd _LS_Corridors_v1_0_stable/
+ls
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+cd ..
+git status
+git rm DB_demo/Resistance_map2.tif.aux.xml 
+git rm DB_demo/Resistance_map2.tif
+git rm DB_demo/ST_map2.tif
+rm DB_demo/Resistance_map2.tif.aux.xml 
+git rm DB_demo/Resistance_map2.tif.aux.xml 
+git rm DB_demo/Resistance_map2*
+git rm DB_demo/*xml
+git add _LS_Corridors_v1_0_stable/*
+git status
+exit
+ls
+g.list rast
+g.list rast
+clear
+ls
+cd Github/LS_CORRIDORS/_LS_Corridors_v1_0_stable/
+clear
+python test_LS_corridors.py 
+git status
+cd ..
+git status
+git add _LS_Corridors_v1_0_stable/*
+git status
+exit
+cd Github/LS_CORRIDORS/_LS_Corridors_v1_0_stable/
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+g.list rast
+g.remove rast patt=* -f
+g.remove vect pat=* -f
+g.list rast
+clear
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python test_LS_corridors.py 
+exit
+exit
