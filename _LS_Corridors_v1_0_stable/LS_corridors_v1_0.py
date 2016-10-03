@@ -411,16 +411,16 @@ class Corridors(wx.Panel):
         self.quote.SetFont(font)                      
       
         # A multiline TextCtrl - This is here to show how the events work in this program, don't pay too much attention to it
-        self.logger = wx.TextCtrl(self,5, "",wx.Point(20,349), wx.Size(320,100),wx.TE_MULTILINE | wx.TE_READONLY)
+        self.logger = wx.TextCtrl(self,5, "",wx.Point(20,339), wx.Size(320,100),wx.TE_MULTILINE | wx.TE_READONLY)
       
         #---------------------------------------------#
         #-------------- BUTTONS ----------------------#
         #---------------------------------------------#
         
-        self.button =wx.Button(self, 10, "START SIMULATIONS", wx.Point(20,459))
+        self.button =wx.Button(self, 10, "START SIMULATIONS", wx.Point(20,449))
         wx.EVT_BUTTON(self, 10, self.OnClick)
   
-        self.button =wx.Button(self, 205, "RUN EXPORT FILES ", wx.Point(145,459))
+        self.button =wx.Button(self, 205, "RUN EXPORT FILES ", wx.Point(145,449))
         wx.EVT_BUTTON(self, 205, self.OnClick)
         
         self.button =wx.Button(self, 210, "select files", wx.Point(280,85))#st
@@ -438,7 +438,7 @@ class Corridors(wx.Panel):
         self.button =wx.Button(self, 260, "COMBINE ALL", wx.Point(418,172))
         wx.EVT_BUTTON(self, 260, self.OnClick)
         
-        self.button =wx.Button(self, 8, "EXIT", wx.Point(265, 459))
+        self.button =wx.Button(self, 8, "EXIT", wx.Point(265, 449))
         wx.EVT_BUTTON(self, 8, self.OnExit)
 
         #---------------------------------------------#
@@ -449,7 +449,7 @@ class Corridors(wx.Panel):
         self.imageFile = 'logo_lab.png'
         im1 = Image.open(self.imageFile)
         jpg1 = wx.Image(self.imageFile, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.StaticBitmap(self, -1, jpg1, (348,350), (jpg1.GetWidth(), jpg1.GetHeight()), style=wx.SUNKEN_BORDER)
+        wx.StaticBitmap(self, -1, jpg1, (348,340), (jpg1.GetWidth(), jpg1.GetHeight()), style=wx.SUNKEN_BORDER)
         
         
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
