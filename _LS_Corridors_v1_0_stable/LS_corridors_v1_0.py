@@ -1678,7 +1678,7 @@ class Corridors(wx.Panel):
 if __name__ == "__main__":
   
     app = wx.PySimpleApp()
-    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(580,540))
+    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(570,540))
     Corridors(frame,-1)
     frame.Show(1)
     
