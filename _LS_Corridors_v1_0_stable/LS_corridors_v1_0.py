@@ -196,10 +196,10 @@ class Corridors(wx.Panel):
         self.C2='M2_MINIMUM'
         
         # Name of maximum map (M3)
-        self.C3='M3_MAXIMUM'
+        self.C3='M3_AVERAGE'
         
         # Name of average map (M4)
-        self.C4='M4_AVERAGE'
+        self.C4='M4_MAXIMUM'
         
         # String to show an example of how the ST list should look like
         self.edtstart_list='Ex:1,2,3,4,...'
@@ -468,7 +468,7 @@ class Corridors(wx.Panel):
         self.lblname = wx.StaticText(self, -1, "M3 (average):", wx.Point(230,300))
         self.lblname = wx.StaticText(self, -1, "M4 (maximum):", wx.Point(390,300))
         self.lblname = wx.StaticText(self, -1, "Name of output corridor:", wx.Point(20,210))
-        self.lblname = wx.StaticText(self, -1, "Scale (meters):", wx.Point(350,210))
+        self.lblname = wx.StaticText(self, -1, "Scale (meters):", wx.Point(370,210))
         
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#        
@@ -488,22 +488,22 @@ class Corridors(wx.Panel):
                                              "by a uniformly randomly distributed number in the interval [0.1*x, x)."))
         self.editname4 = wx.TextCtrl(self, 190, str(self.Nsimulations1), wx.Point(100,267), wx.Size(35,-1))
         self.editname4.SetToolTip(wx.ToolTip("Method M1: no spatial influence"))
-        self.editname5 = wx.TextCtrl(self, 191, str(self.Nsimulations2), wx.Point(180,297), wx.Size(35,-1))
+        self.editname5 = wx.TextCtrl(self, 191, str(self.Nsimulations2), wx.Point(160,297), wx.Size(35,-1))
         self.editname5.SetToolTip(wx.ToolTip("Method M2: minimum\n\n"+
                                              "Each resistance surface pixel is replaced by the minimum of pixel values "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))
-        self.editname6 = wx.TextCtrl(self, 192, str(self.Nsimulations3), wx.Point(340,297), wx.Size(35,-1))
+        self.editname6 = wx.TextCtrl(self, 192, str(self.Nsimulations3), wx.Point(320,297), wx.Size(35,-1))
         self.editname6.SetToolTip(wx.ToolTip("Method M3: average\n\n"+
                                              "Each resistance surface pixel is replaced by the mean pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))        
-        self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(500,297), wx.Size(35,-1))
+        self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(480,297), wx.Size(35,-1))
         self.editname7.SetToolTip(wx.ToolTip("Method M4: maximum\n\n"+
                                              "Each resistance surface pixel is replaced by the maximum pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))        
-        self.editname8 = wx.TextCtrl(self, 196, str(self.esc), wx.Point(435,205), wx.Size(50,-1))
+        self.editname8 = wx.TextCtrl(self, 196, str(self.esc), wx.Point(455,205), wx.Size(50,-1))
         self.editname8.SetToolTip(wx.ToolTip("This parameters controls the scale of landscape influence on local "+
                                              "resistance (the size of the window around each pixel). It affects only the "+
                                              "results of simulations using methods M2, M3, and M4.\n"+
@@ -982,28 +982,28 @@ class Corridors(wx.Panel):
           # Simulation settings
           
           # Start time
-          self.time = datetime.now() # INSTANCE
-          self.day_start=self.time.day # Start day
-          self.month_start=self.time.month # Start month
-          self.year_start=self.time.year # Start year
-          self.hour_start=self.time.hour # Start hour
-          self.minuts_start=self.time.minute # Start minute
-          self.second_start=self.time.second # Start second
+          self.time_start = datetime.now() # INSTANCE
+          self.day_start=self.time_start.day # Start day
+          self.month_start=self.time_start.month # Start month
+          self.year_start=self.time_start.year # Start year
+          self.hour_start=self.time_start.hour # Start hour
+          self.minuts_start=self.time_start.minute # Start minute
+          self.second_start=self.time_start.second # Start second
           
           # Current time
           self.time = datetime.now() # INSTANCE
-          self.day=self.time.day # Current day
-          self.month=self.time.month # Current month
-          self.year=self.time.year # Current year
-          self.hour=self.time.hour # Current hour
-          self.minuts=self.time.minute # Current minute
-          self.second=self.time.second # Current second
+          #self.day=self.time.day # Current day
+          #self.month=self.time.month # Current month
+          #self.year=self.time.year # Current year
+          #self.hour=self.time.hour # Current hour
+          #self.minuts=self.time.minute # Current minute
+          #self.second=self.time.second # Current second
           
           # Change to output directory
           os.chdir(self.OutDir_files_TXT)
           
           # Starting log file
-          self.header_log="___Log_Year_"+`self.year`+"-Month"+`self.month`+"-Day_"+`self.day`+"_Time_"+`self.hour`+"_"+`self.minuts`+"_"+`self.second`
+          self.header_log="___Log_Year_"+`self.year_start`+"-Month"+`self.month_start`+"-Day_"+`self.day_start`+"_Time_"+`self.hour_start`+"_"+`self.minuts_start`+"_"+`self.second_start`
           self.txt_log=open(self.header_log+".txt","w")       
           self.txt_log.write("Start time       : Year "+`self.year_start`+"-Month "+`self.month_start`+"-Day "+`self.day_start`+" ---- time: "+`self.hour_start`+":"+`self.minuts_start`+":"+`self.second_start`+"\n")
           
@@ -1563,28 +1563,33 @@ class Corridors(wx.Panel):
           
           
           # Simulation end time
-          self.time = datetime.now() # INSTANCE
-          self.day_end=self.time.day # End day
-          self.month_end=self.time.month # End month
-          self.year_end=self.time.year # End year
-          self.hour_end=self.time.hour # End hour
-          self.minuts_end=self.time.minute # End minute
-          self.second_end=self.time.second # End second
+          self.time_end = datetime.now() # INSTANCE
+          self.day_end=self.time_end.day # End day
+          self.month_end=self.time_end.month # End month
+          self.year_end=self.time_end.year # End year
+          self.hour_end=self.time_end.hour # End hour
+          self.minuts_end=self.time_end.minute # End minute
+          self.second_end=self.time_end.second # End second
+          
+          self.difference_time = self.time_end - self.time_start
+          weeks, days = divmod(self.difference_time.days, 7)
+          minutes, seconds = divmod(self.difference_time.seconds, 60)
+          hours, minutes = divmod(minutes, 60)          
           
           self.txt_log.write("End time         : Year "+`self.year_end`+"-Month "+`self.month_end`+"-Day "+`self.day_end`+" ---- Time: "+`self.hour_end`+":"+`self.minuts_end`+":"+`self.second_end`+"\n")
           
           # Simulation time
-          self.difference_time=`self.month_end - self.month_start`+" Month - "+`abs(self.day_end - self.day_start)`+" Day - "+" Time: "+`abs(self.hour_end - self.hour_start)`+":"+`abs(self.minuts_end - self.minuts_start)`+":"+`abs(self.second_end - self.second_start)`
+          self.difference_time=`weeks`+" Weeks - "+`days`+" Days - "+" Time: "+`hours`+":"+`minutes`+":"+`seconds`
           
           # Writes log file
           self.txt_log.write("Processing time  : "+self.difference_time+"\n\n")
           
           self.txt_log.write("Inputs : \n")
-          self.txt_log.write("	Resistance Map          : "+self.OutArqResist+" \n")
-          self.txt_log.write("	Source Target Map       : "+self.OutArqST+" \n")
-          self.txt_log.write("	Variability             : "+`self.ruido_float`+" \n")
-          self.txt_log.write("	Perception of scale (m) : "+`self.esc`+" \n")
-          self.txt_log.write("	Number of simulations M1: "+`self.Nsimulations1`+" \n")
+          self.txt_log.write("	Resistance Map                    : "+self.OutArqResist+" \n")
+          self.txt_log.write("	Source Target Map                 : "+self.OutArqST+" \n")
+          self.txt_log.write("	Variability                       : "+`self.ruido_float`+" \n")
+          self.txt_log.write("	Perception of scale (m)           : "+`self.esc`+" \n")
+          self.txt_log.write("	Number of simulations M1          : "+`self.Nsimulations1`+" \n")
           self.txt_log.write("	Number of simulations M2 (minimum): "+`self.Nsimulations2`+"\n")
           self.txt_log.write("	Number of simulations M3 (average): "+`self.Nsimulations3`+"\n")
           self.txt_log.write("	Number of simulations M4 (maximum): "+`self.Nsimulations4`+"\n")    
@@ -1673,7 +1678,7 @@ class Corridors(wx.Panel):
 if __name__ == "__main__":
   
     app = wx.PySimpleApp()
-    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(560,500))
+    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(550,550))
     Corridors(frame,-1)
     frame.Show(1)
     

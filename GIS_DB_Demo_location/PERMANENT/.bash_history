@@ -610,3 +610,44 @@ python LS_corridors_v1_0.py
 python test_LS_corridors.py 
 exit
 exit
+cd Github/LS_CORRIDORS/_LS_Corridors_v1_0_stable/
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+python LS_corridors_v1_0.py 
+cd ..
+git add *
+git status
+git commit -m 'fix minimum method'
+git push origin master
+git push origin master
+clear
+ls
+cd
+cd ls
+ls
+cd Documentos/
+cd UNESP/analises/
+ls
+cd ..
+cd artigos/
+ls
+cd manuscrito_Ribeiro_etal_2016_LSCorridors/
+ls
+cd Resubmission2/
+ls
+cd ..
+ls
+cd corridors_GLT_test_parameters/
+ls
+exit
