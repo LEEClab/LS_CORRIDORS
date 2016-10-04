@@ -454,11 +454,11 @@ class Corridors(wx.Panel):
         self.lblname = wx.StaticText(self, -1, "ST:", wx.Point(300,145))
         self.lbllista = wx.StaticText(self, -1, "Enter a list manually:", wx.Point(20,177))
         self.lblname = wx.StaticText(self, -1, "Without landscape influence:", wx.Point(70,260))
-        self.lblname = wx.StaticText(self, -1, "M1:", wx.Point(70,290))
-        self.lblname = wx.StaticText(self, -1, "Without landscape influence:", wx.Point(70,320))
-        self.lblname = wx.StaticText(self, -1, "M2 (minimum):", wx.Point(70,350))
-        self.lblname = wx.StaticText(self, -1, "M3 (average):", wx.Point(230,350))
-        self.lblname = wx.StaticText(self, -1, "M4 (maximum):", wx.Point(390,350))
+        self.lblname = wx.StaticText(self, -1, "M1:", wx.Point(70,285))
+        self.lblname = wx.StaticText(self, -1, "Without landscape influence:", wx.Point(70,315))
+        self.lblname = wx.StaticText(self, -1, "M2 (minimum):", wx.Point(70,340))
+        self.lblname = wx.StaticText(self, -1, "M3 (average):", wx.Point(230,340))
+        self.lblname = wx.StaticText(self, -1, "M4 (maximum):", wx.Point(390,340))
         self.lblname = wx.StaticText(self, -1, "Name of output corridor:", wx.Point(20,210))
         self.lblname = wx.StaticText(self, -1, "Scale (meters):", wx.Point(370,210))
         
@@ -478,19 +478,19 @@ class Corridors(wx.Panel):
         self.editname3.SetToolTip(wx.ToolTip("Variability factor, x: in each simulation, "+
                                              "resistance value for each pixel in the resistance surface map is multiplied "+
                                              "by a uniformly randomly distributed number in the interval [0.1*x, x)."))
-        self.editname4 = wx.TextCtrl(self, 190, str(self.Nsimulations1), wx.Point(90,287), wx.Size(35,-1))
+        self.editname4 = wx.TextCtrl(self, 190, str(self.Nsimulations1), wx.Point(90,282), wx.Size(35,-1))
         self.editname4.SetToolTip(wx.ToolTip("Method M1: no spatial influence"))
-        self.editname5 = wx.TextCtrl(self, 191, str(self.Nsimulations2), wx.Point(150,347), wx.Size(35,-1))
+        self.editname5 = wx.TextCtrl(self, 191, str(self.Nsimulations2), wx.Point(150,337), wx.Size(35,-1))
         self.editname5.SetToolTip(wx.ToolTip("Method M2: minimum\n\n"+
                                              "Each resistance surface pixel is replaced by the minimum of pixel values "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))
-        self.editname6 = wx.TextCtrl(self, 192, str(self.Nsimulations3), wx.Point(310,347), wx.Size(35,-1))
+        self.editname6 = wx.TextCtrl(self, 192, str(self.Nsimulations3), wx.Point(310,337), wx.Size(35,-1))
         self.editname6.SetToolTip(wx.ToolTip("Method M3: average\n\n"+
                                              "Each resistance surface pixel is replaced by the mean pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))        
-        self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(470,347), wx.Size(35,-1))
+        self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(470,337), wx.Size(35,-1))
         self.editname7.SetToolTip(wx.ToolTip("Method M4: maximum\n\n"+
                                              "Each resistance surface pixel is replaced by the maximum pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
@@ -1651,7 +1651,7 @@ class Corridors(wx.Panel):
 if __name__ == "__main__":
   
     app = wx.PySimpleApp()
-    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(570,550))
+    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(570,560))
     Corridors(frame,-1)
     frame.Show(1)
     
