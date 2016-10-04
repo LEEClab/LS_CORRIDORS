@@ -381,7 +381,7 @@ class Corridors(wx.Panel):
         self.quote.SetFont(font)
         
         #__________________________________________________________________________________________                
-        self.quote = wx.StaticText(self, id=-1, label="Import maps:", pos=wx.Point(20,65))
+        self.quote = wx.StaticText(self, id=-1, label="Import Maps:", pos=wx.Point(20,65))
         
         font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
         self.quote.SetForegroundColour("red")
@@ -402,16 +402,16 @@ class Corridors(wx.Panel):
         self.quote.SetFont(font)                      
       
         # A multiline TextCtrl - This is here to show how the events work in this program, don't pay too much attention to it
-        self.logger = wx.TextCtrl(self,5, "",wx.Point(20,339), wx.Size(320,100),wx.TE_MULTILINE | wx.TE_READONLY)
+        self.logger = wx.TextCtrl(self,5, "",wx.Point(20,379), wx.Size(320,100),wx.TE_MULTILINE | wx.TE_READONLY)
       
         #---------------------------------------------#
         #-------------- BUTTONS ----------------------#
         #---------------------------------------------#
         
-        self.button =wx.Button(self, 10, "START SIMULATIONS", wx.Point(20,449))
+        self.button =wx.Button(self, 10, "START SIMULATIONS", wx.Point(20,489))
         wx.EVT_BUTTON(self, 10, self.OnClick)
   
-        self.button =wx.Button(self, 205, "RUN EXPORT FILES ", wx.Point(145,449))
+        self.button =wx.Button(self, 205, "RUN EXPORT FILES ", wx.Point(145,489))
         wx.EVT_BUTTON(self, 205, self.OnClick)
         
         self.button =wx.Button(self, 210, "select files", wx.Point(280,85))#st
@@ -429,7 +429,7 @@ class Corridors(wx.Panel):
         self.button =wx.Button(self, 260, "COMBINE ALL", wx.Point(418,172))
         wx.EVT_BUTTON(self, 260, self.OnClick)
         
-        self.button =wx.Button(self, 8, "EXIT", wx.Point(265, 449))
+        self.button =wx.Button(self, 8, "EXIT", wx.Point(265, 489))
         wx.EVT_BUTTON(self, 8, self.OnExit)
 
         #---------------------------------------------#
@@ -440,7 +440,7 @@ class Corridors(wx.Panel):
         self.imageFile = 'logo_lab.png'
         im1 = Image.open(self.imageFile)
         jpg1 = wx.Image(self.imageFile, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.StaticBitmap(self, -1, jpg1, (348,340), (jpg1.GetWidth(), jpg1.GetHeight()), style=wx.SUNKEN_BORDER)
+        wx.StaticBitmap(self, -1, jpg1, (348,380), (jpg1.GetWidth(), jpg1.GetHeight()), style=wx.SUNKEN_BORDER)
         
         
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -453,11 +453,12 @@ class Corridors(wx.Panel):
         self.lblname = wx.StaticText(self, -1, "Resistance:", wx.Point(20,145))
         self.lblname = wx.StaticText(self, -1, "ST:", wx.Point(300,145))
         self.lbllista = wx.StaticText(self, -1, "Enter a list manually:", wx.Point(20,177))
-        self.lblname = wx.StaticText(self, -1, "M1:", wx.Point(70,270))
-        self.lblname = wx.StaticText(self, -1, "(no landscape influence)", wx.Point(140,270))
-        self.lblname = wx.StaticText(self, -1, "M2 (minimum):", wx.Point(70,300))
-        self.lblname = wx.StaticText(self, -1, "M3 (average):", wx.Point(230,300))
-        self.lblname = wx.StaticText(self, -1, "M4 (maximum):", wx.Point(390,300))
+        self.lblname = wx.StaticText(self, -1, "Without landscape influence:", wx.Point(70,260))
+        self.lblname = wx.StaticText(self, -1, "M1:", wx.Point(70,290))
+        self.lblname = wx.StaticText(self, -1, "Without landscape influence:", wx.Point(70,320))
+        self.lblname = wx.StaticText(self, -1, "M2 (minimum):", wx.Point(70,350))
+        self.lblname = wx.StaticText(self, -1, "M3 (average):", wx.Point(230,350))
+        self.lblname = wx.StaticText(self, -1, "M4 (maximum):", wx.Point(390,350))
         self.lblname = wx.StaticText(self, -1, "Name of output corridor:", wx.Point(20,210))
         self.lblname = wx.StaticText(self, -1, "Scale (meters):", wx.Point(370,210))
         
@@ -477,19 +478,19 @@ class Corridors(wx.Panel):
         self.editname3.SetToolTip(wx.ToolTip("Variability factor, x: in each simulation, "+
                                              "resistance value for each pixel in the resistance surface map is multiplied "+
                                              "by a uniformly randomly distributed number in the interval [0.1*x, x)."))
-        self.editname4 = wx.TextCtrl(self, 190, str(self.Nsimulations1), wx.Point(90,267), wx.Size(35,-1))
+        self.editname4 = wx.TextCtrl(self, 190, str(self.Nsimulations1), wx.Point(90,287), wx.Size(35,-1))
         self.editname4.SetToolTip(wx.ToolTip("Method M1: no spatial influence"))
-        self.editname5 = wx.TextCtrl(self, 191, str(self.Nsimulations2), wx.Point(150,297), wx.Size(35,-1))
+        self.editname5 = wx.TextCtrl(self, 191, str(self.Nsimulations2), wx.Point(150,347), wx.Size(35,-1))
         self.editname5.SetToolTip(wx.ToolTip("Method M2: minimum\n\n"+
                                              "Each resistance surface pixel is replaced by the minimum of pixel values "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))
-        self.editname6 = wx.TextCtrl(self, 192, str(self.Nsimulations3), wx.Point(310,297), wx.Size(35,-1))
+        self.editname6 = wx.TextCtrl(self, 192, str(self.Nsimulations3), wx.Point(310,347), wx.Size(35,-1))
         self.editname6.SetToolTip(wx.ToolTip("Method M3: average\n\n"+
                                              "Each resistance surface pixel is replaced by the mean pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))        
-        self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(470,297), wx.Size(35,-1))
+        self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(470,347), wx.Size(35,-1))
         self.editname7.SetToolTip(wx.ToolTip("Method M4: maximum\n\n"+
                                              "Each resistance surface pixel is replaced by the maximum pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
@@ -1637,7 +1638,7 @@ class Corridors(wx.Panel):
     def OnExit(self, event):
       
         d= wx.MessageDialog(self, " Thanks for simulating using\n"
-                            " LSCorridors "+ VERSION, "Good bye", wx.OK) # Create a message dialog box
+                            " LSCorridors "+ VERSION+"!", "Good Bye!", wx.OK) # Create a message dialog box
         if not self.perform_tests:
           d.ShowModal() # Shows it
           d.Destroy() # finally destroy it when finished.
@@ -1650,7 +1651,7 @@ class Corridors(wx.Panel):
 if __name__ == "__main__":
   
     app = wx.PySimpleApp()
-    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(570,540))
+    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(570,550))
     Corridors(frame,-1)
     frame.Show(1)
     
