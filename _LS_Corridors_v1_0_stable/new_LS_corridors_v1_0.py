@@ -218,9 +218,9 @@ class Corridors(wx.Panel):
         
         # GUI Parameters
         self.ruido='2.0' # Variability scale for generating the noise map, in string format
-        self.ruido_float=2.0 # Variability scale for generating the noise map, in float format
+        self.ruidos_float=[2.0] # Variability scale for generating the noise map, in float format
         
-        self.esc=100 # Animal movement scale, in meters
+        self.escalas=[100] # Animal movement scale, in meters
         
         self.Nsimulations=0 # Total number of simulations (independent of method)
         self.Nsimulations1=15 # Number of simulation of method M1
@@ -474,7 +474,7 @@ class Corridors(wx.Panel):
         
         self.editname1 = wx.TextCtrl(self, 180, self.edtstart_list, wx.Point(126,173), wx.Size(195,-1))
         self.editname2 = wx.TextCtrl(self, 185, 'Proposed name of the cost map', wx.Point(150,205), wx.Size(195,-1))
-        self.editname3 = wx.TextCtrl(self, 186, str(self.ruido_float), wx.Point(505,85), wx.Size(30,-1))
+        self.editname3 = wx.TextCtrl(self, 186, ','.join(str(i) for i in self.ruidos_float), wx.Point(505,85), wx.Size(30,-1))
         self.editname3.SetToolTip(wx.ToolTip("Variability factor, x: in each simulation, "+
                                              "resistance value for each pixel in the resistance surface map is multiplied "+
                                              "by a uniformly randomly distributed number in the interval [0.1*x, x)."))
@@ -495,7 +495,7 @@ class Corridors(wx.Panel):
                                              "Each resistance surface pixel is replaced by the maximum pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))        
-        self.editname8 = wx.TextCtrl(self, 196, str(self.esc), wx.Point(450,205), wx.Size(50,-1))
+        self.editname8 = wx.TextCtrl(self, 196, ','.join(str(i) for i in self.escalas), wx.Point(450,205), wx.Size(50,-1))
         self.editname8.SetToolTip(wx.ToolTip("This parameters controls the scale of landscape influence on local "+
                                              "resistance (the size of the window around each pixel). It affects only the "+
                                              "results of simulations using methods M2, M3, and M4.\n"+
@@ -876,21 +876,21 @@ class Corridors(wx.Panel):
           self.simulated = [1, 1, 1, 1]
          
           # Tests if variability parameter is greater than 1.0
-          if self.ruido_float < 0.0: 
-            d= wx.MessageDialog(self, "Incorrect variability parameter\n"+
+          if all(i > 0.0 for i in self.ruidos_float): 
+            d= wx.MessageDialog(self, "Incorrect variability parameter(s)\n"+
                                 "Variability must be equal to or greater than zero!\n"+
-                                "Please check the parameter.\n", "", wx.OK) # Create a message dialog box
+                                "Please check the parameter(s).\n", "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
             self.logger.AppendText()
             sys.exit()
             
           # Tests if scale parameter is greater than zero
-          #print 'esc = '+`self.esc`
-          if self.esc <= 0: 
-            d= wx.MessageDialog(self, "Incorrect scale parameter\n"+
+          #print 'escalas = '+','.join(str(i) for i in self.escalas)
+          if all(i > 0 for i in self.escalas): 
+            d= wx.MessageDialog(self, "Incorrect scale parameter(s)\n"+
                                 "Scale must be greater than zero!\n"+
-                                "Please check the parameter.\n", "", wx.OK) # Create a message dialog box
+                                "Please check the parameter(s).\n", "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
             self.logger.AppendText()
@@ -1592,31 +1592,37 @@ class Corridors(wx.Panel):
         ID 180: Reads list of ST points
         """
         if event.GetId() == 180: #180=list of STs
-          self.patch_id_list_aux=event.GetString()
-          self.patch_id_list=self.patch_id_list_aux.split(',')
+          self.patch_id_list_aux = event.GetString()
+          self.patch_id_list = self.patch_id_list_aux.split(',')
         
         """
         ID 186: Defines the variability of the map - noise factor
         """
         if event.GetId() == 186: #186=variability factor
-          self.ruido=event.GetString()
-          self.ruido_float=float(self.ruido)
+          self.ruido = event.GetString()
+          #self.ruido_float=float(self.ruido)
+          self.ruidos_float = map(float, self.ruido.split(','))
+          self.logger.AppendText('Variability factors: \n'+','.join(str(i) for i in self.ruidos_float)+ '\n')
           
         """
         ID 186: Defines the variability of the map - noise factor
         """
         if event.GetId() == 196: #196=animal perception scale
-          self.esc=float(event.GetString())         
+          #self.esc=float(event.GetString())
+          # this transforms values separated by commas into a list 
+          # and turns these numbers into floating point values
+          self.escalas = map(float, event.GetString().split(','))
+          self.logger.AppendText('Landscape scales: \n'+','.join(str(i) for i in self.escalas)+ '\n')
 
         """
         ID 185: Reads output map name
         """
         if event.GetId() == 185: #185=base name
-          self.NEXPER_APOIO=event.GetString()
-          self.NEXPER_FINAL=self.NEXPER_AUX+"_"+self.NEXPER_APOIO
-          self.NEXPER_FINAL=self.NEXPER_FINAL.replace('@PERMANENT','')
-          self.NEXPER_FINAL_txt=self.NEXPER_AUX_txt+"_"+self.NEXPER_APOIO
-          self.NEXPER_FINAL_txt=self.NEXPER_FINAL_txt.replace('@PERMANENT','')          
+          self.NEXPER_APOIO = event.GetString()
+          self.NEXPER_FINAL = self.NEXPER_AUX+"_"+self.NEXPER_APOIO
+          self.NEXPER_FINAL = self.NEXPER_FINAL.replace('@PERMANENT','')
+          self.NEXPER_FINAL_txt = self.NEXPER_AUX_txt+"_"+self.NEXPER_APOIO
+          self.NEXPER_FINAL_txt = self.NEXPER_FINAL_txt.replace('@PERMANENT','')          
           self.logger.AppendText('Output map base name: \n'+self.NEXPER_FINAL+ '\n')
             
         """
