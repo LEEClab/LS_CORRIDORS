@@ -455,7 +455,7 @@ class Corridors(wx.Panel):
         self.lbllista = wx.StaticText(self, -1, "Enter a list manually:", wx.Point(20,177))
         self.lblname = wx.StaticText(self, -1, "Without landscape influence:", wx.Point(70,260))
         self.lblname = wx.StaticText(self, -1, "M1:", wx.Point(70,285))
-        self.lblname = wx.StaticText(self, -1, "Without landscape influence:", wx.Point(70,315))
+        self.lblname = wx.StaticText(self, -1, "With landscape influence:", wx.Point(70,315))
         self.lblname = wx.StaticText(self, -1, "M2 (minimum):", wx.Point(70,340))
         self.lblname = wx.StaticText(self, -1, "M3 (average):", wx.Point(230,340))
         self.lblname = wx.StaticText(self, -1, "M4 (maximum):", wx.Point(390,340))
