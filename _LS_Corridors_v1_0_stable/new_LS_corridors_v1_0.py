@@ -1024,9 +1024,6 @@ class Corridors(wx.Panel):
               self.methods = []
               self.listExport = []
               self.listExportMethod = []
-              
-              # List of number of corridors already simulated - to be updated as simulations run
-              self.simulated = [1, 1, 1, 1]              
             
               # Defining the size of the moving windows, in pixels
               # It is defined given the animal movement scale (user defined parameter)
@@ -1115,6 +1112,9 @@ class Corridors(wx.Panel):
               
               # For each ST pair in the list:
               while (len(self.patch_id_list)>1):
+                
+                # List of number of corridors already simulated - to be updated as simulations run
+                self.simulated = [1, 1, 1, 1]                              
                 
                 self.ChecktTry=True
                 # Change to output dir
@@ -1235,7 +1235,7 @@ class Corridors(wx.Panel):
                 
                 # Open output text file and writes headers      
                 self.arquivo = open(self.mapa_corredores_sem0_txt+'.txt','w')
-                self.cabecalho='EXPERIMENT'+','+'VARIABILITY'+','+'SCALE'+','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'LCP_LENGTH'+','+'LCP_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
+                self.cabecalho='EXPERIMENT'+','+'VARIABILITY'+','+'SCALE'+','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'SOURCE'+','+'TARGET'+','+'LCP_LENGTH'+','+'LCP_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
                 self.arquivo.write(self.cabecalho)
                 
                 #---------------------------------------------#
@@ -1469,7 +1469,7 @@ class Corridors(wx.Panel):
                     self.euclidean_b = self.euclidean_a**0.5         
                          
                     # Produces information for one corridor - to be appended to the output text file
-                    self.linha=self.listafinal[cont].replace("@PERMANENT",'')+','+`ruido_float`+','+`esc`+','+self.M+','+`c_method`+','+ `self.var_dist_line`+','+ `self.var_cost_sum`+','+ `self.euclidean_b`+','+ `self.var_source_x`+','+ `self.var_source_y`+','+ `self.var_target_x`+','+ `self.var_target_y`+ "\n"
+                    self.linha=self.listafinal[cont].replace("@PERMANENT",'')+','+`ruido_float`+','+`esc`+','+self.M+','+`c_method`+','+`self.S1`+','+`self.T1`+','+ `self.var_dist_line`+','+ `self.var_cost_sum`+','+ `self.euclidean_b`+','+ `self.var_source_x`+','+ `self.var_source_y`+','+ `self.var_target_x`+','+ `self.var_target_y`+ "\n"
                     self.linha=self.linha.replace('\'','')
                     
                     # Writes corridor information on output text file
