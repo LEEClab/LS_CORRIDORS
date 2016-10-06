@@ -873,7 +873,7 @@ class Corridors(wx.Panel):
           # Tests if variability parameter is greater than 1.0
           if any(i <= 0.0 for i in self.ruidos_float): 
             d= wx.MessageDialog(self, "Incorrect variability parameter(s)\n"+
-                                "Variability must be equal to or greater than zero!\n"+
+                                "Variability must be a number equal to or greater than zero!\n"+
                                 "Please check the parameter(s).\n", "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
@@ -884,7 +884,7 @@ class Corridors(wx.Panel):
           #print 'escalas = '+','.join(str(i) for i in self.escalas)
           if any(i <= 0 for i in self.escalas): 
             d= wx.MessageDialog(self, "Incorrect scale parameter(s)\n"+
-                                "Scale must be greater than zero!\n"+
+                                "Scale must be a number greater than zero!\n"+
                                 "Please check the parameter(s).\n", "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
@@ -1656,8 +1656,12 @@ class Corridors(wx.Panel):
         if event.GetId() == 186: #186=variability factor
           self.ruido = event.GetString()
           #self.ruido_float=float(self.ruido)
-          self.ruidos_float = map(float, self.ruido.split(','))
-          self.logger.AppendText('Variability factors: \n'+','.join(str(i) for i in self.ruidos_float)+ '\n')
+          try:
+            self.ruidos_float = map(float, self.ruido.split(','))
+            self.logger.AppendText('Variability factor(s): \n'+','.join(str(i) for i in self.ruidos_float)+ '\n')
+          except:
+            self.ruidos_float = [-1.0]
+            print "Could not convert at least one of the variability values to a float."
           
         """
         ID 186: Defines the variability of the map - noise factor
@@ -1666,8 +1670,12 @@ class Corridors(wx.Panel):
           #self.esc=float(event.GetString())
           # this transforms values separated by commas into a list 
           # and turns these numbers into floating point values
-          self.escalas = map(int, event.GetString().split(','))
-          self.logger.AppendText('Landscape scales: \n'+','.join(str(i) for i in self.escalas)+ '\n')
+          try:
+            self.escalas = map(int, event.GetString().split(','))
+            self.logger.AppendText('Landscape scale(s): \n'+','.join(str(i) for i in self.escalas)+ '\n')            
+          except:
+            self.escalas = [-1]
+            print "Could not convert at least one of the scale values to an integer."
 
         """
         ID 185: Reads output map name
@@ -1685,16 +1693,45 @@ class Corridors(wx.Panel):
         """
         # Method M1
         if event.GetId() == 190: #190=number of simulations
-          self.Nsimulations1=int(event.GetString())
+          try:
+            self.Nsimulations1=int(event.GetString())
+          except ValueError:
+            self.Nsimulations1=0
+            
         # Method M2
         if event.GetId() == 191: #191=number of simulations
-          self.Nsimulations2=int(event.GetString())  
+          try:
+            self.Nsimulations2=int(event.GetString())
+          except ValueError:
+            self.Nsimulations2=0  
+            
+          if self.Nsimulations2 <= 0 and self.Nsimulations3 <= 0 and self.Nsimulations4 <= 0:
+            self.editname8.Disable()
+          else:
+            self.editname8.Enable()
+            
         # Method M3
         if event.GetId() == 192: #192=number of simulations
-          self.Nsimulations3=int(event.GetString())
+          try:
+            self.Nsimulations3=int(event.GetString())
+          except ValueError:
+            self.Nsimulations3=0          
+            
+          if self.Nsimulations2 <= 0 and self.Nsimulations3 <= 0 and self.Nsimulations4 <= 0:
+            self.editname8.Disable()
+          else:
+            self.editname8.Enable()          
         # Method M4
         if event.GetId() == 193: #193=number of simulations
-          self.Nsimulations4=int(event.GetString())  
+          try:
+            self.Nsimulations4=int(event.GetString())
+          except ValueError:
+            self.Nsimulations4=0
+            
+          if self.Nsimulations2 <= 0 and self.Nsimulations3 <= 0 and self.Nsimulations4 <= 0:
+            self.editname8.Disable()
+          else:
+            self.editname8.Enable()          
         
     def OnExit(self, event):
       
