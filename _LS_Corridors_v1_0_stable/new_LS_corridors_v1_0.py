@@ -193,13 +193,13 @@ class Corridors(wx.Panel):
         
         # Variables with 'C' are used to generate output names for auxiliary maps M2,M3,M4
         # Name of mode map (M2)
-        self.C2='M2_MINIMUM'
+        self.C2_pre='M2_MINIMUM'
         
         # Name of maximum map (M3)
-        self.C3='M3_AVERAGE'
+        self.C3_pre='M3_AVERAGE'
         
         # Name of average map (M4)
-        self.C4='M4_MAXIMUM'
+        self.C4_pre='M4_MAXIMUM'
         
         # String to show an example of how the ST list should look like
         self.edtstart_list='Ex:1,2,3,4,...'
@@ -598,7 +598,7 @@ class Corridors(wx.Panel):
           self.OutArqST=event.GetString()
           
           # Shows selection in the Dialog Box
-          self.logger.AppendText('Map Souce Targetd:\n')
+          self.logger.AppendText('Souce-Target Map:\n')
           self.logger.AppendText('%s\n' % event.GetString())
         
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -833,12 +833,12 @@ class Corridors(wx.Panel):
           
           # Opens and reads the list as a string and transforms it into a list
           self.fileHandle = open(self.readtxt, 'r')
-          self.patch_id_list_aux=self.fileHandle.read()
+          self.patch_id_list_aux = self.fileHandle.read()
           self.fileHandle.close()
-          self.patch_id_list=self.patch_id_list_aux.split(',')
+          self.patch_id_list = self.patch_id_list_aux.split(',')
           
           # Prints list of ST combinations
-          print self.patch_id_list
+          #print self.patch_id_list
           self.logger.AppendText("TXT Combinations:\n"+`self.patch_id_list`+"\n")
           
 
@@ -867,16 +867,11 @@ class Corridors(wx.Panel):
           # Size of the ST list
           self.lenlist=len(self.patch_id_list)
           
-          # Refreshing the list of methods to be simulated, and outputs
-          self.methods = []
-          self.listExport = []
-          self.listExportMethod = []
-          
-          # List of number of corridors already simulated - to be updated as simulations run
-          self.simulated = [1, 1, 1, 1]
+          # Backup of the list of ST patches
+          self.patch_id_list_bkp = self.patch_id_list
          
           # Tests if variability parameter is greater than 1.0
-          if all(i > 0.0 for i in self.ruidos_float): 
+          if any(i <= 0.0 for i in self.ruidos_float): 
             d= wx.MessageDialog(self, "Incorrect variability parameter(s)\n"+
                                 "Variability must be equal to or greater than zero!\n"+
                                 "Please check the parameter(s).\n", "", wx.OK) # Create a message dialog box
@@ -887,7 +882,7 @@ class Corridors(wx.Panel):
             
           # Tests if scale parameter is greater than zero
           #print 'escalas = '+','.join(str(i) for i in self.escalas)
-          if all(i > 0 for i in self.escalas): 
+          if any(i <= 0 for i in self.escalas): 
             d= wx.MessageDialog(self, "Incorrect scale parameter(s)\n"+
                                 "Scale must be greater than zero!\n"+
                                 "Please check the parameter(s).\n", "", wx.OK) # Create a message dialog box
@@ -954,7 +949,7 @@ class Corridors(wx.Panel):
               
             if self.OutDir_files_TXT == '' and self.perform_tests == False:
               self.OutDir_files_TXT = selectdirectory()
-            self.logger.AppendText("Selected output folder: \n"+self.OutDir_files_TXT)
+            self.logger.AppendText("Selected output folder: \n"+self.OutDir_files_TXT+"\n\n")
           
             # Start running
             self.logger.AppendText("Running...:\n")
@@ -990,542 +985,589 @@ class Corridors(wx.Panel):
           self.txt_log=open(self.header_log+".txt","w")       
           self.txt_log.write("Start time       : Year "+`self.year_start`+"-Month "+`self.month_start`+"-Day "+`self.day_start`+" ---- time: "+`self.hour_start`+":"+`self.minuts_start`+":"+`self.second_start`+"\n")
           
-          #######################################3
+          #######################################
+          ## Review that
           self.S1="" # Variable to select a source point
           self.T1="" # Variable to select a target point
-          self.C2=self.C2+''
-          self.C3=self.C3+''
-          self.C4=self.C4+''
           
-          # Defining GRASS GIS region as output map region
-          grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)
+          # A series of simulations for each value of variability defined by the user
+          for ruido_float in self.ruidos_float:
           
-          # Reading map resolution
-          self.res = grass.read_command('g.region', flags='m')
-          self.res2 = self.res.split('\n')
-          self.res3 = self.res2[5]
-          self.res3 = float(self.res3.replace('ewres=',''))
-          
-          # Defining the size of the moving windows, in pixels
-          # It is defined given the animal movement scale (user defined parameter)
-          #  and the resolution of the map (map grain or pixel size)
-          self.escfina1=(self.esc*2)/self.res3
-          
-          # Checking if number of pixels of moving window is integer and even
-          #  and correcting it if necessary
-          if int(self.escfina1)%2 == 0:
-            self.escfina1=int(self.escfina1)
-            self.escfina1=self.escfina1+1
-          else:
-            self.escfina1=int(self.escfina1)
-            #self.escfina1=int(round(self.escfina1, ndigits=0))
-          
-          # Defining GRASS GIS region as output map region
-          # grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)          
-          
-          # If methods M2, M3, M4 are going to be simulated, this command prepares
-          # the resistance map taking into consider these methods
-          # Also, the list of methods to be simulated is defined
-          if self.Nsimulations1 > 0: # no influence of landscape
-            self.methods.append('M1')
-          
-          if self.Nsimulations2 > 0: # minimum
-            self.methods.append('M2')
-            self.defaultsize_moviwin_allcor=self.escfina1
-            grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C2, method='minimum', size=self.escfina1, overwrite = True)
+            self.logger.AppendText("Running corridors for variability = "+`ruido_float`+".\n")
             
-          if self.Nsimulations3 > 0: # average
-            self.methods.append('M3')
-            self.defaultsize_moviwin_allcor=self.escfina1
-            grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C3, method='average', size=self.escfina1, overwrite = True)
-          
-          if self.Nsimulations4 > 0: # maximum
-            self.methods.append('M4')
-            self.defaultsize_moviwin_allcor=self.escfina1
-            grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C4, method='maximum', size=self.escfina1, overwrite = True)
-          
-          # Organizes names of resistance maps to be used in simulations
-          self.listafinal=[]
-          self.listamethods=[]
-          
-          for i in range(self.Nsimulations1):
-            self.listafinal.append(self.OutArqResist)
-            self.listamethods.append('M1')
-          for i in range(self.Nsimulations2):
-            self.listafinal.append(self.C2)
-            self.listamethods.append('M2')
-          for i in range(self.Nsimulations3):
-            self.listafinal.append(self.C3)
-            self.listamethods.append('M3')
-          for i in range(self.Nsimulations4):
-            self.listafinal.append(self.C4)
-            self.listamethods.append('M4')
-          
-          # Not necessary
-          #grass.run_command('g.region', rast=self.OutArqResist, res=self.res3)
-          
-          # Total number of simulations (M! + M2 + M3 + M4)
-          self.Nsimulations = self.Nsimulations1 + self.Nsimulations2 + self.Nsimulations3 + self.Nsimulations4
-          
-          # Transforming list of STs in integers (for recongnizing them in the map)       
-          self.patch_id_list=map(int,self.patch_id_list)
-          
-          #---------------------------------------------#
-          #--------------- START SIMULATIONS -----------#
-          #---------------------------------------------#
-          
-          # For each ST pair in the list:
-          while (len(self.patch_id_list)>1):
+            # Defining GRASS GIS region as output map region
+            grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)
             
-            self.ChecktTry=True
-            # Change to output dir
-            os.chdir(self.OutDir_files_TXT)
+            # Reading map resolution
+            self.res = grass.read_command('g.region', flags='m')
+            self.res2 = self.res.split('\n')
+            self.res3 = self.res2[5]
+            self.res3 = float(self.res3.replace('ewres=',''))
             
-            # Select a pair from the list and prepare vectors for processing
-            while self.ChecktTry==True:
-              try:
-                # Selects from the beginning to the end of the list
-                self.S1=self.patch_id_list[0]
-                self.T1=self.patch_id_list[1]
-                self.S1FORMAT='000000'+`self.S1`
-                self.S1FORMAT=self.S1FORMAT[-5:]
-                self.T1FORMAT='000000'+`self.T1`
-                self.T1FORMAT=self.T1FORMAT[-5:]
-                
-                # Selects pair and delete it from the original ST combination list
-                del self.patch_id_list[0:2]
-                self.PAISAGEM='EXPERIMENT'
-                self.ARQSAIDA=self.PAISAGEM+'_s'+self.S1FORMAT+'_t'+self.T1FORMAT # Name of ouput text file                  
-                self.logger.AppendText("Processing ST pair: \n"+self.S1FORMAT+' & '+self.T1FORMAT+ '\n')  
-                self.S1=(int(str(self.S1)))
-                self.T1=(int(str(self.T1)))
-                
-                # Generates rasters with only the region of the source and terget points
-                self.form_02='source = if('+self.OutArqST+' != '+`self.S1`+', null(), '+`self.S1`+ ')'
-                grass.mapcalc(self.form_02, overwrite = True, quiet = True)
-                self.form_03='target = if('+self.OutArqST+' != '+`self.T1`+', null(), '+`self.T1`+ ')'
-                grass.mapcalc(self.form_03, overwrite = True, quiet = True)
-                
-                # Transform source and target rasters into vectors
-                grass.run_command('g.region', rast=self.OutArqST, verbose=False)
-                grass.run_command('r.to.vect', input='source', out='source_shp', type='area', verbose=False, overwrite = True ) 
-                grass.run_command('r.to.vect', input='target', out='target_shp', type='area', verbose=False, overwrite = True ) 
-                # Adds x and y coordinates as columns to the vectors attribute
-                grass.run_command ('v.db.addcolumn', map='source_shp', columns='x double precision,y double precision', overwrite = True)
-                grass.run_command ('v.db.addcolumn', map='target_shp', columns='x double precision,y double precision', overwrite = True)
-                
-                grass.read_command ('v.to.db', map='source_shp', option='coor', columns="x,y", overwrite = True)
-                grass.read_command ('v.to.db', map='target_shp', option='coor', columns="x,y", overwrite = True)
-                
-                # Selects x,y coordinates of source point
-                self.var_source_x=grass.vector_db_select('source_shp', columns = 'x')['values'][1][0]
-                self.var_source_y=grass.vector_db_select('source_shp', columns = 'y')['values'][1][0]
-                # Selects x,y coordinates of source point
-                self.var_target_x=grass.vector_db_select('target_shp', columns = 'x')['values'][1][0]
-                self.var_target_y=grass.vector_db_select('target_shp', columns = 'y')['values'][1][0]
-                self.ChecktTry=False
-                
-              # In case the list of x,y is invalid, skips the simulation pair of STs with Error message, and keeps on simulating other pairs
-              except:
-                self.ChecktTry=True
-                # Error message on GRASS GIS console
-                print ("Error def Rasterize ST, Add cols, Get x,y cords...")
-                self.time = datetime.now() # INSTANCE
-                self.day_now=self.time.day # Error day
-                self.month_now=self.time.month # Error month
-                self.year_now=self.time.year # Error year
-                self.hour_now=self.time.hour # Error hour
-                self.minuts_now=self.time.minute # Error minute
-                self.second_now=self.time.second # Error second
-                
-                # Updates Log file
-                self.listErrorLog.append("[Error ->-> :] <- Rasterize ST, Add cols, Get x,y coord : "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
-                self.listErrorLog.append("[Error ->-> :] <- Skip STS: " + self.ARQSAIDA)
-                
-                # Finishes the simulation process if there are no more ST pairs
-                if len(self.patch_id_list)==0:
-                  
-                  self.txt_log.close() 
-                  d= wx.MessageDialog( self,"Error: STs invalid, please check them!", "", wx.OK)
-                  retCode=d.ShowModal() # Shows
-                  d.Close(True) # Closes
-                  break                
+            # This variables are used to define whether simulations for method M1 were already 
+            #  performed when there is more than one scale; in this case, there's no need to 
+            #  simulate it again for method M1, only for methods M2, M3, and M4
+            self.n_scales = len(self.escalas) # Number of scales
+            self.scale_counter = 1 # Scale counter
             
-            # Transforms ST coordinates in float
-            self.var_source_x_b_int=float(self.var_source_x)
-            self.var_source_y_b_int=float(self.var_source_y)
-            self.var_target_x_b_int=float(self.var_target_x)
-            self.var_target_y_b_int=float(self.var_target_y)
+            # A series of simulations for each landscape scale value defined by the user
+            for esc in self.escalas:
+              
+              self.logger.AppendText("Running corridors for landscape scale = "+`esc`+".\n")
+              
+              # Names of input maps for each scale and each method
+              self.C2=self.OutArqResist+'_'+self.C2_pre+'_scale_'+`esc`
+              self.C3=self.OutArqResist+'_'+self.C3_pre+'_scale_'+`esc`
+              self.C4=self.OutArqResist+'_'+self.C4_pre+'_scale_'+`esc`
+              
+              # Refreshing the list of methods to be simulated, and outputs
+              self.methods = []
+              self.listExport = []
+              self.listExportMethod = []
+              
+              # List of number of corridors already simulated - to be updated as simulations run
+              self.simulated = [1, 1, 1, 1]              
             
-           
-            # Set region defined by the limits of source and target points + fixed distance (self.influenceprocess)
-            #  This reduces simulation time, since map processing may be restricted to 
-            #  the region where points are located
-            defineregion("source_shp", "target_shp", self.influenceprocess) 
-            
-            # Name of the corridor output map
-            self.mapa_corredores_sem0=self.NEXPER_FINAL+'_'+'S_'+self.S1FORMAT+"_T_"+self.T1FORMAT
-            self.mapa_corredores_sem0_txt=self.NEXPER_FINAL_txt+'_'+'S_'+self.S1FORMAT+"_T_"+self.T1FORMAT
-            
-            # Checks if the output folder for text files exists; 
-            # If not, creates it.
-            self.checkfolder=os.path.exists('Line_'+self.mapa_corredores_sem0)
-            
-            if self.checkfolder==False:
-              os.mkdir('Line_'+str(self.mapa_corredores_sem0))
-              if platform.system() == 'Windows':
-                self.outdir=self.OutDir_files_TXT+'\Line_'+self.mapa_corredores_sem0
-              elif platform.system() == 'Linux':
-                self.outdir=self.OutDir_files_TXT+'/Line_'+self.mapa_corredores_sem0
+              # Defining the size of the moving windows, in pixels
+              # It is defined given the animal movement scale (user defined parameter)
+              #  and the resolution of the map (map grain or pixel size)
+              self.escfina1=(esc*2)/self.res3
+              
+              # Checking if number of pixels of moving window is integer and even
+              #  and correcting it if necessary
+              if int(self.escfina1)%2 == 0:
+                self.escfina1=int(self.escfina1)
+                self.escfina1=self.escfina1+1
               else:
-                # Improve it to Mac OS - how does it work?
-                raise Exception("What platform is yours?? It's not Windows or Linux...")
-            else:
-              d= wx.MessageDialog( self, "Folder for text files already exists!\n"+
-                                   "Please select another directory to save the output.\n", "", wx.OK) # Create a message dialog box
-              d.ShowModal() # Shows it
-              d.Destroy() # Closes
-              self.outdir=selectdirectory() # Choose output folder, if the previous one already exists
+                self.escfina1=int(self.escfina1)
+                #self.escfina1=int(round(self.escfina1, ndigits=0))
               
-            # Initializes corridor and auxiliary map
-            for method in self.methods:
-              self.form_04='mapa_corredores_'+method+' = 0'
-              grass.mapcalc(self.form_04, overwrite = True, quiet = True)
-              #self.form_16='corredores_aux = 0'
-              #grass.mapcalc(self.form_16, overwrite = True, quiet = True)
-            
-            # Open output text file and writes headers      
-            self.arquivo = open(self.mapa_corredores_sem0_txt+'.txt','w')
-            self.cabecalho='EXPERIMENT'','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'LCP_LENGTH'+','+'LCP_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
-            self.arquivo.write(self.cabecalho)
-            
-            #---------------------------------------------#
-            #-------- PERFORMS EACH SIMULATION -----------#
-            #---------------------------------------------#
-            cont=0
-            for i in range(self.Nsimulations):
-                # Set region defined by the limits of source and target points + fixed distance (self.influenceprocess)
-                defineregion("source_shp","target_shp", self.influenceprocess)
+              # Defining GRASS GIS region as output map region
+              grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3) 
+              
+              if self.n_scales > 1 and self.scale_counter > 1:
+                self.Nsimulations1_tobe_realized = 0
+              else:
+                self.Nsimulations1_tobe_realized = self.Nsimulations1
+              
+              # If methods M2, M3, M4 are going to be simulated, this command prepares
+              # the resistance map taking into consider these methods
+              # Also, the list of methods to be simulated is defined
+              if self.Nsimulations1 > 0: # no influence of landscape
+                self.methods.append('M1')
+              
+              if self.Nsimulations2 > 0: # minimum
+                self.methods.append('M2')
+                self.defaultsize_moviwin_allcor=self.escfina1
+                # ver se o mapa existe
+                map_exists = grass.list_grouped('rast', pattern=self.C2)['PERMANENT']
+                if len(map_exists) == 0:
+                  grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C2, method='minimum', size=self.escfina1, overwrite = True)
                 
-                # Selecting resistance map
-                self.form_08='mapa_resist = '+self.listafinal[cont]
-                grass.mapcalc(self.form_08, overwrite = True, quiet = True)
-                self.M = self.listamethods[cont]
+              if self.Nsimulations3 > 0: # average
+                self.methods.append('M3')
+                self.defaultsize_moviwin_allcor=self.escfina1
+                grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C3, method='average', size=self.escfina1, overwrite = True)
+              
+              if self.Nsimulations4 > 0: # maximum
+                self.methods.append('M4')
+                self.defaultsize_moviwin_allcor=self.escfina1
+                grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C4, method='maximum', size=self.escfina1, overwrite = True)
+              
+              # Organizes names of resistance maps to be used in simulations
+              self.listafinal=[]
+              self.listamethods=[]
+              
+              for i in range(self.Nsimulations1):
+                self.listafinal.append(self.OutArqResist)
+                self.listamethods.append('M1')
+              for i in range(self.Nsimulations2):
+                self.listafinal.append(self.C2)
+                self.listamethods.append('M2')
+              for i in range(self.Nsimulations3):
+                self.listafinal.append(self.C3)
+                self.listamethods.append('M3')
+              for i in range(self.Nsimulations4):
+                self.listafinal.append(self.C4)
+                self.listamethods.append('M4')
+              
+              # Not necessary
+              #grass.run_command('g.region', rast=self.OutArqResist, res=self.res3)
+              
+              # Total number of simulations (M! + M2 + M3 + M4)
+              self.Nsimulations = self.Nsimulations1 + self.Nsimulations2 + self.Nsimulations3 + self.Nsimulations4
+              
+              # Transforming list of STs in integers (for recongnizing them in the map)       
+              self.patch_id_list=map(int,self.patch_id_list_bkp)
+              
+              #---------------------------------------------#
+              #--------------- START SIMULATIONS -----------#
+              #---------------------------------------------#
+              
+              # For each ST pair in the list:
+              while (len(self.patch_id_list)>1):
                 
-                # Number of simulation   
-                c = i+1
-                # Number of simulation for a given method
-                if self.M == "M1":
-                  c_method = self.simulated[0]
-                  self.simulated[0] = self.simulated[0] + 1
-                if self.M == "M2":
-                  c_method = self.simulated[1]
-                  self.simulated[1] = self.simulated[1] + 1
-                if self.M == "M3":
-                  c_method = self.simulated[2]             
-                  self.simulated[2] = self.simulated[2] + 1
-                if self.M == "M4":
-                  c_method = self.simulated[3]
-                  self.simulated[3] = self.simulated[3] + 1
-                
-                # Message in dialog box
-                self.logger.AppendText('=======> Running simulation '+`c`+ '\n')
-                
-                #---------- RANDOM SOURCE POINT -------#
-                # Defines a random source point inside the input/source region
-                grass.run_command('r.mask', raster='source') # Mask - look only at source region
-                grass.run_command('g.region', vect='source_shp', verbose=False, overwrite = True)
-                
-                # Select a random source point
                 self.ChecktTry=True
+                # Change to output dir
+                os.chdir(self.OutDir_files_TXT)
+                
+                # Select a pair from the list and prepare vectors for processing
                 while self.ChecktTry==True:
                   try:
-                    # Generates random points
-                    grass.run_command('v.random', output='temp_point1_s', n=30, overwrite = True)
-                    # Selects random points that overlap with source region
-                    grass.run_command('v.select', ainput='temp_point1_s', binput='source_shp', output='temp_point2_s', operator='overlap', overwrite = True)
-                    # Creates attribute table and connects to the random points inside source region
-                    grass.run_command('v.db.addtable', map='temp_point2_s', columns="temp double precision")
-                    grass.run_command('v.db.connect', flags='p', map='temp_point2_s')
-                    # List of such random points inside Python
-                    self.frag_list2=grass.vector_db_select('temp_point2_s', columns = 'cat')['values']
-                    self.frag_list2=list(self.frag_list2)
-                    # Selects the first (a random) point of the list
-                    self.selct="cat="+`self.frag_list2[0]`
-                    grass.run_command('v.extract', input='temp_point2_s', output='pnts_aleat_S', where=self.selct, overwrite = True)
+                    # Selects from the beginning to the end of the list
+                    self.S1=self.patch_id_list[0]
+                    self.T1=self.patch_id_list[1]
+                    self.S1FORMAT='000000'+`self.S1`
+                    self.S1FORMAT=self.S1FORMAT[-5:]
+                    self.T1FORMAT='000000'+`self.T1`
+                    self.T1FORMAT=self.T1FORMAT[-5:]
                     
-                    if len(self.frag_list2)>0:
-                      self.ChecktTry=False
-                    else:
-                      self.ChecktTry=True
-                      
-                  # If an error in selecting a random source point occurs, this is registered here and a new random point is selected
-                  except:
-                    self.ChecktTry=True
-                    # Error message on GRASS GIS console
-                    print ("Error Randomize source points...")                    
-                    # Registering error in logfile
-                    self.time = datetime.now() # INSTANCE
-                    self.day_now=self.time.day # Error day
-                    self.month_now=self.time.month # Error month
-                    self.year_now=self.time.year # Error year
-                    self.hour_now=self.time.hour # Error hour
-                    self.minuts_now=self.time.minute # Error minute
-                    self.second_now=self.time.second # Error second
-                    self.listErrorLog.append("[Error ->-> :] <- Randomize source points: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
+                    # Selects pair and delete it from the original ST combination list
+                    del self.patch_id_list[0:2]
+                    self.PAISAGEM='EXPERIMENT'
+                    self.ARQSAIDA=self.PAISAGEM+'_s'+self.S1FORMAT+'_t'+self.T1FORMAT # Name of ouput text file                  
+                    self.logger.AppendText("Processing ST pair: \n"+self.S1FORMAT+' & '+self.T1FORMAT+ '\n')  
+                    self.S1=(int(str(self.S1)))
+                    self.T1=(int(str(self.T1)))
                     
-                
-                # Removing mask
-                grass.run_command('r.mask',flags='r')
-                
-                #---------- RANDOM TARGET POINT -------#
-                # Defines a random target point inside the input/target region
-                grass.run_command('r.mask',raster='target')
-                grass.run_command('g.region', vect='target_shp',verbose=False,overwrite = True)
-                # Select a random target point
-                self.ChecktTry=True
-                while self.ChecktTry==True:
-                  try:
-                    # Generates random points
-                    grass.run_command('v.random', output='temp_point1_t',n=30 ,overwrite = True)
-                    # Selects random points that overlap with target region
-                    grass.run_command('v.select',ainput='temp_point1_t',binput='target_shp',output='temp_point2_t',operator='overlap',overwrite = True)
-                    # Creates attribute table and connects to the random points inside target region
-                    grass.run_command('v.db.addtable', map='temp_point2_t',columns="temp double precision")
-                    grass.run_command('v.db.connect',flags='p',map='temp_point2_t')
+                    # Generates rasters with only the region of the source and terget points
+                    self.form_02='source = if('+self.OutArqST+' != '+`self.S1`+', null(), '+`self.S1`+ ')'
+                    grass.mapcalc(self.form_02, overwrite = True, quiet = True)
+                    self.form_03='target = if('+self.OutArqST+' != '+`self.T1`+', null(), '+`self.T1`+ ')'
+                    grass.mapcalc(self.form_03, overwrite = True, quiet = True)
                     
-                    # List of such random points inside Python
-                    self.frag_list2=grass.vector_db_select('temp_point2_t', columns = 'cat')['values']
-                    self.frag_list2=list(self.frag_list2)
-
-                    # Selects the first (a random) point of the list
-                    self.selct="cat="+`self.frag_list2[0]`                
-                    grass.run_command('v.extract',input='temp_point2_t',output='pnts_aleat_T',where=self.selct,overwrite = True)  
+                    # Transform source and target rasters into vectors
+                    grass.run_command('g.region', rast=self.OutArqST, verbose=False)
+                    grass.run_command('r.to.vect', input='source', out='source_shp', type='area', verbose=False, overwrite = True ) 
+                    grass.run_command('r.to.vect', input='target', out='target_shp', type='area', verbose=False, overwrite = True ) 
+                    # Adds x and y coordinates as columns to the vectors attribute
+                    grass.run_command ('v.db.addcolumn', map='source_shp', columns='x double precision,y double precision', overwrite = True)
+                    grass.run_command ('v.db.addcolumn', map='target_shp', columns='x double precision,y double precision', overwrite = True)
                     
-                    if len(self.frag_list2)>0:
-                      self.ChecktTry=False
-                    else:
-                      self.ChecktTry=True
-                      
-                  # If an error in selecting a random target point occurs, this is registered here and a new random point is selected
-                  except:
-                    self.ChecktTry=True
-                    # Error message on GRASS GIS console
-                    print ("Error Randomize target points...")                     
-                    # Registering error in logfile
-                    self.time = datetime.now() # INSTANCE
-                    self.day_now=self.time.day # Error day
-                    self.month_now=self.time.month # Error month
-                    self.year_now=self.time.year # Error year
-                    self.hour_now=self.time.hour # Error hour
-                    self.minuts_now=self.time.minute # Error minute
-                    self.second_now=self.time.second # Error second
-                    self.listErrorLog.append("[Error ->-> :] <- Randomize target points: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
-
-                # Removing mask
-                grass.run_command('r.mask',flags='r')
-                
-                ######################################################
-                # If the user wants to consider only the region around ST points, this region
-                #  is selected as GRASS region; otherwise, the whole resistance map region is set
-                #  as GRASS region
-                if self.influenceprocess_boll:
-                  defineregion("source_shp","target_shp", self.influenceprocess)  
-                else:
-                  grass.run_command('g.region', rast=self.OutArqResist,verbose=False)
-                
-                #---------- GENERATE CORRIDOR -------#
-                self.ChecktTry=True  
-                while self.ChecktTry==True:
-                  try:
-                    self.form_05='corredores_aux = mapa_corredores_'+self.M
-                    grass.mapcalc(self.form_05, overwrite = True, quiet = True)
+                    grass.read_command ('v.to.db', map='source_shp', option='coor', columns="x,y", overwrite = True)
+                    grass.read_command ('v.to.db', map='target_shp', option='coor', columns="x,y", overwrite = True)
+                    
+                    # Selects x,y coordinates of source point
+                    self.var_source_x=grass.vector_db_select('source_shp', columns = 'x')['values'][1][0]
+                    self.var_source_y=grass.vector_db_select('source_shp', columns = 'y')['values'][1][0]
+                    # Selects x,y coordinates of source point
+                    self.var_target_x=grass.vector_db_select('target_shp', columns = 'x')['values'][1][0]
+                    self.var_target_y=grass.vector_db_select('target_shp', columns = 'y')['values'][1][0]
                     self.ChecktTry=False
+                    
+                  # In case the list of x,y is invalid, skips the simulation pair of STs with Error message, and keeps on simulating other pairs
                   except:
                     self.ChecktTry=True
+                    # Error message on GRASS GIS console
+                    print ("Error def Rasterize ST, Add cols, Get x,y cords...")
+                    self.time = datetime.now() # INSTANCE
+                    self.day_now=self.time.day # Error day
+                    self.month_now=self.time.month # Error month
+                    self.year_now=self.time.year # Error year
+                    self.hour_now=self.time.hour # Error hour
+                    self.minuts_now=self.time.minute # Error minute
+                    self.second_now=self.time.second # Error second
                     
-                  self.ChecktTry=True
-                  while self.ChecktTry==True:
-                    try:
-                      # Creates a raster of uniformely distributed random values in the interval [1,100)
-                      self.form_06="aleat = rand(0,100)"
-                      grass.mapcalc(self.form_06, seed=random.randint(1, 10000), overwrite = True, quiet = True)
-                      # Transforms raster map of random values to the range [0.1*noise, noise), where "noise" is
-                      #  the variability factor defined by the user (variable self.ruido_float)
-                      self.form_06="aleat2 = aleat/100.0 * "+`self.ruido_float`+" + 1.0"
-                      grass.mapcalc(self.form_06, overwrite = True, quiet = True)
-                      # Multiply resistance map by random noise map
-                      self.form_07='resist_aux = mapa_resist * aleat2'
-                      grass.mapcalc(self.form_07, overwrite = True, quiet = True)
-                      # Sets null cells as vistually infinite resistance
-                      self.form_07='resist_aux2 = if(isnull(resist_aux), 10000000, resist_aux)'
-                      grass.mapcalc(self.form_07, overwrite = True, quiet = True)
+                    # Updates Log file
+                    self.listErrorLog.append("[Error ->-> :] <- Rasterize ST, Add cols, Get x,y coord : "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
+                    self.listErrorLog.append("[Error ->-> :] <- Skip STS: " + self.ARQSAIDA)
+                    
+                    # Finishes the simulation process if there are no more ST pairs
+                    if len(self.patch_id_list)==0:
                       
-                      # Sets GRASS region
-                      defineregion("source_shp","target_shp", self.influenceprocess)
-                      
-                      # Generating cumulative cost raster map for linking S and T points
-                      grass.run_command('r.cost', flags='k', input='resist_aux2', output='custo_aux_cost', start_points='pnts_aleat_S', stop_points='pnts_aleat_T', overwrite = True)
-                      # Tracing the least cost path (corridor) - the flow based on cumulative cost map
-                      grass.run_command('r.drain', input='custo_aux_cost', output='custo_aux_cost_drain', start_points='pnts_aleat_T', overwrite = True)
-                      # Transforms null cells (no corridor) in zeros
-                      # Now we have a corridor map
-                      grass.run_command('r.series', input='corredores_aux,custo_aux_cost_drain', output='mapa_corredores_'+self.M, method='sum', overwrite = True)
-                      self.ChecktTry=False
-                      
-                    # If an error in generating corridors, this is registered here and the algoeithm tries to generate the corridor again
-                    except:
-                      self.ChecktTry=True
-                      # Error message on GRASS GIS console
-                      print ("Error Corridor methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series...")
-                      # Registering error in logfile
-                      self.time = datetime.now() # INSTANCE
-                      self.day_now=self.time.day # Error day
-                      self.month_now=self.time.month # Error month
-                      self.year_now=self.time.year # Error year
-                      self.hour_now=self.time.hour # Error hour
-                      self.minuts_now=self.time.minute # Error minute
-                      self.second_now=self.time.second # Error second
-                      self.listErrorLog.append("[Error ->-> :] <- Methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- Time : "+`self.hour_now `+":"+`self.second_now`)
-                      
-                # Multiply corridor map (binary - 0/1) by the original resistance map
-                # Now we get a raster with the cost of each pixel along the LCP
-                self.form_09='custo_aux_cost_drain_sum = custo_aux_cost_drain * '+self.listafinal[0]
-                grass.mapcalc(self.form_09, overwrite = True, quiet = True)  
+                      self.txt_log.close() 
+                      d= wx.MessageDialog( self,"Error: STs invalid, please check them!", "", wx.OK)
+                      retCode=d.ShowModal() # Shows
+                      d.Close(True) # Closes
+                      break                
+                
+                # Transforms ST coordinates in float
+                self.var_source_x_b_int=float(self.var_source_x)
+                self.var_source_y_b_int=float(self.var_source_y)
+                self.var_target_x_b_int=float(self.var_target_x)
+                self.var_target_y_b_int=float(self.var_target_y)
+                
                
-                # CALCULATES COST
-                self.x = grass.read_command('r.univar', map='custo_aux_cost_drain_sum')
-                # List of corridor statistics
-                self.x_b = self.x.split('\n')
-                # Sum of the cost of each pixel along the LCP, string format
-                self.x_c = str(self.x_b[14])
-                # Value of the LCP total cost, float format
-                self.var_cost_sum = float(self.x_c.replace("sum: ",""))
+                # Set region defined by the limits of source and target points + fixed distance (self.influenceprocess)
+                #  This reduces simulation time, since map processing may be restricted to 
+                #  the region where points are located
+                defineregion("source_shp", "target_shp", self.influenceprocess) 
                 
+                # Name of the corridor output map
+                self.mapa_corredores_sem0=self.NEXPER_FINAL+'_'+'var_'+str(ruido_float).replace('.', '_')+'_'+'scale_'+str(esc)+'_'+'S_'+self.S1FORMAT+"_T_"+self.T1FORMAT
+                self.mapa_corredores_sem0_txt=self.NEXPER_FINAL_txt+'_'+'var_'+str(ruido_float).replace('.', '_')+'_'+'scale_'+str(esc)+'_'+'S_'+self.S1FORMAT+"_T_"+self.T1FORMAT
+              
+                # Checks if the output folder for text files exists; 
+                # If not, creates it.
+                self.checkfolder=os.path.exists('Line_'+self.mapa_corredores_sem0)
                 
-                # Defining GRASS region
-                if self.influenceprocess_boll:
-                  defineregion("source_shp", "target_shp", self.influenceprocess)  
+                if self.checkfolder==False:
+                  os.mkdir('Line_'+str(self.mapa_corredores_sem0))
+                  if platform.system() == 'Windows':
+                    self.outdir=self.OutDir_files_TXT+'\Line_'+self.mapa_corredores_sem0
+                  elif platform.system() == 'Linux':
+                    self.outdir=self.OutDir_files_TXT+'/Line_'+self.mapa_corredores_sem0
+                  else:
+                    # Improve it to Mac OS - how does it work?
+                    raise Exception("What platform is yours?? It's not Windows or Linux...")
                 else:
-                  grass.run_command('g.region', rast=self.OutArqResist, verbose=False)
+                  d= wx.MessageDialog( self, "Folder for text files already exists!\n"+
+                                       "Please select another directory to save the output.\n", "", wx.OK) # Create a message dialog box
+                  d.ShowModal() # Shows it
+                  d.Destroy() # Closes
+                  self.outdir=selectdirectory() # Choose output folder, if the previous one already exists
+                  
+                # Initializes corridor and auxiliary map
+                for method in self.methods:
+                  self.form_04='mapa_corredores_'+method+' = 0'
+                  grass.mapcalc(self.form_04, overwrite = True, quiet = True)
+                  #self.form_16='corredores_aux = 0'
+                  #grass.mapcalc(self.form_16, overwrite = True, quiet = True)
                 
-                # Corridor map with NULL cells instead of zeros
-                self.form_10=self.mapa_corredores_sem0+'_'+self.M+' = if(mapa_corredores_'+self.M+' == 0, null(), mapa_corredores_'+self.M+')'
-                grass.mapcalc(self.form_10, overwrite = True, quiet = True)
+                # Open output text file and writes headers      
+                self.arquivo = open(self.mapa_corredores_sem0_txt+'.txt','w')
+                self.cabecalho='EXPERIMENT'+','+'VARIABILITY'+','+'SCALE'+','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'LCP_LENGTH'+','+'LCP_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
+                self.arquivo.write(self.cabecalho)
                 
-                # CALCULATES LCP LENGTH using corridor map (with NULL values)
-                self.length = grass.read_command('r.univar', map='custo_aux_cost_drain')
-                # List of statistics
-                self.length_b=self.length.split('\n')
-                # Sum of pixels (value 1) of the corridor, string format
-                self.length_c=str(self.length_b[14])
-                # Sum of pixels of the corridor, float format
-                self.length_d=self.length_c[5:9]
-                self.length_e=float(self.length_d)
-                # Distance in meters (multiply map resolution by distance in pixels)
-                self.var_dist_line=self.res3*self.length_e
-               
-                # CALCULATES EUCLIDEAN DISTANCE between S and T points
-                self.euclidean_a = float((self.var_source_x_b_int-self.var_target_x_b_int)**2 + (self.var_source_y_b_int-self.var_target_y_b_int)**2)
-                self.euclidean_b = self.euclidean_a**0.5         
-                     
-                # Produces information for one corridor - to be appended to the output text file
-                self.linha=self.listafinal[cont].replace("@PERMANENT",'')+','+self.M+','+`c_method`+','+ `self.var_dist_line`+','+ `self.var_cost_sum`+','+ `self.euclidean_b`+','+ `self.var_source_x`+','+ `self.var_source_y`+','+ `self.var_target_x`+','+ `self.var_target_y`+ "\n"
-                self.linha=self.linha.replace('\'','')
+                #---------------------------------------------#
+                #-------- PERFORMS EACH SIMULATION -----------#
+                #---------------------------------------------#
+                cont=0
+                for i in range(self.Nsimulations):
+                    # Set region defined by the limits of source and target points + fixed distance (self.influenceprocess)
+                    defineregion("source_shp","target_shp", self.influenceprocess)
+                    
+                    # Selecting resistance map
+                    self.form_08='mapa_resist = '+self.listafinal[cont]
+                    grass.mapcalc(self.form_08, overwrite = True, quiet = True)
+                    self.M = self.listamethods[cont]
+                    
+                    # Number of simulation   
+                    c = i+1
+                    # Number of simulation for a given method
+                    if self.M == "M1":
+                      c_method = self.simulated[0]
+                      self.simulated[0] = self.simulated[0] + 1
+                    if self.M == "M2":
+                      c_method = self.simulated[1]
+                      self.simulated[1] = self.simulated[1] + 1
+                    if self.M == "M3":
+                      c_method = self.simulated[2]             
+                      self.simulated[2] = self.simulated[2] + 1
+                    if self.M == "M4":
+                      c_method = self.simulated[3]
+                      self.simulated[3] = self.simulated[3] + 1
+                    
+                    # Message in dialog box
+                    self.logger.AppendText('=======> Running simulation '+`c`+ '\n')
+                    
+                    #---------- RANDOM SOURCE POINT -------#
+                    # Defines a random source point inside the input/source region
+                    grass.run_command('r.mask', raster='source') # Mask - look only at source region
+                    grass.run_command('g.region', vect='source_shp', verbose=False, overwrite = True)
+                    
+                    # Select a random source point
+                    self.ChecktTry=True
+                    while self.ChecktTry==True:
+                      try:
+                        # Generates random points
+                        grass.run_command('v.random', output='temp_point1_s', n=30, overwrite = True)
+                        # Selects random points that overlap with source region
+                        grass.run_command('v.select', ainput='temp_point1_s', binput='source_shp', output='temp_point2_s', operator='overlap', overwrite = True)
+                        # Creates attribute table and connects to the random points inside source region
+                        grass.run_command('v.db.addtable', map='temp_point2_s', columns="temp double precision")
+                        grass.run_command('v.db.connect', flags='p', map='temp_point2_s')
+                        # List of such random points inside Python
+                        self.frag_list2=grass.vector_db_select('temp_point2_s', columns = 'cat')['values']
+                        self.frag_list2=list(self.frag_list2)
+                        # Selects the first (a random) point of the list
+                        self.selct="cat="+`self.frag_list2[0]`
+                        grass.run_command('v.extract', input='temp_point2_s', output='pnts_aleat_S', where=self.selct, overwrite = True)
+                        
+                        if len(self.frag_list2)>0:
+                          self.ChecktTry=False
+                        else:
+                          self.ChecktTry=True
+                          
+                      # If an error in selecting a random source point occurs, this is registered here and a new random point is selected
+                      except:
+                        self.ChecktTry=True
+                        # Error message on GRASS GIS console
+                        print ("Error Randomize source points...")                    
+                        # Registering error in logfile
+                        self.time = datetime.now() # INSTANCE
+                        self.day_now=self.time.day # Error day
+                        self.month_now=self.time.month # Error month
+                        self.year_now=self.time.year # Error year
+                        self.hour_now=self.time.hour # Error hour
+                        self.minuts_now=self.time.minute # Error minute
+                        self.second_now=self.time.second # Error second
+                        self.listErrorLog.append("[Error ->-> :] <- Randomize source points: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
+                        
+                    
+                    # Removing mask
+                    grass.run_command('r.mask',flags='r')
+                    
+                    #---------- RANDOM TARGET POINT -------#
+                    # Defines a random target point inside the input/target region
+                    grass.run_command('r.mask',raster='target')
+                    grass.run_command('g.region', vect='target_shp',verbose=False,overwrite = True)
+                    # Select a random target point
+                    self.ChecktTry=True
+                    while self.ChecktTry==True:
+                      try:
+                        # Generates random points
+                        grass.run_command('v.random', output='temp_point1_t',n=30 ,overwrite = True)
+                        # Selects random points that overlap with target region
+                        grass.run_command('v.select',ainput='temp_point1_t',binput='target_shp',output='temp_point2_t',operator='overlap',overwrite = True)
+                        # Creates attribute table and connects to the random points inside target region
+                        grass.run_command('v.db.addtable', map='temp_point2_t',columns="temp double precision")
+                        grass.run_command('v.db.connect',flags='p',map='temp_point2_t')
+                        
+                        # List of such random points inside Python
+                        self.frag_list2=grass.vector_db_select('temp_point2_t', columns = 'cat')['values']
+                        self.frag_list2=list(self.frag_list2)
+    
+                        # Selects the first (a random) point of the list
+                        self.selct="cat="+`self.frag_list2[0]`                
+                        grass.run_command('v.extract',input='temp_point2_t',output='pnts_aleat_T',where=self.selct,overwrite = True)  
+                        
+                        if len(self.frag_list2)>0:
+                          self.ChecktTry=False
+                        else:
+                          self.ChecktTry=True
+                          
+                      # If an error in selecting a random target point occurs, this is registered here and a new random point is selected
+                      except:
+                        self.ChecktTry=True
+                        # Error message on GRASS GIS console
+                        print ("Error Randomize target points...")                     
+                        # Registering error in logfile
+                        self.time = datetime.now() # INSTANCE
+                        self.day_now=self.time.day # Error day
+                        self.month_now=self.time.month # Error month
+                        self.year_now=self.time.year # Error year
+                        self.hour_now=self.time.hour # Error hour
+                        self.minuts_now=self.time.minute # Error minute
+                        self.second_now=self.time.second # Error second
+                        self.listErrorLog.append("[Error ->-> :] <- Randomize target points: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
+    
+                    # Removing mask
+                    grass.run_command('r.mask',flags='r')
+                    
+                    ######################################################
+                    # If the user wants to consider only the region around ST points, this region
+                    #  is selected as GRASS region; otherwise, the whole resistance map region is set
+                    #  as GRASS region
+                    if self.influenceprocess_boll:
+                      defineregion("source_shp","target_shp", self.influenceprocess)  
+                    else:
+                      grass.run_command('g.region', rast=self.OutArqResist,verbose=False)
+                    
+                    #---------- GENERATE CORRIDOR -------#
+                    self.ChecktTry=True  
+                    while self.ChecktTry==True:
+                      try:
+                        self.form_05='corredores_aux = mapa_corredores_'+self.M
+                        grass.mapcalc(self.form_05, overwrite = True, quiet = True)
+                        self.ChecktTry=False
+                      except:
+                        self.ChecktTry=True
+                        
+                      self.ChecktTry=True
+                      while self.ChecktTry==True:
+                        try:
+                          # Creates a raster of uniformely distributed random values in the interval [1,100)
+                          self.form_06="aleat = rand(0,100)"
+                          grass.mapcalc(self.form_06, seed=random.randint(1, 10000), overwrite = True, quiet = True)
+                          # Transforms raster map of random values to the range [0.1*noise, noise), where "noise" is
+                          #  the variability factor defined by the user (variable ruido_float)
+                          self.form_06="aleat2 = aleat/100.0 * "+`ruido_float`+" + 1.0"
+                          grass.mapcalc(self.form_06, overwrite = True, quiet = True)
+                          # Multiply resistance map by random noise map
+                          self.form_07='resist_aux = mapa_resist * aleat2'
+                          grass.mapcalc(self.form_07, overwrite = True, quiet = True)
+                          # Sets null cells as vistually infinite resistance
+                          self.form_07='resist_aux2 = if(isnull(resist_aux), 10000000, resist_aux)'
+                          grass.mapcalc(self.form_07, overwrite = True, quiet = True)
+                          
+                          # Sets GRASS region
+                          defineregion("source_shp","target_shp", self.influenceprocess)
+                          
+                          # Generating cumulative cost raster map for linking S and T points
+                          grass.run_command('r.cost', flags='k', input='resist_aux2', output='custo_aux_cost', start_points='pnts_aleat_S', stop_points='pnts_aleat_T', overwrite = True)
+                          # Tracing the least cost path (corridor) - the flow based on cumulative cost map
+                          grass.run_command('r.drain', input='custo_aux_cost', output='custo_aux_cost_drain', start_points='pnts_aleat_T', overwrite = True)
+                          # Transforms null cells (no corridor) in zeros
+                          # Now we have a corridor map
+                          grass.run_command('r.series', input='corredores_aux,custo_aux_cost_drain', output='mapa_corredores_'+self.M, method='sum', overwrite = True)
+                          self.ChecktTry=False
+                          
+                        # If an error in generating corridors, this is registered here and the algoeithm tries to generate the corridor again
+                        except:
+                          self.ChecktTry=True
+                          # Error message on GRASS GIS console
+                          print ("Error Corridor methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series...")
+                          # Registering error in logfile
+                          self.time = datetime.now() # INSTANCE
+                          self.day_now=self.time.day # Error day
+                          self.month_now=self.time.month # Error month
+                          self.year_now=self.time.year # Error year
+                          self.hour_now=self.time.hour # Error hour
+                          self.minuts_now=self.time.minute # Error minute
+                          self.second_now=self.time.second # Error second
+                          self.listErrorLog.append("[Error ->-> :] <- Methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- Time : "+`self.hour_now `+":"+`self.second_now`)
+                          
+                    # Multiply corridor map (binary - 0/1) by the original resistance map
+                    # Now we get a raster with the cost of each pixel along the LCP
+                    self.form_09='custo_aux_cost_drain_sum = custo_aux_cost_drain * '+self.listafinal[0]
+                    grass.mapcalc(self.form_09, overwrite = True, quiet = True)  
+                   
+                    # CALCULATES COST
+                    self.x = grass.read_command('r.univar', map='custo_aux_cost_drain_sum')
+                    # List of corridor statistics
+                    self.x_b = self.x.split('\n')
+                    # Sum of the cost of each pixel along the LCP, string format
+                    self.x_c = str(self.x_b[14])
+                    # Value of the LCP total cost, float format
+                    self.var_cost_sum = float(self.x_c.replace("sum: ",""))
+                    
+                    
+                    # Defining GRASS region
+                    if self.influenceprocess_boll:
+                      defineregion("source_shp", "target_shp", self.influenceprocess)  
+                    else:
+                      grass.run_command('g.region', rast=self.OutArqResist, verbose=False)
+                    
+                    # Corridor map with NULL cells instead of zeros
+                    self.form_10=self.mapa_corredores_sem0+'_'+self.M+' = if(mapa_corredores_'+self.M+' == 0, null(), mapa_corredores_'+self.M+')'
+                    grass.mapcalc(self.form_10, overwrite = True, quiet = True)
+                    
+                    # CALCULATES LCP LENGTH using corridor map (with NULL values)
+                    self.length = grass.read_command('r.univar', map='custo_aux_cost_drain')
+                    # List of statistics
+                    self.length_b=self.length.split('\n')
+                    # Sum of pixels (value 1) of the corridor, string format
+                    self.length_c=str(self.length_b[14])
+                    # Sum of pixels of the corridor, float format
+                    self.length_d=self.length_c[5:9]
+                    self.length_e=float(self.length_d)
+                    # Distance in meters (multiply map resolution by distance in pixels)
+                    self.var_dist_line=self.res3*self.length_e
+                   
+                    # CALCULATES EUCLIDEAN DISTANCE between S and T points
+                    self.euclidean_a = float((self.var_source_x_b_int-self.var_target_x_b_int)**2 + (self.var_source_y_b_int-self.var_target_y_b_int)**2)
+                    self.euclidean_b = self.euclidean_a**0.5         
+                         
+                    # Produces information for one corridor - to be appended to the output text file
+                    self.linha=self.listafinal[cont].replace("@PERMANENT",'')+','+`ruido_float`+','+`esc`+','+self.M+','+`c_method`+','+ `self.var_dist_line`+','+ `self.var_cost_sum`+','+ `self.euclidean_b`+','+ `self.var_source_x`+','+ `self.var_source_y`+','+ `self.var_target_x`+','+ `self.var_target_y`+ "\n"
+                    self.linha=self.linha.replace('\'','')
+                    
+                    # Writes corridor information on output text file
+                    self.arquivo.write(self.linha)
+                    
+                    # Generates a vector line map for each corridor (vectorizing raster map)
+                    self.outline1='000000'+`c_method`  
+                    self.outline1=self.outline1[-3:]
+                    self.outline1=self.mapa_corredores_sem0+'_'+self.M+"_SM_"+self.outline1
+                    
+                    # Vectorizes corridor raster map
+                    grass.run_command('g.region', rast='custo_aux_cost_drain')
+                    grass.run_command('r.to.vect', input='custo_aux_cost_drain', output=self.outline1, type='line',verbose=False, overwrite = True)
+                    # Add column with corridor (LCP) length, in meters
+                    grass.run_command ('v.db.addcolumn', map=self.outline1, columns='dist double precision', overwrite = True)
+                    grass.read_command ('v.to.db', map=self.outline1, option='length', type='line', col='dist', units='me', overwrite = True)
+                    # Exports output vector
+                    os.chdir(self.outdir)
+                    grass.run_command('v.out.ogr', input=self.outline1, dsn=self.outline1+'.shp',verbose=False,type='line')              
+                    grass.run_command('g.remove', type="vect", name=self.outline1, flags='f')              
+                    cont=cont+1
+                    
+                    # Re-initializes corridor variables
+                    self.var_dist_line=0.0
+                    self.var_cost_sum=0.0                
+                    self.linha=""                
+                    
+                    # -------- HERE ENDS THE SIMULATION OF ONE CORRIDOR ------------------#
+                    # -------- THE LOOPS CONTINUES UNTIL ALL CORRIDORS ARE SIMULATES -----#
+                    
+                # All corridors were simulated - close output text file    
+                self.arquivo.close()
                 
-                # Writes corridor information on output text file
-                self.arquivo.write(self.linha)
+                # Exports raster maps with all corridors for the selected ST pair, for each simulated method
+                for method in self.methods:
                 
-                # Generates a vector line map for each corridor (vectorizing raster map)
-                self.outline1='000000'+`c_method`  
-                self.outline1=self.outline1[-3:]
-                self.outline1=self.mapa_corredores_sem0+'_'+self.M+"_SM_"+self.outline1
+                  self.listExport.append(self.mapa_corredores_sem0+'_'+method)
+                  self.listExportMethod.append(method)
+                  
+                  grass.run_command('g.region', rast=self.mapa_corredores_sem0+'_'+method)
                 
-                # Vectorizes corridor raster map
-                grass.run_command('g.region', rast='custo_aux_cost_drain')
-                grass.run_command('r.to.vect', input='custo_aux_cost_drain', output=self.outline1, type='line',verbose=False, overwrite = True)
-                # Add column with corridor (LCP) length, in meters
-                grass.run_command ('v.db.addcolumn', map=self.outline1, columns='dist double precision', overwrite = True)
-                grass.read_command ('v.to.db', map=self.outline1, option='length', type='line', col='dist', units='me', overwrite = True)
-                # Exports output vector
-                os.chdir(self.outdir)
-                grass.run_command('v.out.ogr', input=self.outline1, dsn=self.outline1+'.shp',verbose=False,type='line')              
-                grass.run_command('g.remove', type="vect", name=self.outline1, flags='f')              
-                cont=cont+1
+                  os.chdir(self.OutDir_files_TXT)
+                  grass.run_command('r.out.gdal', input=self.mapa_corredores_sem0+'_'+method, out=self.mapa_corredores_sem0+'_'+method+'.tif', nodata=-9999)
                 
-                # Re-initializes corridor variables
-                self.var_dist_line=0.0
-                self.var_cost_sum=0.0                
-                self.linha=""                
                 
-                # -------- HERE ENDS THE SIMULATION OF ONE CORRIDOR ------------------#
-                # -------- THE LOOPS CONTINUES UNTIL ALL CORRIDORS ARE SIMULATES -----#
-                
-            # All corridors were simulated - close output text file    
-            self.arquivo.close()
-            
-            # Exports raster maps with all corridors for the selected ST pair, for each simulated method
-            for method in self.methods:
-            
-              self.listExport.append(self.mapa_corredores_sem0+'_'+method)
-              self.listExportMethod.append(method)
+              #---------------------------------------------#
+              #-------- EXPORTS SYNTHESIS MAPS -------------#
+              #---------------------------------------------#
               
-              grass.run_command('g.region', rast=self.mapa_corredores_sem0+'_'+method)
-            
-              os.chdir(self.OutDir_files_TXT)
-              grass.run_command('r.out.gdal', input=self.mapa_corredores_sem0+'_'+method, out=self.mapa_corredores_sem0+'_'+method+'.tif', nodata=-9999)
-            
-            
-          #---------------------------------------------#
-          #-------- EXPORTS SYNTHESIS MAPS -------------#
-          #---------------------------------------------#
-          
-          # If the number of simulations for a given method is > 1 or there is more than um ST pair, two summary maps are generated, for each method:
-          #  - RSFI, a map with the route selection frequency index value for each pixel (the number of routes that passes by each pixel)
-          #  - LargeZone_Corridors, an average map of corridors, considering all simulations all STs
-          for method in self.methods:
-            
-            index = [i for i, v in enumerate(self.listExportMethod) if v == method] # get indexes of simulations that were each of method
-            export = [self.listExport[i] for i in index] # select map names simulated simulated for each 'method'
-            if method == 'M1':
-              Nsims = self.Nsimulations1
-            elif method == 'M2':
-              Nsims = self.Nsimulations2
-            elif method == 'M3':
-              Nsims = self.Nsimulations3            
-            elif method == 'M4':
-              Nsims = self.Nsimulations4
-            else:
-              print 'No method selected for generating synthesis maps!'
-              break
+              # If the number of simulations for a given method is > 1 or there is more than um ST pair, two summary maps are generated, for each method:
+              #  - RSFI, a map with the route selection frequency index value for each pixel (the number of routes that passes by each pixel)
+              #  - LargeZone_Corridors, an average map of corridors, considering all simulations all STs
+              for method in self.methods:
+                
+                # name of the final corridor raster maps and output files
+                self.output_file_name = self.NEXPER_FINAL+'_'+'var_'+str(ruido_float).replace('.', '_')+'_'+'scale_'+str(esc)+'_'+method
+                
+                index = [i for i, v in enumerate(self.listExportMethod) if v == method] # get indexes of simulations that were each of method
+                export = [self.listExport[i] for i in index] # select map names simulated simulated for each 'method'
+                if method == 'M1':
+                  Nsims = self.Nsimulations1
+                elif method == 'M2':
+                  Nsims = self.Nsimulations2
+                elif method == 'M3':
+                  Nsims = self.Nsimulations3            
+                elif method == 'M4':
+                  Nsims = self.Nsimulations4
+                else:
+                  print 'No method selected for generating synthesis maps!'
+                  break
+                  
+                self.listExport
+                if len(export) > 1:
+                  
+                  # Check this
+                  grass.run_command('r.series', input=export, out=self.output_file_name+'_RSFI', method="sum", overwrite = True)
+                  #grass.run_command('r.series', input=export, out=self.output_file_name+'_RSFI', method="maximum", overwrite = True)
+    
+                  grass.run_command('g.region', rast=self.output_file_name+'_RSFI', verbose=False)
+                  #grass.run_command('r.neighbors', input=self.output_file_name+'_RSFI', out=self.output_file_name+"_LargeZone_Corridors", method='average', size=self.defaultsize_moviwin_allcor, overwrite = True)
+                  grass.run_command('r.out.gdal', input=self.output_file_name+'_RSFI', out=self.output_file_name+'_RSFI.tif', nodata=-9999, overwrite = True)
+                  #grass.run_command('r.out.gdal', input=self.output_file_name+"_LargeZone_Corridors", out=self.output_file_name+"_LargeZone_Corridors.tif", nodata=-9999, overwrite = True)
+      
+                  #grass.run_command('g.region', rast=self.output_file_name+"_LargeZone_Corridors")
               
-            self.listExport
-            if len(export) > 1:
+                elif Nsims > 1 and len(export) == 1:
+                  
+                  grass.run_command('g.region', rast=export, verbose=False)
+                  grass.run_command('r.out.gdal', input=export, out=self.output_file_name+'_RSFI.tif', nodata=-9999, overwrite = True)
+                
+              #---------------------------------------------#
+              #---- REMOVE AUX MAPS FROM GRASS DATABASE ----#
+              #---------------------------------------------#
+              self.logger.AppendText("Removing auxiliary files... \n")
               
-              # Check this
-              grass.run_command('r.series', input=export, out=self.NEXPER_FINAL+'_'+method+'_RSFI', method="sum", overwrite = True)
-              #grass.run_command('r.series', input=export, out=self.NEXPER_FINAL+'_'+method+'_RSFI', method="maximum", overwrite = True)
-
-              grass.run_command('g.region', rast=self.NEXPER_FINAL+'_'+method+'_RSFI', verbose=False)
-              #grass.run_command('r.neighbors', input=self.NEXPER_FINAL+'_RSFI', out=self.NEXPER_FINAL+"_LargeZone_Corridors", method='average', size=self.defaultsize_moviwin_allcor, overwrite = True)
-              grass.run_command('r.out.gdal', input=self.NEXPER_FINAL+'_'+method+'_RSFI', out=self.NEXPER_FINAL+'_'+method+'_RSFI.tif', nodata=-9999, overwrite = True)
-              #grass.run_command('r.out.gdal', input=self.NEXPER_FINAL+"_LargeZone_Corridors", out=self.NEXPER_FINAL+"_LargeZone_Corridors.tif", nodata=-9999, overwrite = True)
-  
-              #grass.run_command('g.region', rast=self.NEXPER_FINAL+"_LargeZone_Corridors")
-          
-            elif Nsims > 1 and len(export) == 1:
+              if self.remove_aux_maps:
+                grass.run_command('g.remove', type="vect", name='temp_point1_s,temp_point2_s,temp_point1_t,temp_point2_t,pnts_aleat_S,pnts_aleat_T,source_shp,target_shp', flags='f')
+                grass.run_command('g.remove', type="rast", name='source,target,resist_aux,resist_aux2,mapa_resist,mapa_corredores_M1,mapa_corredores_M2,mapa_corredores_M3,mapa_corredores_M4,aleat,aleat2,custo_aux_cost,custo_aux_cost_drain,custo_aux_cost_drain_sum,corredores_aux,M2_MODE,M3_MAXIMUM,M4_AVERAGE', flags='f')
               
-              grass.run_command('g.region', rast=export, verbose=False)
-              grass.run_command('r.out.gdal', input=export, out=self.NEXPER_FINAL+'_'+method+'_RSFI.tif', nodata=-9999, overwrite = True)
+              #----------------------------------------------------------#  
+              # Here we finish the simulations for each landscape scale  #
+              #----------------------------------------------------------#
+              self.scale_counter += 1
             
-          #---------------------------------------------#
-          #---- REMOVE AUX MAPS FROM GRASS DATABASE ----#
-          #---------------------------------------------#
-          self.logger.AppendText("Removing auxiliary files... \n")
-          
-          if self.remove_aux_maps:
-            grass.run_command('g.remove', type="vect", name='temp_point1_s,temp_point2_s,temp_point1_t,temp_point2_t,pnts_aleat_S,pnts_aleat_T,source_shp,target_shp', flags='f')
-            grass.run_command('g.remove', type="rast", name='source,target,resist_aux,resist_aux2,mapa_resist,mapa_corredores_M1,mapa_corredores_M2,mapa_corredores_M3,mapa_corredores_M4,aleat,aleat2,custo_aux_cost,custo_aux_cost_drain,custo_aux_cost_drain_sum,corredores_aux,M2_MODE,M3_MAXIMUM,M4_AVERAGE', flags='f')          
+            #-------------------------------------------------------------#  
+            # Here we finish the simulations for each variability factor  #            
+            #-------------------------------------------------------------#
                      
           #---------------------------------------------#
           #------------ WRITES LOG FILES ---------------#
@@ -1555,20 +1597,24 @@ class Corridors(wx.Panel):
           self.difference_time=`weeks`+" Weeks - "+`days`+" Days - "+" Time: "+`hours`+":"+`minutes`+":"+`seconds`
           
           # Writes log file
-          self.txt_log.write("Processing time  : "+self.difference_time+"\n\n")
+          self.txt_log.write("Processing time: "+self.difference_time+"\n\n")
           
-          self.txt_log.write("Inputs : \n")
-          self.txt_log.write("	Resistance Map                                  : "+self.OutArqResist+" \n")
-          self.txt_log.write("	Source Target Map                               : "+self.OutArqST+" \n")
-          self.txt_log.write("	Variability                                     : "+`self.ruido_float`+" \n")
-          self.txt_log.write("	Perception of scale (m)                         : "+`self.esc`+" \n")
-          self.txt_log.write("	Number of simulations M1 (no landcape influence): "+`self.Nsimulations1`+" \n")
-          self.txt_log.write("	Number of simulations M2 (minimum)              : "+`self.Nsimulations2`+"\n")
-          self.txt_log.write("	Number of simulations M3 (average)              : "+`self.Nsimulations3`+"\n")
-          self.txt_log.write("	Number of simulations M4 (maximum)              : "+`self.Nsimulations4`+"\n")    
+          self.txt_log.write("Inputs: \n")
+          self.txt_log.write("	Resistance map                                             : "+self.OutArqResist+"\n")
+          self.txt_log.write("	Source-Target map                                          : "+self.OutArqST+"\n")
+          self.txt_log.write("	Resistance map resolution (m)                              : "+`self.res3`+"\n")
+          self.txt_log.write("	Variability factor(s)                                      : "+', '.join(str(i) for i in self.ruidos_float)+"\n")
+          self.txt_log.write("	Perception(s) of scale (m)                                 : "+', '.join(str(i) for i in self.escalas)+"\n")
+          self.txt_log.write("	Number of simulations M1 (without landcape influence)      : "+`self.Nsimulations1`+"\n")
+          self.txt_log.write("	Number of simulations M2 (with landscape influence-minimum): "+`self.Nsimulations2`+"\n")
+          self.txt_log.write("	Number of simulations M3 (with landscape influence-average): "+`self.Nsimulations3`+"\n")
+          self.txt_log.write("	Number of simulations M4 (with landscape influence-maximum): "+`self.Nsimulations4`+"\n")
           
-          self.txt_log.write("Output location : \n")
-          self.txt_log.write("	"+self.OutDir_files_TXT+"\n\n")          
+          self.txt_log.write("Output prefix: \n")
+          self.txt_log.write("	"+self.NEXPER_FINAL+"\n\n")          
+
+          self.txt_log.write("Output folder: \n")
+          self.txt_log.write("	"+self.OutDir_files_TXT+"\n\n")
           
           for logERR in self.listErrorLog:
             self.txt_log.write(logERR+"\n")
@@ -1611,7 +1657,7 @@ class Corridors(wx.Panel):
           #self.esc=float(event.GetString())
           # this transforms values separated by commas into a list 
           # and turns these numbers into floating point values
-          self.escalas = map(float, event.GetString().split(','))
+          self.escalas = map(int, event.GetString().split(','))
           self.logger.AppendText('Landscape scales: \n'+','.join(str(i) for i in self.escalas)+ '\n')
 
         """
