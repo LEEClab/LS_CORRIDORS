@@ -1,9 +1,0 @@
-name: SAD_1969_Polyconic
-datum: sam69
-ellps: sam69
-proj: poly
-lat_0: 0
-lon_0: -54
-x_0: 0
-y_0: 0
-no_defs: defined
