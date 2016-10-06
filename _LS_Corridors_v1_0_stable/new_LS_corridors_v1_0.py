@@ -942,7 +942,7 @@ class Corridors(wx.Panel):
             self.logger.AppendText("Waiting...\n")
             
             # Selects output directory for text files
-            d=wx.MessageDialog(self, "Select the output folder for text files.\n", "", wx.OK) # Create a message dialog box
+            d=wx.MessageDialog(self, "Please, select the output folder for text files.\n", "", wx.OK) # Create a message dialog box
             if not self.perform_tests:
               d.ShowModal() # Shows it
               d.Destroy() # Finally destroy it when finished.
@@ -1053,13 +1053,14 @@ class Corridors(wx.Panel):
               # If methods M2, M3, M4 are going to be simulated, this command prepares
               # the resistance map taking into consider these methods
               # Also, the list of methods to be simulated is defined
-              if self.Nsimulations1 > 0: # no influence of landscape
+              if self.Nsimulations1_tobe_realized > 0: # no influence of landscape
                 self.methods.append('M1')
               
               if self.Nsimulations2 > 0: # minimum
                 self.methods.append('M2')
                 self.defaultsize_moviwin_allcor=self.escfina1
-                # ver se o mapa existe
+                
+                # Generates the input map, but only if it does not exist
                 map_exists = grass.list_grouped('rast', pattern=self.C2)['PERMANENT']
                 if len(map_exists) == 0:
                   grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C2, method='minimum', size=self.escfina1, overwrite = True)
@@ -1067,18 +1068,26 @@ class Corridors(wx.Panel):
               if self.Nsimulations3 > 0: # average
                 self.methods.append('M3')
                 self.defaultsize_moviwin_allcor=self.escfina1
-                grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C3, method='average', size=self.escfina1, overwrite = True)
+                
+                # Generates the input map, but only if it does not exist
+                map_exists = grass.list_grouped('rast', pattern=self.C3)['PERMANENT']
+                if len(map_exists) == 0:              
+                  grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C3, method='average', size=self.escfina1, overwrite = True)
               
               if self.Nsimulations4 > 0: # maximum
                 self.methods.append('M4')
                 self.defaultsize_moviwin_allcor=self.escfina1
-                grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C4, method='maximum', size=self.escfina1, overwrite = True)
+                
+                # Generates the input map, but only if it does not exist
+                map_exists = grass.list_grouped('rast', pattern=self.C4)['PERMANENT']
+                if len(map_exists) == 0:                
+                  grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C4, method='maximum', size=self.escfina1, overwrite = True)
               
               # Organizes names of resistance maps to be used in simulations
               self.listafinal=[]
               self.listamethods=[]
               
-              for i in range(self.Nsimulations1):
+              for i in range(self.Nsimulations1_tobe_realized):
                 self.listafinal.append(self.OutArqResist)
                 self.listamethods.append('M1')
               for i in range(self.Nsimulations2):
@@ -1095,7 +1104,7 @@ class Corridors(wx.Panel):
               #grass.run_command('g.region', rast=self.OutArqResist, res=self.res3)
               
               # Total number of simulations (M! + M2 + M3 + M4)
-              self.Nsimulations = self.Nsimulations1 + self.Nsimulations2 + self.Nsimulations3 + self.Nsimulations4
+              self.Nsimulations = self.Nsimulations1_tobe_realized + self.Nsimulations2 + self.Nsimulations3 + self.Nsimulations4
               
               # Transforming list of STs in integers (for recongnizing them in the map)       
               self.patch_id_list=map(int,self.patch_id_list_bkp)
@@ -1604,7 +1613,7 @@ class Corridors(wx.Panel):
           self.txt_log.write("	Source-Target map                                          : "+self.OutArqST+"\n")
           self.txt_log.write("	Resistance map resolution (m)                              : "+`self.res3`+"\n")
           self.txt_log.write("	Variability factor(s)                                      : "+', '.join(str(i) for i in self.ruidos_float)+"\n")
-          self.txt_log.write("	Perception(s) of scale (m)                                 : "+', '.join(str(i) for i in self.escalas)+"\n")
+          self.txt_log.write("	Scale(s) of influence (m)                                  : "+', '.join(str(i) for i in self.escalas)+"\n")
           self.txt_log.write("	Number of simulations M1 (without landcape influence)      : "+`self.Nsimulations1`+"\n")
           self.txt_log.write("	Number of simulations M2 (with landscape influence-minimum): "+`self.Nsimulations2`+"\n")
           self.txt_log.write("	Number of simulations M3 (with landscape influence-average): "+`self.Nsimulations3`+"\n")
