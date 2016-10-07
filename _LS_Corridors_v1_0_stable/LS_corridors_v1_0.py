@@ -871,7 +871,7 @@ class Corridors(wx.Panel):
           self.patch_id_list_bkp = self.patch_id_list
          
           # Tests if variability parameter is greater than 1.0
-          if any(i <= 0.0 for i in self.ruidos_float): 
+          if any(i < 0.0 for i in self.ruidos_float): 
             d= wx.MessageDialog(self, "Incorrect variability parameter(s)\n"+
                                 "Variability must be a number equal to or greater than zero!\n"+
                                 "Please check the parameter(s).\n", "", wx.OK) # Create a message dialog box
