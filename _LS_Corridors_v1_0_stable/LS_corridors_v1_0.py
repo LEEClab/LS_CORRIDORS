@@ -1618,6 +1618,7 @@ class Corridors(wx.Panel):
           self.txt_log.write("	Number of simulations M2 (with landscape influence-minimum): "+`self.Nsimulations2`+"\n")
           self.txt_log.write("	Number of simulations M3 (with landscape influence-average): "+`self.Nsimulations3`+"\n")
           self.txt_log.write("	Number of simulations M4 (with landscape influence-maximum): "+`self.Nsimulations4`+"\n")
+          self.txt_log.write("	Source-Target pairs simulated                              : "+`', '.join(str(i) for i in self.patch_id_list_bkp)`+"\n")
           
           self.txt_log.write("Output prefix: \n")
           self.txt_log.write("	"+self.NEXPER_FINAL+"\n\n")          
