@@ -130,6 +130,8 @@ def combine_st(st_map):
     has a 'plain' form. E.g.: 1,2,5,7 shows two combinations of points: 1-2 and 5-7
   '''
   
+  grass.run_command('g.region', rast=st_map, verbose=False)
+  
   listRstats=grass.read_command('r.stats', input=st_map, flags='n', separator='space')
   b=[]
   b=listRstats.split('\n')
@@ -228,8 +230,9 @@ class Corridors(wx.Panel):
         self.Nsimulations3=15 # Number of simulation of method M3 (average)
         self.Nsimulations4=15 # Number of simulation of method M4 (maximum)
         
-        self.influenceprocess=10000 # Distance to consider variability in corridors and ST points, in meters
-        self.influenceprocess_boll=False # Boolean - is the variability in the region around ST points to be considered?        
+        self.influence_factor = 1.1
+        self.influenceprocess = self.influence_factor * float(self.escalas[0]) # Distance to consider variability in corridors and ST points, in meters
+        self.influenceprocess_boll = False # Boolean - are we going to close the computing window around each ST map?
         
         # Auxiliary variables
         
@@ -686,7 +689,9 @@ class Corridors(wx.Panel):
           if (retCode == wx.ID_YES):
             self.patch_id_list=self.patch_id_list_aux_b
             self.logger.AppendText('\nCreated list. \n')
-            #print self.patch_id_list
+            
+            # Backup of the list of ST patches
+            self.patch_id_list_bkp = self.patch_id_list            
           else:
               print ""
               self.logger.AppendText('\nList not created. \n')
@@ -837,6 +842,9 @@ class Corridors(wx.Panel):
           self.fileHandle.close()
           self.patch_id_list = self.patch_id_list_aux.split(',')
           
+          # Backup of the list of ST patches
+          self.patch_id_list_bkp = self.patch_id_list
+          
           # Prints list of ST combinations
           #print self.patch_id_list
           self.logger.AppendText("TXT Combinations:\n"+`self.patch_id_list`+"\n")
@@ -864,11 +872,11 @@ class Corridors(wx.Panel):
           # Message in the Dialog box
           self.logger.AppendText("Checking the list \n")
           
+          # Retrieving ST list from backup of the list of ST patches
+          self.patch_id_list = self.patch_id_list_bkp
+          
           # Size of the ST list
           self.lenlist=len(self.patch_id_list)
-          
-          # Backup of the list of ST patches
-          self.patch_id_list_bkp = self.patch_id_list
          
           # Tests if variability parameter is greater than 1.0
           if any(i < 0.0 for i in self.ruidos_float): 
@@ -890,6 +898,33 @@ class Corridors(wx.Panel):
             d.Destroy() # Finally destroy it when finished.
             self.logger.AppendText()
             sys.exit()
+            
+          # Checks if the size of the window (landscape scale x 2) is greater than the pixel size
+          #  if it is, ok
+          #  if not, and we are going to simulate method M2, M3, or M4, warn the user!
+          
+          # First, defining GRASS GIS region as output map region
+          grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)
+                      
+          # Second, reading map resolution
+          self.res = grass.read_command('g.region', rast=self.OutArqResist, flags='m')
+          self.res2 = self.res.split('\n')
+          self.res3 = self.res2[5]
+          self.res3 = float(self.res3.replace('ewres=',''))
+          
+          # Third, calculate window size (landscape scale x 2) in number of pixels
+          self.escalas_pixels = [float(i)*2/self.res3 for i in self.escalas]
+          
+          # Finally, tests if any of the scales are lower than the pixel size
+          #  (this only matters if methods M2, M3, or M4 are going to be simulated)
+          if any(i < 2.0 for i in self.escalas_pixels) and (self.Nsimulations2 > 0 or self.Nsimulations3 > 0 or self.Nsimulations4 > 0): 
+            d= wx.MessageDialog(self, "There may a problem with scale parameter. \n"+
+                                "Input map resolution is "+`round(self.res3,1)`+" m, scale should be greater than that!\n"+
+                                "Please check the parameter(s).\n", "", wx.OK) # Create a message dialog box
+            d.ShowModal() # Shows it
+            d.Destroy() # Finally destroy it when finished.
+            self.logger.AppendText()
+            sys.exit()           
             
           # Tests if number of simulations is >= 0
           if self.Nsimulations1 < 0 or self.Nsimulations2 < 0 or self.Nsimulations3 < 0 or self.Nsimulations4 < 0:
@@ -984,6 +1019,13 @@ class Corridors(wx.Panel):
           self.header_log="___Log_Year_"+`self.year_start`+"-Month"+`self.month_start`+"-Day_"+`self.day_start`+"_Time_"+`self.hour_start`+"_"+`self.minuts_start`+"_"+`self.second_start`
           self.txt_log=open(self.header_log+".txt","w")       
           self.txt_log.write("Start time       : Year "+`self.year_start`+"-Month "+`self.month_start`+"-Day "+`self.day_start`+" ---- time: "+`self.hour_start`+":"+`self.minuts_start`+":"+`self.second_start`+"\n")
+          self.txt_log.close()
+          
+          # Open output text file and writes headers      
+          self.arquivo = open(self.NEXPER_FINAL_txt+'.txt','w')
+          self.cabecalho='EXPERIMENT'+','+'VARIABILITY'+','+'SCALE'+','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'SOURCE'+','+'TARGET'+','+'LCP_LENGTH'+','+'LCP_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
+          self.arquivo.write(self.cabecalho)
+          self.arquivo.close()
           
           #######################################
           ## Review that
@@ -1025,10 +1067,13 @@ class Corridors(wx.Panel):
               self.listExport = []
               self.listExportMethod = []
             
+              # Size of the influence process when computing a certain ST pair
+              self.influenceprocess = self.influence_factor * float(esc)
+            
               # Defining the size of the moving windows, in pixels
               # It is defined given the animal movement scale (user defined parameter)
               #  and the resolution of the map (map grain or pixel size)
-              self.escfina1=(esc*2)/self.res3
+              self.escfina1=(float(esc)*2)/self.res3
               
               # Checking if number of pixels of moving window is integer and even
               #  and correcting it if necessary
@@ -1184,7 +1229,7 @@ class Corridors(wx.Panel):
                     # Finishes the simulation process if there are no more ST pairs
                     if len(self.patch_id_list)==0:
                       
-                      self.txt_log.close() 
+                      #self.txt_log.close() 
                       d= wx.MessageDialog( self,"Error: STs invalid, please check them!", "", wx.OK)
                       retCode=d.ShowModal() # Shows
                       d.Close(True) # Closes
@@ -1233,10 +1278,10 @@ class Corridors(wx.Panel):
                   #self.form_16='corredores_aux = 0'
                   #grass.mapcalc(self.form_16, overwrite = True, quiet = True)
                 
-                # Open output text file and writes headers      
-                self.arquivo = open(self.mapa_corredores_sem0_txt+'.txt','w')
-                self.cabecalho='EXPERIMENT'+','+'VARIABILITY'+','+'SCALE'+','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'SOURCE'+','+'TARGET'+','+'LCP_LENGTH'+','+'LCP_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
-                self.arquivo.write(self.cabecalho)
+                ## Open output text file and writes headers      
+                #self.arquivo = open(self.mapa_corredores_sem0_txt+'.txt','w')
+                #self.cabecalho='EXPERIMENT'+','+'VARIABILITY'+','+'SCALE'+','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'SOURCE'+','+'TARGET'+','+'LCP_LENGTH'+','+'LCP_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
+                #self.arquivo.write(self.cabecalho)
                 
                 #---------------------------------------------#
                 #-------- PERFORMS EACH SIMULATION -----------#
@@ -1364,7 +1409,6 @@ class Corridors(wx.Panel):
                     # Removing mask
                     grass.run_command('r.mask',flags='r')
                     
-                    ######################################################
                     # If the user wants to consider only the region around ST points, this region
                     #  is selected as GRASS region; otherwise, the whole resistance map region is set
                     #  as GRASS region
@@ -1441,8 +1485,9 @@ class Corridors(wx.Panel):
                     # Value of the LCP total cost, float format
                     self.var_cost_sum = float(self.x_c.replace("sum: ",""))
                     
-                    
-                    # Defining GRASS region
+                    # If the user wants to consider only the region around ST points, this region
+                    #  is selected as GRASS region; otherwise, the whole resistance map region is set
+                    #  as GRASS region
                     if self.influenceprocess_boll:
                       defineregion("source_shp", "target_shp", self.influenceprocess)  
                     else:
@@ -1472,8 +1517,13 @@ class Corridors(wx.Panel):
                     self.linha=self.listafinal[cont].replace("@PERMANENT",'')+','+`ruido_float`+','+`esc`+','+self.M+','+`c_method`+','+`self.S1`+','+`self.T1`+','+ `self.var_dist_line`+','+ `self.var_cost_sum`+','+ `self.euclidean_b`+','+ `self.var_source_x`+','+ `self.var_source_y`+','+ `self.var_target_x`+','+ `self.var_target_y`+ "\n"
                     self.linha=self.linha.replace('\'','')
                     
+                    # Output directory
+                    os.chdir(self.OutDir_files_TXT)                    
+                    
                     # Writes corridor information on output text file
+                    self.arquivo = open(self.NEXPER_FINAL_txt+'.txt','a')
                     self.arquivo.write(self.linha)
+                    self.arquivo.close()
                     
                     # Generates a vector line map for each corridor (vectorizing raster map)
                     self.outline1='000000'+`c_method`  
@@ -1499,9 +1549,6 @@ class Corridors(wx.Panel):
                     
                     # -------- HERE ENDS THE SIMULATION OF ONE CORRIDOR ------------------#
                     # -------- THE LOOPS CONTINUES UNTIL ALL CORRIDORS ARE SIMULATES -----#
-                    
-                # All corridors were simulated - close output text file    
-                self.arquivo.close()
                 
                 # Exports raster maps with all corridors for the selected ST pair, for each simulated method
                 for method in self.methods:
@@ -1585,6 +1632,8 @@ class Corridors(wx.Panel):
           # Output directory
           os.chdir(self.OutDir_files_TXT)
           
+          # Open Log file
+          self.txt_log=open(self.header_log+'.txt','a')
           
           # Simulation end time
           self.time_end = datetime.now() # INSTANCE
@@ -1599,7 +1648,7 @@ class Corridors(wx.Panel):
           weeks, days = divmod(self.difference_time.days, 7)
           minutes, seconds = divmod(self.difference_time.seconds, 60)
           hours, minutes = divmod(minutes, 60)          
-          
+                   
           self.txt_log.write("End time         : Year "+`self.year_end`+"-Month "+`self.month_end`+"-Day "+`self.day_end`+" ---- Time: "+`self.hour_end`+":"+`self.minuts_end`+":"+`self.second_end`+"\n")
           
           # Simulation time
@@ -1629,7 +1678,12 @@ class Corridors(wx.Panel):
           for logERR in self.listErrorLog:
             self.txt_log.write(logERR+"\n")
           
-          self.txt_log.close() 
+          # Close log file
+          self.txt_log.close()
+          
+          self.OutDir_files_TXT = ''
+          
+          # FINISH SIMULATIONS
           d = wx.MessageDialog(self,"Corridor simulation finished!\n"+
                               "Thanks for simulating using\n LSCorridors "+VERSION+"!", "", wx.OK)
           
@@ -1650,6 +1704,9 @@ class Corridors(wx.Panel):
         if event.GetId() == 180: #180=list of STs
           self.patch_id_list_aux = event.GetString()
           self.patch_id_list = self.patch_id_list_aux.split(',')
+          
+          # Backup of the list of ST patches
+          self.patch_id_list_bkp = self.patch_id_list          
         
         """
         ID 186: Defines the variability of the map - noise factor
