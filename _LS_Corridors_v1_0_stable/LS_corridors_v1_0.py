@@ -1018,7 +1018,26 @@ class Corridors(wx.Panel):
           # Starting log file
           self.header_log="___Log_Year_"+`self.year_start`+"-Month"+`self.month_start`+"-Day_"+`self.day_start`+"_Time_"+`self.hour_start`+"_"+`self.minuts_start`+"_"+`self.second_start`
           self.txt_log=open(self.header_log+".txt","w")       
-          self.txt_log.write("Start time       : Year "+`self.year_start`+"-Month "+`self.month_start`+"-Day "+`self.day_start`+" ---- time: "+`self.hour_start`+":"+`self.minuts_start`+":"+`self.second_start`+"\n")
+          self.txt_log.write("LS Corridors log file\n")
+          self.txt_log.write("---------------------\n\n")
+          
+          self.txt_log.write("Inputs: \n")
+          self.txt_log.write("	Resistance map                                             : "+self.OutArqResist+"\n")
+          self.txt_log.write("	Source-Target map                                          : "+self.OutArqST+"\n")
+          self.txt_log.write("	Resistance map resolution (m)                              : "+`self.res3`+"\n")
+          self.txt_log.write("	Variability factor(s)                                      : "+', '.join(str(i) for i in self.ruidos_float)+"\n")
+          self.txt_log.write("	Scale(s) of influence (m)                                  : "+', '.join(str(i) for i in self.escalas)+"\n")
+          self.txt_log.write("	Number of simulations M1 (without landcape influence)      : "+`self.Nsimulations1`+"\n")
+          self.txt_log.write("	Number of simulations M2 (with landscape influence-minimum): "+`self.Nsimulations2`+"\n")
+          self.txt_log.write("	Number of simulations M3 (with landscape influence-average): "+`self.Nsimulations3`+"\n")
+          self.txt_log.write("	Number of simulations M4 (with landscape influence-maximum): "+`self.Nsimulations4`+"\n")
+          self.txt_log.write("	Source-Target pairs simulated                              : "+`', '.join(str(i) for i in self.patch_id_list_bkp)`+"\n")
+        
+          self.txt_log.write("Output prefix: \n")
+          self.txt_log.write("	"+self.NEXPER_FINAL+"\n\n")          
+        
+          self.txt_log.write("Output folder: \n")
+          self.txt_log.write("	"+self.OutDir_files_TXT+"\n\n")          
           self.txt_log.close()
           
           # Open output text file and writes headers      
@@ -1648,7 +1667,8 @@ class Corridors(wx.Panel):
           weeks, days = divmod(self.difference_time.days, 7)
           minutes, seconds = divmod(self.difference_time.seconds, 60)
           hours, minutes = divmod(minutes, 60)          
-                   
+          
+          self.txt_log.write("Start time       : Year "+`self.year_start`+"-Month "+`self.month_start`+"-Day "+`self.day_start`+" ---- time: "+`self.hour_start`+":"+`self.minuts_start`+":"+`self.second_start`+"\n")                   
           self.txt_log.write("End time         : Year "+`self.year_end`+"-Month "+`self.month_end`+"-Day "+`self.day_end`+" ---- Time: "+`self.hour_end`+":"+`self.minuts_end`+":"+`self.second_end`+"\n")
           
           # Simulation time
@@ -1657,24 +1677,7 @@ class Corridors(wx.Panel):
           # Writes log file
           self.txt_log.write("Processing time: "+self.difference_time+"\n\n")
           
-          self.txt_log.write("Inputs: \n")
-          self.txt_log.write("	Resistance map                                             : "+self.OutArqResist+"\n")
-          self.txt_log.write("	Source-Target map                                          : "+self.OutArqST+"\n")
-          self.txt_log.write("	Resistance map resolution (m)                              : "+`self.res3`+"\n")
-          self.txt_log.write("	Variability factor(s)                                      : "+', '.join(str(i) for i in self.ruidos_float)+"\n")
-          self.txt_log.write("	Scale(s) of influence (m)                                  : "+', '.join(str(i) for i in self.escalas)+"\n")
-          self.txt_log.write("	Number of simulations M1 (without landcape influence)      : "+`self.Nsimulations1`+"\n")
-          self.txt_log.write("	Number of simulations M2 (with landscape influence-minimum): "+`self.Nsimulations2`+"\n")
-          self.txt_log.write("	Number of simulations M3 (with landscape influence-average): "+`self.Nsimulations3`+"\n")
-          self.txt_log.write("	Number of simulations M4 (with landscape influence-maximum): "+`self.Nsimulations4`+"\n")
-          self.txt_log.write("	Source-Target pairs simulated                              : "+`', '.join(str(i) for i in self.patch_id_list_bkp)`+"\n")
-          
-          self.txt_log.write("Output prefix: \n")
-          self.txt_log.write("	"+self.NEXPER_FINAL+"\n\n")          
-
-          self.txt_log.write("Output folder: \n")
-          self.txt_log.write("	"+self.OutDir_files_TXT+"\n\n")
-          
+          # Errors
           for logERR in self.listErrorLog:
             self.txt_log.write(logERR+"\n")
           
