@@ -163,7 +163,7 @@ class Corridors(wx.Panel):
         wx.Panel.__init__(self, parent, id)
         
         # Takes the current mapset and looks for maps only inside it
-        self.current_mapset = grass.read_command('g.mapset', flags = 'p').replace('\n','')
+        self.current_mapset = grass.read_command('g.mapset', flags = 'p').replace('\n','').replace('\r','')
         
         # List of possible resistance and ST maps (already loaded inside GRASS GIS DataBase)
         self.listmaps=grass.list_grouped('rast')[self.current_mapset]
@@ -486,7 +486,7 @@ class Corridors(wx.Panel):
         
         self.editname1 = wx.TextCtrl(self, 180, self.edtstart_list, wx.Point(126,203), wx.Size(195,-1))
         self.editname2 = wx.TextCtrl(self, 185, 'Proposed name of the cost map', wx.Point(150,235), wx.Size(195,-1))
-        self.editname3 = wx.TextCtrl(self, 186, ','.join(str(i) for i in self.ruidos_float), wx.Point(535,115), wx.Size(30,-1))
+        self.editname3 = wx.TextCtrl(self, 186, ','.join(str(i) for i in self.ruidos_float), wx.Point(515,115), wx.Size(30,-1))
         self.editname3.SetToolTip(wx.ToolTip("Variability factor, x: in each simulation, "+
                                              "resistance value for each pixel in the resistance surface map is multiplied "+
                                              "by a uniformly randomly distributed number in the interval [0.1*x, x)."))
