@@ -162,8 +162,11 @@ class Corridors(wx.Panel):
     def __init__(self, parent, id):
         wx.Panel.__init__(self, parent, id)
         
+        # Takes the current mapset and looks for maps only inside it
+        self.current_mapset = grass.read_command('g.mapset', flags = 'p').replace('\n','')
+        
         # List of possible resistance and ST maps (already loaded inside GRASS GIS DataBase)
-        self.listmaps=grass.list_grouped('rast')['PERMANENT']
+        self.listmaps=grass.list_grouped('rast')[self.current_mapset]
         
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         #----------------------------------------------------------------BLOCK OF VARIABLE DESCRIPTION--------------------------------------------------------------------------------------------#
@@ -175,10 +178,10 @@ class Corridors(wx.Panel):
         # Performing tests on the code?
         self.perform_tests = False
         
-        # Loads the output directory
+        # Loads the output directory - only for RUN EXPORT button
         self.OutDir_files='Path of the files'
 
-        # Loads the path to the txt output files
+        # Loads the path to the output files - used while running the corridors
         self.OutDir_files_TXT=''
         
         # Loads the name of the resistance matrix
@@ -230,8 +233,8 @@ class Corridors(wx.Panel):
         self.Nsimulations3=15 # Number of simulation of method M3 (average)
         self.Nsimulations4=15 # Number of simulation of method M4 (maximum)
         
-        self.influence_factor = 1.1
-        self.influenceprocess = self.influence_factor * float(self.escalas[0]) # Distance to consider variability in corridors and ST points, in meters
+        self.influence_factor = 1.1 # In case we are going to close the computing window, its size is increased by 110% the scale paramater in each side
+        self.influenceprocess = self.influence_factor * float(self.escalas[0]) # Distance beyond the window size of a given ST pair, in meters
         self.influenceprocess_boll = False # Boolean - are we going to close the computing window around each ST map?
         
         # Auxiliary variables
@@ -377,62 +380,68 @@ class Corridors(wx.Panel):
         #-------------- STATIC TEXT ------------------#
         #---------------------------------------------#
         
-        self.quote = wx.StaticText(self, id=-1, label="LandScape Corridors",pos=wx.Point(20, 20))
+        #if not self.perform_tests:
+        self.imageFile0 = 'img_lscorr.jpg'
+        im0 = Image.open(self.imageFile0)
+        jpg0 = wx.Image(self.imageFile0, wx.BITMAP_TYPE_ANY).Scale(250, 64).ConvertToBitmap()
+        wx.StaticBitmap(self, -1, jpg0, (20,20), (jpg0.GetWidth(), jpg0.GetHeight()), style=wx.SUNKEN_BORDER)          
         
-        font = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD)
-        self.quote.SetForegroundColour("blue")
-        self.quote.SetFont(font)
+        #self.quote = wx.StaticText(self, id=-1, label="LandScape Corridors",pos=wx.Point(20, 20))
+        
+        #font = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD)
+        #self.quote.SetForegroundColour("blue")
+        #self.quote.SetFont(font)
         
         #__________________________________________________________________________________________                
-        self.quote = wx.StaticText(self, id=-1, label="Import Maps:", pos=wx.Point(20,65))
+        self.quote = wx.StaticText(self, id=-1, label="Import Maps:", pos=wx.Point(20,95))
         
         font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
         self.quote.SetForegroundColour("red")
         self.quote.SetFont(font)   
                 
         #__________________________________________________________________________________________                
-        self.quote = wx.StaticText(self, id=-1, label="Using Maps Already Imported:", pos=wx.Point(20,120))
+        self.quote = wx.StaticText(self, id=-1, label="Using Maps Already Imported:", pos=wx.Point(20,150))
         
         font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
         self.quote.SetForegroundColour("red")
         self.quote.SetFont(font)          
         
         #__________________________________________________________________________________________
-        self.quote = wx.StaticText(self, id=-1, label="Number of Simulations:", pos=wx.Point(20,238))
+        self.quote = wx.StaticText(self, id=-1, label="Number of Simulations:", pos=wx.Point(20,268))
                 
         font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
         self.quote.SetForegroundColour("red")
         self.quote.SetFont(font)                      
       
         # A multiline TextCtrl - This is here to show how the events work in this program, don't pay too much attention to it
-        self.logger = wx.TextCtrl(self,5, "",wx.Point(20,379), wx.Size(320,100),wx.TE_MULTILINE | wx.TE_READONLY)
+        self.logger = wx.TextCtrl(self,5, "",wx.Point(20,409), wx.Size(320,100),wx.TE_MULTILINE | wx.TE_READONLY)
       
         #---------------------------------------------#
         #-------------- BUTTONS ----------------------#
         #---------------------------------------------#
         
-        self.button =wx.Button(self, 10, "START SIMULATIONS", wx.Point(20,489))
+        self.button =wx.Button(self, 10, "START SIMULATIONS", wx.Point(20,519))
         wx.EVT_BUTTON(self, 10, self.OnClick)
   
-        self.button =wx.Button(self, 205, "RUN EXPORT FILES ", wx.Point(145,489))
+        self.button =wx.Button(self, 205, "RUN EXPORT FILES ", wx.Point(145,519))
         wx.EVT_BUTTON(self, 205, self.OnClick)
         
-        self.button =wx.Button(self, 210, "select files", wx.Point(280,85))#st
+        self.button =wx.Button(self, 210, "select files", wx.Point(280,115))#st
         wx.EVT_BUTTON(self, 210, self.OnClick)
         
-        self.button =wx.Button(self, 230, "select files", wx.Point(100,85)) #cost
+        self.button =wx.Button(self, 230, "select files", wx.Point(100,115)) #cost
         wx.EVT_BUTTON(self, 230, self.OnClick)
         
-        self.button =wx.Button(self, 240, "IMPORT FILES", wx.Point(358,85))
+        self.button =wx.Button(self, 240, "IMPORT FILES", wx.Point(358,115))
         wx.EVT_BUTTON(self, 240, self.OnClick)
         
-        self.button =wx.Button(self, 250, "READ LIST TXT", wx.Point(322,172))
+        self.button =wx.Button(self, 250, "READ LIST TXT", wx.Point(322,202))
         wx.EVT_BUTTON(self, 250, self.OnClick)
 
-        self.button =wx.Button(self, 260, "COMBINE ALL", wx.Point(418,172))
+        self.button =wx.Button(self, 260, "COMBINE ALL", wx.Point(418,202))
         wx.EVT_BUTTON(self, 260, self.OnClick)
         
-        self.button =wx.Button(self, 8, "EXIT", wx.Point(265, 489))
+        self.button =wx.Button(self, 8, "EXIT", wx.Point(265, 519))
         wx.EVT_BUTTON(self, 8, self.OnExit)
 
         #---------------------------------------------#
@@ -443,27 +452,27 @@ class Corridors(wx.Panel):
         self.imageFile = 'logo_lab.png'
         im1 = Image.open(self.imageFile)
         jpg1 = wx.Image(self.imageFile, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.StaticBitmap(self, -1, jpg1, (348,380), (jpg1.GetWidth(), jpg1.GetHeight()), style=wx.SUNKEN_BORDER)
+        wx.StaticBitmap(self, -1, jpg1, (348,410), (jpg1.GetWidth(), jpg1.GetHeight()), style=wx.SUNKEN_BORDER)
         
         
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         #----------------------------------------------------------------STATIC TEXTS-----------------------------------------------------------------------------------------------------------#
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         
-        self.lblname = wx.StaticText(self, -1, "Resistance Map:", wx.Point(20,88))
-        self.lblname2 = wx.StaticText(self, -1, "Source-Target Map:", wx.Point(180,90))
-        self.lblname2 = wx.StaticText(self, -1, "Variability:", wx.Point(450,90))
-        self.lblname = wx.StaticText(self, -1, "Resistance:", wx.Point(20,145))
-        self.lblname = wx.StaticText(self, -1, "ST:", wx.Point(300,145))
-        self.lbllista = wx.StaticText(self, -1, "Enter a list manually:", wx.Point(20,177))
-        self.lblname = wx.StaticText(self, -1, "Without landscape influence:", wx.Point(70,260))
-        self.lblname = wx.StaticText(self, -1, "M1:", wx.Point(70,285))
-        self.lblname = wx.StaticText(self, -1, "With landscape influence:", wx.Point(70,315))
-        self.lblname = wx.StaticText(self, -1, "M2 (minimum):", wx.Point(70,340))
-        self.lblname = wx.StaticText(self, -1, "M3 (average):", wx.Point(230,340))
-        self.lblname = wx.StaticText(self, -1, "M4 (maximum):", wx.Point(390,340))
-        self.lblname = wx.StaticText(self, -1, "Name of output corridor:", wx.Point(20,210))
-        self.lblname = wx.StaticText(self, -1, "Scale (meters):", wx.Point(370,210))
+        self.lblname = wx.StaticText(self, -1, "Resistance Map:", wx.Point(20,118))
+        self.lblname2 = wx.StaticText(self, -1, "Source-Target Map:", wx.Point(180,120))
+        self.lblname2 = wx.StaticText(self, -1, "Variability:", wx.Point(450,120))
+        self.lblname = wx.StaticText(self, -1, "Resistance:", wx.Point(20,175))
+        self.lblname = wx.StaticText(self, -1, "ST:", wx.Point(300,175))
+        self.lbllista = wx.StaticText(self, -1, "Enter a list manually:", wx.Point(20,207))
+        self.lblname = wx.StaticText(self, -1, "Without landscape influence:", wx.Point(70,290))
+        self.lblname = wx.StaticText(self, -1, "M1:", wx.Point(70,315))
+        self.lblname = wx.StaticText(self, -1, "With landscape influence:", wx.Point(70,345))
+        self.lblname = wx.StaticText(self, -1, "M2 (minimum):", wx.Point(70,370))
+        self.lblname = wx.StaticText(self, -1, "M3 (average):", wx.Point(230,370))
+        self.lblname = wx.StaticText(self, -1, "M4 (maximum):", wx.Point(390,370))
+        self.lblname = wx.StaticText(self, -1, "Name of output corridor:", wx.Point(20,240))
+        self.lblname = wx.StaticText(self, -1, "Scale (meters):", wx.Point(370,240))
         
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#        
@@ -475,30 +484,30 @@ class Corridors(wx.Panel):
         #----------------------------------------------------------------TEXT CONTROLS----------------------------------------------------------------------------------------------------------#
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         
-        self.editname1 = wx.TextCtrl(self, 180, self.edtstart_list, wx.Point(126,173), wx.Size(195,-1))
-        self.editname2 = wx.TextCtrl(self, 185, 'Proposed name of the cost map', wx.Point(150,205), wx.Size(195,-1))
-        self.editname3 = wx.TextCtrl(self, 186, ','.join(str(i) for i in self.ruidos_float), wx.Point(505,85), wx.Size(30,-1))
+        self.editname1 = wx.TextCtrl(self, 180, self.edtstart_list, wx.Point(126,203), wx.Size(195,-1))
+        self.editname2 = wx.TextCtrl(self, 185, 'Proposed name of the cost map', wx.Point(150,235), wx.Size(195,-1))
+        self.editname3 = wx.TextCtrl(self, 186, ','.join(str(i) for i in self.ruidos_float), wx.Point(535,115), wx.Size(30,-1))
         self.editname3.SetToolTip(wx.ToolTip("Variability factor, x: in each simulation, "+
                                              "resistance value for each pixel in the resistance surface map is multiplied "+
                                              "by a uniformly randomly distributed number in the interval [0.1*x, x)."))
-        self.editname4 = wx.TextCtrl(self, 190, str(self.Nsimulations1), wx.Point(90,282), wx.Size(35,-1))
+        self.editname4 = wx.TextCtrl(self, 190, str(self.Nsimulations1), wx.Point(90,312), wx.Size(35,-1))
         self.editname4.SetToolTip(wx.ToolTip("Method M1: no spatial influence"))
-        self.editname5 = wx.TextCtrl(self, 191, str(self.Nsimulations2), wx.Point(150,337), wx.Size(35,-1))
+        self.editname5 = wx.TextCtrl(self, 191, str(self.Nsimulations2), wx.Point(150,367), wx.Size(35,-1))
         self.editname5.SetToolTip(wx.ToolTip("Method M2: minimum\n\n"+
                                              "Each resistance surface pixel is replaced by the minimum of pixel values "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))
-        self.editname6 = wx.TextCtrl(self, 192, str(self.Nsimulations3), wx.Point(310,337), wx.Size(35,-1))
+        self.editname6 = wx.TextCtrl(self, 192, str(self.Nsimulations3), wx.Point(310,367), wx.Size(35,-1))
         self.editname6.SetToolTip(wx.ToolTip("Method M3: average\n\n"+
                                              "Each resistance surface pixel is replaced by the mean pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))        
-        self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(470,337), wx.Size(35,-1))
+        self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(470,367), wx.Size(35,-1))
         self.editname7.SetToolTip(wx.ToolTip("Method M4: maximum\n\n"+
                                              "Each resistance surface pixel is replaced by the maximum pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))        
-        self.editname8 = wx.TextCtrl(self, 196, ','.join(str(i) for i in self.escalas), wx.Point(450,205), wx.Size(50,-1))
+        self.editname8 = wx.TextCtrl(self, 196, ','.join(str(i) for i in self.escalas), wx.Point(450,235), wx.Size(50,-1))
         self.editname8.SetToolTip(wx.ToolTip("This parameters controls the scale of landscape influence on local "+
                                              "resistance (the size of the window around each pixel). It affects only the "+
                                              "results of simulations using methods M2, M3, and M4.\n"+
@@ -540,7 +549,7 @@ class Corridors(wx.Panel):
 
         # RESISTANCE MAP
         # List of maps taken from GRASS GIS database, using the command "grass.list_grouped"
-        self.editspeciesList=wx.ComboBox(self, 93, 'Click to select', wx.Point(80, 142), wx.Size(215, -1),
+        self.editspeciesList=wx.ComboBox(self, 93, 'Click to select', wx.Point(80, 172), wx.Size(215, -1),
                                          self.listmaps, wx.CB_DROPDOWN)
         wx.EVT_COMBOBOX(self, 93, self.EvtComboBox)
         wx.EVT_TEXT(self, 93, self.EvtText)
@@ -548,7 +557,7 @@ class Corridors(wx.Panel):
         
         # SOURCE TARGET MAP
         # List of maps taken from GRASS GIS database, using the command "grass.list_grouped"
-        self.editspeciesList=wx.ComboBox(self, 95, 'Click to select', wx.Point(320, 142), wx.Size(215, -1),
+        self.editspeciesList=wx.ComboBox(self, 95, 'Click to select', wx.Point(320, 172), wx.Size(215, -1),
                                          self.listmaps, wx.CB_DROPDOWN)
         wx.EVT_COMBOBOX(self, 95, self.EvtComboBox)
         wx.EVT_TEXT(self, 95, self.EvtText)        
@@ -714,7 +723,7 @@ class Corridors(wx.Panel):
         if event.GetId() == 205:   #205==export maps
         
           # List raster resulting files and confirms if the user wants to export them
-          p=grass.mlist_grouped ('rast', pattern='*MSP*') ['PERMANENT']
+          p=grass.mlist_grouped ('rast', pattern='*MSP*') [self.current_mapset]
           j=len(p)
           
           self.logger.AppendText('Found: '+j+' files.')
@@ -1122,7 +1131,7 @@ class Corridors(wx.Panel):
                 self.defaultsize_moviwin_allcor=self.escfina1
                 
                 # Generates the input map, but only if it does not exist
-                map_exists = grass.list_grouped('rast', pattern=self.C2)['PERMANENT']
+                map_exists = grass.list_grouped('rast', pattern=self.C2)[self.current_mapset]
                 if len(map_exists) == 0:
                   grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C2, method='minimum', size=self.escfina1, overwrite = True)
                 
@@ -1131,7 +1140,7 @@ class Corridors(wx.Panel):
                 self.defaultsize_moviwin_allcor=self.escfina1
                 
                 # Generates the input map, but only if it does not exist
-                map_exists = grass.list_grouped('rast', pattern=self.C3)['PERMANENT']
+                map_exists = grass.list_grouped('rast', pattern=self.C3)[self.current_mapset]
                 if len(map_exists) == 0:              
                   grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C3, method='average', size=self.escfina1, overwrite = True)
               
@@ -1140,7 +1149,7 @@ class Corridors(wx.Panel):
                 self.defaultsize_moviwin_allcor=self.escfina1
                 
                 # Generates the input map, but only if it does not exist
-                map_exists = grass.list_grouped('rast', pattern=self.C4)['PERMANENT']
+                map_exists = grass.list_grouped('rast', pattern=self.C4)[self.current_mapset]
                 if len(map_exists) == 0:                
                   grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C4, method='maximum', size=self.escfina1, overwrite = True)
               
@@ -1561,10 +1570,27 @@ class Corridors(wx.Panel):
                     grass.run_command('g.remove', type="vect", name=self.outline1, flags='f')              
                     cont=cont+1
                     
-                    # Re-initializes corridor variables
-                    self.var_dist_line=0.0
-                    self.var_cost_sum=0.0                
-                    self.linha=""                
+                    #--------------------------------------------------#
+                    # Opens he log file and writes the errors in the log
+                    # Output directory
+                    os.chdir(self.OutDir_files_TXT)
+                  
+                    # Open Log file
+                    self.txt_log = open(self.header_log+'.txt','a')                    
+                  
+                    # Errors
+                    for logERR in self.listErrorLog:
+                      self.txt_log.write(logERR+"\n")
+                  
+                    # Close log file
+                    self.txt_log.close()                       
+                    
+                    #---------------------------------#
+                    # Re-initializes corridor variables and list of errors
+                    self.var_dist_line = 0.0
+                    self.var_cost_sum = 0.0                
+                    self.linha = ''
+                    self.listErrorLog = []
                     
                     # -------- HERE ENDS THE SIMULATION OF ONE CORRIDOR ------------------#
                     # -------- THE LOOPS CONTINUES UNTIL ALL CORRIDORS ARE SIMULATES -----#
@@ -1652,16 +1678,16 @@ class Corridors(wx.Panel):
           os.chdir(self.OutDir_files_TXT)
           
           # Open Log file
-          self.txt_log=open(self.header_log+'.txt','a')
+          self.txt_log = open(self.header_log+'.txt','a')
           
           # Simulation end time
           self.time_end = datetime.now() # INSTANCE
-          self.day_end=self.time_end.day # End day
-          self.month_end=self.time_end.month # End month
-          self.year_end=self.time_end.year # End year
-          self.hour_end=self.time_end.hour # End hour
-          self.minuts_end=self.time_end.minute # End minute
-          self.second_end=self.time_end.second # End second
+          self.day_end = self.time_end.day # End day
+          self.month_end = self.time_end.month # End month
+          self.year_end = self.time_end.year # End year
+          self.hour_end = self.time_end.hour # End hour
+          self.minuts_end = self.time_end.minute # End minute
+          self.second_end = self.time_end.second # End second
           
           self.difference_time = self.time_end - self.time_start
           weeks, days = divmod(self.difference_time.days, 7)
@@ -1677,13 +1703,10 @@ class Corridors(wx.Panel):
           # Writes log file
           self.txt_log.write("Processing time: "+self.difference_time+"\n\n")
           
-          # Errors
-          for logERR in self.listErrorLog:
-            self.txt_log.write(logERR+"\n")
-          
           # Close log file
           self.txt_log.close()
           
+          # Re-initializes output dir, in case new corridors are produced by clicking START SIMULATIONS button
           self.OutDir_files_TXT = ''
           
           # FINISH SIMULATIONS
@@ -1725,7 +1748,7 @@ class Corridors(wx.Panel):
             print "Could not convert at least one of the variability values to a float."
           
         """
-        ID 186: Defines the variability of the map - noise factor
+        ID 186: Defines the scale of influence for methods M2, M3, and M4
         """
         if event.GetId() == 196: #196=animal perception scale
           #self.esc=float(event.GetString())
@@ -1810,7 +1833,7 @@ class Corridors(wx.Panel):
 if __name__ == "__main__":
   
     app = wx.PySimpleApp()
-    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(570,560))
+    frame = wx.Frame(None, -1, "LSCorridors "+VERSION, pos=(0,0), size=(570,590))
     Corridors(frame,-1)
     frame.Show(1)
     
