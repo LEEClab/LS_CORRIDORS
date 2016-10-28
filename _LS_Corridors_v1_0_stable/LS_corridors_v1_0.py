@@ -502,7 +502,7 @@ class Corridors(wx.Panel):
                                              "Each resistance surface pixel is replaced by the mean pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))        
-        self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(480,367), wx.Size(35,-1))
+        self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(485,367), wx.Size(35,-1))
         self.editname7.SetToolTip(wx.ToolTip("Method MLmax: maximum\n\n"+
                                              "Each resistance surface pixel is replaced by the maximum pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
