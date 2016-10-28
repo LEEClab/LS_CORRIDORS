@@ -492,17 +492,17 @@ class Corridors(wx.Panel):
                                              "by a uniformly randomly distributed number in the interval [0.1*x, x)."))
         self.editname4 = wx.TextCtrl(self, 190, str(self.Nsimulations1), wx.Point(90,312), wx.Size(35,-1))
         self.editname4.SetToolTip(wx.ToolTip("Method MP: no spatial influence"))
-        self.editname5 = wx.TextCtrl(self, 191, str(self.Nsimulations2), wx.Point(150,367), wx.Size(35,-1))
+        self.editname5 = wx.TextCtrl(self, 191, str(self.Nsimulations2), wx.Point(160,367), wx.Size(35,-1))
         self.editname5.SetToolTip(wx.ToolTip("Method MLmin: minimum\n\n"+
                                              "Each resistance surface pixel is replaced by the minimum of pixel values "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))
-        self.editname6 = wx.TextCtrl(self, 192, str(self.Nsimulations3), wx.Point(310,367), wx.Size(35,-1))
+        self.editname6 = wx.TextCtrl(self, 192, str(self.Nsimulations3), wx.Point(320,367), wx.Size(35,-1))
         self.editname6.SetToolTip(wx.ToolTip("Method MLavg: average\n\n"+
                                              "Each resistance surface pixel is replaced by the mean pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))        
-        self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(470,367), wx.Size(35,-1))
+        self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(480,367), wx.Size(35,-1))
         self.editname7.SetToolTip(wx.ToolTip("Method MLmax: maximum\n\n"+
                                              "Each resistance surface pixel is replaced by the maximum pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
