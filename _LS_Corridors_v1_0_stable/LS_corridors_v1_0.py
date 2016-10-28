@@ -196,15 +196,15 @@ class Corridors(wx.Panel):
         # List of methods to be simulated
         self.methods=[]
         
-        # Variables with 'C' are used to generate output names for auxiliary maps M2,M3,M4
-        # Name of mode map (M2)
-        self.C2_pre='M2_MINIMUM'
+        # Variables with 'C' are used to generate output names for auxiliary maps MLmin,MLavg,MLmax
+        # Name of minimum map (MLmin)
+        self.C2_pre='MLmin_MINIMUM'
         
-        # Name of maximum map (M3)
-        self.C3_pre='M3_AVERAGE'
+        # Name of average map (MLavg)
+        self.C3_pre='MLavg_AVERAGE'
         
-        # Name of average map (M4)
-        self.C4_pre='M4_MAXIMUM'
+        # Name of maximum map (MLmax)
+        self.C4_pre='MLmax_MAXIMUM'
         
         # String to show an example of how the ST list should look like
         self.edtstart_list='Ex:1,2,3,4,...'
@@ -228,10 +228,10 @@ class Corridors(wx.Panel):
         self.escalas=[100] # Animal movement scale, in meters
         
         self.Nsimulations=0 # Total number of simulations (independent of method)
-        self.Nsimulations1=15 # Number of simulation of method M1
-        self.Nsimulations2=15 # Number of simulation of method M2 (minimum)
-        self.Nsimulations3=15 # Number of simulation of method M3 (average)
-        self.Nsimulations4=15 # Number of simulation of method M4 (maximum)
+        self.Nsimulations1=15 # Number of simulation of method MP
+        self.Nsimulations2=15 # Number of simulation of method MLmin (minimum)
+        self.Nsimulations3=15 # Number of simulation of method MLavg (average)
+        self.Nsimulations4=15 # Number of simulation of method MLmax (maximum)
         
         self.influence_factor = 1.1 # In case we are going to close the computing window, its size is increased by 110% the scale paramater in each side
         self.influenceprocess = self.influence_factor * float(self.escalas[0]) # Distance beyond the window size of a given ST pair, in meters
@@ -329,7 +329,7 @@ class Corridors(wx.Panel):
         self.listafinal=[] # List of resistance maps to be simulated
         self.frag_list2='' # Aux list variable for generating random source/target points
         self.selct='' # Aux variable for generating random source/target points 
-        self.defaultsize_moviwin_allcor=7 # Default moving window size to calculate resistance maps for methods M2, M3, M4
+        self.defaultsize_moviwin_allcor=7 # Default moving window size to calculate resistance maps for methods MLmin, MLavg, MLmax
         
         # Start time
         self.time = 0 # INSTANCE
@@ -466,11 +466,11 @@ class Corridors(wx.Panel):
         self.lblname = wx.StaticText(self, -1, "ST:", wx.Point(300,175))
         self.lbllista = wx.StaticText(self, -1, "Enter a list manually:", wx.Point(20,207))
         self.lblname = wx.StaticText(self, -1, "Without landscape influence:", wx.Point(70,290))
-        self.lblname = wx.StaticText(self, -1, "M1:", wx.Point(70,315))
+        self.lblname = wx.StaticText(self, -1, "MP:", wx.Point(70,315))
         self.lblname = wx.StaticText(self, -1, "With landscape influence:", wx.Point(70,345))
-        self.lblname = wx.StaticText(self, -1, "M2 (minimum):", wx.Point(70,370))
-        self.lblname = wx.StaticText(self, -1, "M3 (average):", wx.Point(230,370))
-        self.lblname = wx.StaticText(self, -1, "M4 (maximum):", wx.Point(390,370))
+        self.lblname = wx.StaticText(self, -1, "MLmin (minimum):", wx.Point(70,370))
+        self.lblname = wx.StaticText(self, -1, "MLavg (average):", wx.Point(230,370))
+        self.lblname = wx.StaticText(self, -1, "MLmax (maximum):", wx.Point(390,370))
         self.lblname = wx.StaticText(self, -1, "Name of output corridor:", wx.Point(20,240))
         self.lblname = wx.StaticText(self, -1, "Scale (meters):", wx.Point(370,240))
         
@@ -491,26 +491,26 @@ class Corridors(wx.Panel):
                                              "resistance value for each pixel in the resistance surface map is multiplied "+
                                              "by a uniformly randomly distributed number in the interval [0.1*x, x)."))
         self.editname4 = wx.TextCtrl(self, 190, str(self.Nsimulations1), wx.Point(90,312), wx.Size(35,-1))
-        self.editname4.SetToolTip(wx.ToolTip("Method M1: no spatial influence"))
+        self.editname4.SetToolTip(wx.ToolTip("Method MP: no spatial influence"))
         self.editname5 = wx.TextCtrl(self, 191, str(self.Nsimulations2), wx.Point(150,367), wx.Size(35,-1))
-        self.editname5.SetToolTip(wx.ToolTip("Method M2: minimum\n\n"+
+        self.editname5.SetToolTip(wx.ToolTip("Method MLmin: minimum\n\n"+
                                              "Each resistance surface pixel is replaced by the minimum of pixel values "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))
         self.editname6 = wx.TextCtrl(self, 192, str(self.Nsimulations3), wx.Point(310,367), wx.Size(35,-1))
-        self.editname6.SetToolTip(wx.ToolTip("Method M3: average\n\n"+
+        self.editname6.SetToolTip(wx.ToolTip("Method MLavg: average\n\n"+
                                              "Each resistance surface pixel is replaced by the mean pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))        
         self.editname7 = wx.TextCtrl(self, 193, str(self.Nsimulations4), wx.Point(470,367), wx.Size(35,-1))
-        self.editname7.SetToolTip(wx.ToolTip("Method M4: maximum\n\n"+
+        self.editname7.SetToolTip(wx.ToolTip("Method MLmax: maximum\n\n"+
                                              "Each resistance surface pixel is replaced by the maximum pixel value "+
                                              "inside a window around it; this window represents the spatial context "+
                                              "influence and is controlled by the scale parameter."))        
         self.editname8 = wx.TextCtrl(self, 196, ','.join(str(i) for i in self.escalas), wx.Point(450,235), wx.Size(50,-1))
         self.editname8.SetToolTip(wx.ToolTip("This parameters controls the scale of landscape influence on local "+
                                              "resistance (the size of the window around each pixel). It affects only the "+
-                                             "results of simulations using methods M2, M3, and M4.\n"+
+                                             "results of simulations using methods MLmin, MLavg, and MLmax.\n"+
                                              "Scale may be related to the species' landscape perception, for example."))
          
          
@@ -910,7 +910,7 @@ class Corridors(wx.Panel):
             
           # Checks if the size of the window (landscape scale x 2) is greater than the pixel size
           #  if it is, ok
-          #  if not, and we are going to simulate method M2, M3, or M4, warn the user!
+          #  if not, and we are going to simulate method MLmin, MLavg, or MLmax, warn the user!
           
           # First, defining GRASS GIS region as output map region
           grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)
@@ -925,7 +925,7 @@ class Corridors(wx.Panel):
           self.escalas_pixels = [float(i)*2/self.res3 for i in self.escalas]
           
           # Finally, tests if any of the scales are lower than the pixel size
-          #  (this only matters if methods M2, M3, or M4 are going to be simulated)
+          #  (this only matters if methods MLmin, MLavg, or MLmax are going to be simulated)
           if any(i < 2.0 for i in self.escalas_pixels) and (self.Nsimulations2 > 0 or self.Nsimulations3 > 0 or self.Nsimulations4 > 0): 
             d= wx.MessageDialog(self, "There may a problem with scale parameter. \n"+
                                 "Input map resolution is "+`round(self.res3,1)`+" m, scale should be greater than that!\n"+
@@ -1031,16 +1031,16 @@ class Corridors(wx.Panel):
           self.txt_log.write("---------------------\n\n")
           
           self.txt_log.write("Inputs: \n")
-          self.txt_log.write("	Resistance map                                             : "+self.OutArqResist+"\n")
-          self.txt_log.write("	Source-Target map                                          : "+self.OutArqST+"\n")
-          self.txt_log.write("	Resistance map resolution (m)                              : "+`self.res3`+"\n")
-          self.txt_log.write("	Variability factor(s)                                      : "+', '.join(str(i) for i in self.ruidos_float)+"\n")
-          self.txt_log.write("	Scale(s) of influence (m)                                  : "+', '.join(str(i) for i in self.escalas)+"\n")
-          self.txt_log.write("	Number of simulations M1 (without landcape influence)      : "+`self.Nsimulations1`+"\n")
-          self.txt_log.write("	Number of simulations M2 (with landscape influence-minimum): "+`self.Nsimulations2`+"\n")
-          self.txt_log.write("	Number of simulations M3 (with landscape influence-average): "+`self.Nsimulations3`+"\n")
-          self.txt_log.write("	Number of simulations M4 (with landscape influence-maximum): "+`self.Nsimulations4`+"\n")
-          self.txt_log.write("	Source-Target pairs simulated                              : "+`', '.join(str(i) for i in self.patch_id_list_bkp)`+"\n")
+          self.txt_log.write("	Resistance map                                                : "+self.OutArqResist+"\n")
+          self.txt_log.write("	Source-Target map                                             : "+self.OutArqST+"\n")
+          self.txt_log.write("	Resistance map resolution (m)                                 : "+`self.res3`+"\n")
+          self.txt_log.write("	Variability factor(s)                                         : "+', '.join(str(i) for i in self.ruidos_float)+"\n")
+          self.txt_log.write("	Scale(s) of influence (m)                                     : "+', '.join(str(i) for i in self.escalas)+"\n")
+          self.txt_log.write("	Number of simulations MP    (without landcape influence)      : "+`self.Nsimulations1`+"\n")
+          self.txt_log.write("	Number of simulations MLmin (with landscape influence-minimum): "+`self.Nsimulations2`+"\n")
+          self.txt_log.write("	Number of simulations MLavg (with landscape influence-average): "+`self.Nsimulations3`+"\n")
+          self.txt_log.write("	Number of simulations MLmax (with landscape influence-maximum): "+`self.Nsimulations4`+"\n")
+          self.txt_log.write("	Source-Target pairs simulated                                 : "+`', '.join(str(i) for i in self.patch_id_list_bkp)`+"\n")
         
           self.txt_log.write("Output prefix: \n")
           self.txt_log.write("	"+self.NEXPER_FINAL+"\n\n")          
@@ -1074,9 +1074,9 @@ class Corridors(wx.Panel):
             self.res3 = self.res2[5]
             self.res3 = float(self.res3.replace('ewres=',''))
             
-            # This variables are used to define whether simulations for method M1 were already 
+            # This variables are used to define whether simulations for method MP were already 
             #  performed when there is more than one scale; in this case, there's no need to 
-            #  simulate it again for method M1, only for methods M2, M3, and M4
+            #  simulate it again for method MP, only for methods MLmin, MLavg, and MLmax
             self.n_scales = len(self.escalas) # Number of scales
             self.scale_counter = 1 # Scale counter
             
@@ -1120,14 +1120,14 @@ class Corridors(wx.Panel):
               else:
                 self.Nsimulations1_tobe_realized = self.Nsimulations1
               
-              # If methods M2, M3, M4 are going to be simulated, this command prepares
+              # If methods MLmin, MLavg, MLmax are going to be simulated, this command prepares
               # the resistance map taking into consider these methods
               # Also, the list of methods to be simulated is defined
               if self.Nsimulations1_tobe_realized > 0: # no influence of landscape
-                self.methods.append('M1')
+                self.methods.append('MP')
               
               if self.Nsimulations2 > 0: # minimum
-                self.methods.append('M2')
+                self.methods.append('MLmin')
                 self.defaultsize_moviwin_allcor=self.escfina1
                 
                 # Generates the input map, but only if it does not exist
@@ -1136,7 +1136,7 @@ class Corridors(wx.Panel):
                   grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C2, method='minimum', size=self.escfina1, overwrite = True)
                 
               if self.Nsimulations3 > 0: # average
-                self.methods.append('M3')
+                self.methods.append('MLavg')
                 self.defaultsize_moviwin_allcor=self.escfina1
                 
                 # Generates the input map, but only if it does not exist
@@ -1145,7 +1145,7 @@ class Corridors(wx.Panel):
                   grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C3, method='average', size=self.escfina1, overwrite = True)
               
               if self.Nsimulations4 > 0: # maximum
-                self.methods.append('M4')
+                self.methods.append('MLmax')
                 self.defaultsize_moviwin_allcor=self.escfina1
                 
                 # Generates the input map, but only if it does not exist
@@ -1159,21 +1159,21 @@ class Corridors(wx.Panel):
               
               for i in range(self.Nsimulations1_tobe_realized):
                 self.listafinal.append(self.OutArqResist)
-                self.listamethods.append('M1')
+                self.listamethods.append('MP')
               for i in range(self.Nsimulations2):
                 self.listafinal.append(self.C2)
-                self.listamethods.append('M2')
+                self.listamethods.append('MLmin')
               for i in range(self.Nsimulations3):
                 self.listafinal.append(self.C3)
-                self.listamethods.append('M3')
+                self.listamethods.append('MLavg')
               for i in range(self.Nsimulations4):
                 self.listafinal.append(self.C4)
-                self.listamethods.append('M4')
+                self.listamethods.append('MLmax')
               
               # Not necessary
               #grass.run_command('g.region', rast=self.OutArqResist, res=self.res3)
               
-              # Total number of simulations (M! + M2 + M3 + M4)
+              # Total number of simulations (M! + MLmin + MLavg + MLmax)
               self.Nsimulations = self.Nsimulations1_tobe_realized + self.Nsimulations2 + self.Nsimulations3 + self.Nsimulations4
               
               # Transforming list of STs in integers (for recongnizing them in the map)       
@@ -1327,16 +1327,16 @@ class Corridors(wx.Panel):
                     # Number of simulation   
                     c = i+1
                     # Number of simulation for a given method
-                    if self.M == "M1":
+                    if self.M == "MP":
                       c_method = self.simulated[0]
                       self.simulated[0] = self.simulated[0] + 1
-                    if self.M == "M2":
+                    if self.M == "MLmin":
                       c_method = self.simulated[1]
                       self.simulated[1] = self.simulated[1] + 1
-                    if self.M == "M3":
+                    if self.M == "MLavg":
                       c_method = self.simulated[2]             
                       self.simulated[2] = self.simulated[2] + 1
-                    if self.M == "M4":
+                    if self.M == "MLmax":
                       c_method = self.simulated[3]
                       self.simulated[3] = self.simulated[3] + 1
                     
@@ -1621,13 +1621,13 @@ class Corridors(wx.Panel):
                 
                 index = [i for i, v in enumerate(self.listExportMethod) if v == method] # get indexes of simulations that were each of method
                 export = [self.listExport[i] for i in index] # select map names simulated simulated for each 'method'
-                if method == 'M1':
+                if method == 'MP':
                   Nsims = self.Nsimulations1
-                elif method == 'M2':
+                elif method == 'MLmin':
                   Nsims = self.Nsimulations2
-                elif method == 'M3':
+                elif method == 'MLavg':
                   Nsims = self.Nsimulations3            
-                elif method == 'M4':
+                elif method == 'MLmax':
                   Nsims = self.Nsimulations4
                 else:
                   print 'No method selected for generating synthesis maps!'
@@ -1659,7 +1659,7 @@ class Corridors(wx.Panel):
               
               if self.remove_aux_maps:
                 grass.run_command('g.remove', type="vect", name='temp_point1_s,temp_point2_s,temp_point1_t,temp_point2_t,pnts_aleat_S,pnts_aleat_T,source_shp,target_shp', flags='f')
-                grass.run_command('g.remove', type="rast", name='source,target,resist_aux,resist_aux2,mapa_resist,mapa_corredores_M1,mapa_corredores_M2,mapa_corredores_M3,mapa_corredores_M4,aleat,aleat2,custo_aux_cost,custo_aux_cost_drain,custo_aux_cost_drain_sum,corredores_aux,M2_MODE,M3_MAXIMUM,M4_AVERAGE', flags='f')
+                grass.run_command('g.remove', type="rast", name='source,target,resist_aux,resist_aux2,mapa_resist,mapa_corredores_MP,mapa_corredores_MLmin,mapa_corredores_MLavg,mapa_corredores_MLmax,aleat,aleat2,custo_aux_cost,custo_aux_cost_drain,custo_aux_cost_drain_sum,corredores_aux,MLmin_MINIMUM,MLavg_AVERAGE,MLmax_MAXIMUM', flags='f')
               
               #----------------------------------------------------------#  
               # Here we finish the simulations for each landscape scale  #
@@ -1748,7 +1748,7 @@ class Corridors(wx.Panel):
             print "Could not convert at least one of the variability values to a float."
           
         """
-        ID 186: Defines the scale of influence for methods M2, M3, and M4
+        ID 186: Defines the scale of influence for methods MLmin, MLavg, and MLmax
         """
         if event.GetId() == 196: #196=animal perception scale
           #self.esc=float(event.GetString())
@@ -1773,16 +1773,16 @@ class Corridors(wx.Panel):
           self.logger.AppendText('Output map base name: \n'+self.NEXPER_FINAL+ '\n')
             
         """
-        ID 190-193: Reads number of simulations for each method: M!, M2, M3, M4
+        ID 190-193: Reads number of simulations for each method: M!, MLmin, MLavg, MLmax
         """
-        # Method M1
+        # Method MP
         if event.GetId() == 190: #190=number of simulations
           try:
             self.Nsimulations1=int(event.GetString())
           except ValueError:
             self.Nsimulations1=0
             
-        # Method M2
+        # Method MLmin
         if event.GetId() == 191: #191=number of simulations
           try:
             self.Nsimulations2=int(event.GetString())
@@ -1794,7 +1794,7 @@ class Corridors(wx.Panel):
           else:
             self.editname8.Enable()
             
-        # Method M3
+        # Method MLavg
         if event.GetId() == 192: #192=number of simulations
           try:
             self.Nsimulations3=int(event.GetString())
@@ -1805,7 +1805,7 @@ class Corridors(wx.Panel):
             self.editname8.Disable()
           else:
             self.editname8.Enable()          
-        # Method M4
+        # Method MLmax
         if event.GetId() == 193: #193=number of simulations
           try:
             self.Nsimulations4=int(event.GetString())
