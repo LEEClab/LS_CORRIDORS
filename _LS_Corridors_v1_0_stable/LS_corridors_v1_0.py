@@ -296,12 +296,12 @@ class Corridors(wx.Panel):
         self.x_b='' # Cost map statistics for one corridor, list format
         self.x_c='' # Sum of cost map along LCP for one corridor, as string                
         
-        # Variables for calculating length of the LCP
+        # Variables for calculating length of the corridor
         self.length='' # Statistics for corridor
         self.length_b='' # String element for sum of number of pixels of the corridor
-        self.length_c='' # Final LCP length value, string format
-        self.length_d='' # Final LCP length value, in pixels
-        self.length_e=0.0 # Final LCP length value, in meters
+        self.length_c='' # Final corridor length value, string format
+        self.length_d='' # Final corridor length value, in pixels
+        self.length_e=0.0 # Final corridor length value, in meters
         
         # Variables for calculating Euclidean distance between points
 
@@ -319,7 +319,7 @@ class Corridors(wx.Panel):
         self.euclidean_a=0.0 # Aux variable for calculating euclidean distance
         self.euclidean_b=0.0 # Aux variable for calculating euclidean distance
         
-        # Variables where LCP cost and length are loaded
+        # Variables where corridor cost and length are loaded
         self.var_cost_sum='' # Sum of cost map along LCP for one corridor, as float
         self.var_dist_line=0.0 # Length of the LCP for one corridor, as float        
         
@@ -1051,7 +1051,7 @@ class Corridors(wx.Panel):
           
           # Open output text file and writes headers      
           self.arquivo = open(self.NEXPER_FINAL_txt+'.txt','w')
-          self.cabecalho='EXPERIMENT'+','+'VARIABILITY'+','+'SCALE'+','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'SOURCE'+','+'TARGET'+','+'LCP_LENGTH'+','+'LCP_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
+          self.cabecalho='EXPERIMENT'+','+'VARIABILITY'+','+'SCALE'+','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'SOURCE'+','+'TARGET'+','+'CORRIDOR_LENGTH'+','+'CORRIDOR_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
           self.arquivo.write(self.cabecalho)
           self.arquivo.close()
           
@@ -1308,7 +1308,7 @@ class Corridors(wx.Panel):
                 
                 ## Open output text file and writes headers      
                 #self.arquivo = open(self.mapa_corredores_sem0_txt+'.txt','w')
-                #self.cabecalho='EXPERIMENT'+','+'VARIABILITY'+','+'SCALE'+','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'SOURCE'+','+'TARGET'+','+'LCP_LENGTH'+','+'LCP_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
+                #self.cabecalho='EXPERIMENT'+','+'VARIABILITY'+','+'SCALE'+','+'SIMULATION_METHOD'+','+'SIMULATION_NUMBER'+','+'SOURCE'+','+'TARGET'+','+'CORRIDOR_LENGTH'+','+'CORRIDOR_COST'+','+'EUCLIDEAN_DISTANCE'+','+'COORD_SOURCE_X'+','+'COORD_SOURCE_Y'+','+'COORD_TARGET_X'+','+'COORD_TARGET_Y'+ '\n'
                 #self.arquivo.write(self.cabecalho)
                 
                 #---------------------------------------------#
@@ -1500,7 +1500,7 @@ class Corridors(wx.Panel):
                           self.listErrorLog.append("[Error ->-> :] <- Methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- Time : "+`self.hour_now `+":"+`self.second_now`)
                           
                     # Multiply corridor map (binary - 0/1) by the original resistance map
-                    # Now we get a raster with the cost of each pixel along the LCP
+                    # Now we get a raster with the cost of each pixel along the corridor
                     self.form_09='custo_aux_cost_drain_sum = custo_aux_cost_drain * '+self.listafinal[0]
                     grass.mapcalc(self.form_09, overwrite = True, quiet = True)  
                    
@@ -1508,9 +1508,9 @@ class Corridors(wx.Panel):
                     self.x = grass.read_command('r.univar', map='custo_aux_cost_drain_sum')
                     # List of corridor statistics
                     self.x_b = self.x.split('\n')
-                    # Sum of the cost of each pixel along the LCP, string format
+                    # Sum of the cost of each pixel along the corridor, string format
                     self.x_c = str(self.x_b[14])
-                    # Value of the LCP total cost, float format
+                    # Value of the corridor total cost, float format
                     self.var_cost_sum = float(self.x_c.replace("sum: ",""))
                     
                     # If the user wants to consider only the region around ST points, this region
@@ -1525,7 +1525,7 @@ class Corridors(wx.Panel):
                     self.form_10=self.mapa_corredores_sem0+'_'+self.M+' = if(mapa_corredores_'+self.M+' == 0, null(), mapa_corredores_'+self.M+')'
                     grass.mapcalc(self.form_10, overwrite = True, quiet = True)
                     
-                    # CALCULATES LCP LENGTH using corridor map (with NULL values)
+                    # CALCULATES CORRIDOR LENGTH using corridor map (with NULL values)
                     self.length = grass.read_command('r.univar', map='custo_aux_cost_drain')
                     # List of statistics
                     self.length_b=self.length.split('\n')
