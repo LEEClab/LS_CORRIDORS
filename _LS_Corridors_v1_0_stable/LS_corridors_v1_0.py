@@ -235,7 +235,7 @@ class Corridors(wx.Panel):
         
         self.influence_factor = 1.1 # In case we are going to close the computing window, its size is increased by 110% the scale paramater in each side
         self.influenceprocess = self.influence_factor * float(self.escalas[0]) # Distance beyond the window size of a given ST pair, in meters
-        self.influenceprocess_boll = False # Boolean - are we going to close the computing window around each ST map?
+        self.influenceprocess_boll = True # Boolean - are we going to close the computing window around each ST map?
         
         # Auxiliary variables
         
@@ -466,11 +466,11 @@ class Corridors(wx.Panel):
         self.lblname = wx.StaticText(self, -1, "ST:", wx.Point(300,175))
         self.lbllista = wx.StaticText(self, -1, "Enter a list manually:", wx.Point(20,207))
         self.lblname = wx.StaticText(self, -1, "Without landscape influence:", wx.Point(70,290))
-        self.lblname = wx.StaticText(self, -1, "M1:", wx.Point(70,315))
+        self.lblname = wx.StaticText(self, -1, "MP:", wx.Point(70,315))
         self.lblname = wx.StaticText(self, -1, "With landscape influence:", wx.Point(70,345))
-        self.lblname = wx.StaticText(self, -1, "M2 (minimum):", wx.Point(70,370))
-        self.lblname = wx.StaticText(self, -1, "M3 (average):", wx.Point(230,370))
-        self.lblname = wx.StaticText(self, -1, "M4 (maximum):", wx.Point(390,370))
+        self.lblname = wx.StaticText(self, -1, "MLmin:", wx.Point(70,370))
+        self.lblname = wx.StaticText(self, -1, "MLavg:", wx.Point(230,370))
+        self.lblname = wx.StaticText(self, -1, "MLmax:", wx.Point(390,370))
         self.lblname = wx.StaticText(self, -1, "Name of output corridor:", wx.Point(20,240))
         self.lblname = wx.StaticText(self, -1, "Scale (meters):", wx.Point(370,240))
         
@@ -916,10 +916,9 @@ class Corridors(wx.Panel):
           grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)
                       
           # Second, reading map resolution
-          self.res = grass.read_command('g.region', rast=self.OutArqResist, flags='m')
-          self.res2 = self.res.split('\n')
-          self.res3 = self.res2[5]
-          self.res3 = float(self.res3.replace('ewres=',''))
+          
+          self.res =grass.parse_command('g.region', rast=self.OutArqResist, flags='m')
+          self.res3 = float(self.res['ewres'])
           
           # Third, calculate window size (landscape scale x 2) in number of pixels
           self.escalas_pixels = [float(i)*2/self.res3 for i in self.escalas]
@@ -1069,10 +1068,8 @@ class Corridors(wx.Panel):
             grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)
             
             # Reading map resolution
-            self.res = grass.read_command('g.region', flags='m')
-            self.res2 = self.res.split('\n')
-            self.res3 = self.res2[5]
-            self.res3 = float(self.res3.replace('ewres=',''))
+            self.res =grass.parse_command('g.region', flags='m')
+            self.res3 = float(self.res['ewres'])
             
             # This variables are used to define whether simulations for method M1 were already 
             #  performed when there is more than one scale; in this case, there's no need to 
@@ -1110,7 +1107,7 @@ class Corridors(wx.Panel):
                 self.escfina1=self.escfina1+1
               else:
                 self.escfina1=int(self.escfina1)
-                #self.escfina1=int(round(self.escfina1, ndigits=0))
+                
               
               # Defining GRASS GIS region as output map region
               grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3) 
@@ -1124,10 +1121,10 @@ class Corridors(wx.Panel):
               # the resistance map taking into consider these methods
               # Also, the list of methods to be simulated is defined
               if self.Nsimulations1_tobe_realized > 0: # no influence of landscape
-                self.methods.append('M1')
+                self.methods.append('MP')
               
               if self.Nsimulations2 > 0: # minimum
-                self.methods.append('M2')
+                self.methods.append('MLmin')
                 self.defaultsize_moviwin_allcor=self.escfina1
                 
                 # Generates the input map, but only if it does not exist
@@ -1136,7 +1133,7 @@ class Corridors(wx.Panel):
                   grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C2, method='minimum', size=self.escfina1, overwrite = True)
                 
               if self.Nsimulations3 > 0: # average
-                self.methods.append('M3')
+                self.methods.append('MLavg')
                 self.defaultsize_moviwin_allcor=self.escfina1
                 
                 # Generates the input map, but only if it does not exist
@@ -1145,7 +1142,7 @@ class Corridors(wx.Panel):
                   grass.run_command('r.neighbors', input=self.OutArqResist, output=self.C3, method='average', size=self.escfina1, overwrite = True)
               
               if self.Nsimulations4 > 0: # maximum
-                self.methods.append('M4')
+                self.methods.append('MLmax')
                 self.defaultsize_moviwin_allcor=self.escfina1
                 
                 # Generates the input map, but only if it does not exist
@@ -1159,19 +1156,19 @@ class Corridors(wx.Panel):
               
               for i in range(self.Nsimulations1_tobe_realized):
                 self.listafinal.append(self.OutArqResist)
-                self.listamethods.append('M1')
+                self.listamethods.append('MP')
               for i in range(self.Nsimulations2):
                 self.listafinal.append(self.C2)
-                self.listamethods.append('M2')
+                self.listamethods.append('MLmin')
               for i in range(self.Nsimulations3):
                 self.listafinal.append(self.C3)
-                self.listamethods.append('M3')
+                self.listamethods.append('MLavg')
               for i in range(self.Nsimulations4):
                 self.listafinal.append(self.C4)
-                self.listamethods.append('M4')
+                self.listamethods.append('MLmax')
               
               # Not necessary
-              #grass.run_command('g.region', rast=self.OutArqResist, res=self.res3)
+              
               
               # Total number of simulations (M! + M2 + M3 + M4)
               self.Nsimulations = self.Nsimulations1_tobe_realized + self.Nsimulations2 + self.Nsimulations3 + self.Nsimulations4
@@ -1185,6 +1182,7 @@ class Corridors(wx.Panel):
               
               # For each ST pair in the list:
               while (len(self.patch_id_list)>1):
+                grass.run_command('g.region', rast=self.OutArqResist,verbose=False)
                 
                 # List of number of corridors already simulated - to be updated as simulations run
                 self.simulated = [1, 1, 1, 1]                              
@@ -1273,9 +1271,13 @@ class Corridors(wx.Panel):
                 # Set region defined by the limits of source and target points + fixed distance (self.influenceprocess)
                 #  This reduces simulation time, since map processing may be restricted to 
                 #  the region where points are located
-                defineregion("source_shp", "target_shp", self.influenceprocess) 
+                if self.influenceprocess_boll:
+                  defineregion("source_shp", "target_shp", self.influenceprocess) 
+                else:
+                  grass.run_command('g.region', rast=self.OutArqResist,verbose=False)
                 
                 # Name of the corridor output map
+                # self.NEXPER_FINAL='outpuit prefix
                 self.mapa_corredores_sem0=self.NEXPER_FINAL+'_'+'var_'+str(ruido_float).replace('.', '_')+'_'+'scale_'+str(esc)+'_'+'S_'+self.S1FORMAT+"_T_"+self.T1FORMAT
                 self.mapa_corredores_sem0_txt=self.NEXPER_FINAL_txt+'_'+'var_'+str(ruido_float).replace('.', '_')+'_'+'scale_'+str(esc)+'_'+'S_'+self.S1FORMAT+"_T_"+self.T1FORMAT
               
@@ -1317,7 +1319,10 @@ class Corridors(wx.Panel):
                 cont=0
                 for i in range(self.Nsimulations):
                     # Set region defined by the limits of source and target points + fixed distance (self.influenceprocess)
-                    defineregion("source_shp","target_shp", self.influenceprocess)
+                    if self.influenceprocess_boll:
+                      defineregion("source_shp", "target_shp", self.influenceprocess) 
+                    else:
+                      grass.run_command('g.region', rast=self.OutArqResist,verbose=False)
                     
                     # Selecting resistance map
                     self.form_08='mapa_resist = '+self.listafinal[cont]
@@ -1327,16 +1332,16 @@ class Corridors(wx.Panel):
                     # Number of simulation   
                     c = i+1
                     # Number of simulation for a given method
-                    if self.M == "M1":
+                    if self.M == "MP":
                       c_method = self.simulated[0]
                       self.simulated[0] = self.simulated[0] + 1
-                    if self.M == "M2":
+                    if self.M == "MLmin":
                       c_method = self.simulated[1]
                       self.simulated[1] = self.simulated[1] + 1
-                    if self.M == "M3":
+                    if self.M == "MLavg":
                       c_method = self.simulated[2]             
                       self.simulated[2] = self.simulated[2] + 1
-                    if self.M == "M4":
+                    if self.M == "MLmax":
                       c_method = self.simulated[3]
                       self.simulated[3] = self.simulated[3] + 1
                     
@@ -1621,13 +1626,13 @@ class Corridors(wx.Panel):
                 
                 index = [i for i, v in enumerate(self.listExportMethod) if v == method] # get indexes of simulations that were each of method
                 export = [self.listExport[i] for i in index] # select map names simulated simulated for each 'method'
-                if method == 'M1':
+                if method == 'MP':
                   Nsims = self.Nsimulations1
-                elif method == 'M2':
+                elif method == 'MLmin':
                   Nsims = self.Nsimulations2
-                elif method == 'M3':
+                elif method == 'MLavg':
                   Nsims = self.Nsimulations3            
-                elif method == 'M4':
+                elif method == 'MLmax':
                   Nsims = self.Nsimulations4
                 else:
                   print 'No method selected for generating synthesis maps!'
@@ -1666,9 +1671,11 @@ class Corridors(wx.Panel):
               #----------------------------------------------------------#
               self.scale_counter += 1
             
+            self.OutDir_files_TXT == '' 
             #-------------------------------------------------------------#  
             # Here we finish the simulations for each variability factor  #            
             #-------------------------------------------------------------#
+            
                      
           #---------------------------------------------#
           #------------ WRITES LOG FILES ---------------#
