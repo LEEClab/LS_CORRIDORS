@@ -651,3 +651,4 @@ ls
 cd corridors_GLT_test_parameters/
 ls
 exit
+r.mask -r
