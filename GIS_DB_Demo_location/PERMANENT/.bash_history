@@ -651,3 +651,12 @@ ls
 cd corridors_GLT_test_parameters/
 ls
 exit
+g.list rast
+cd Github/
+ls
+cd Ls
+cd LS_CORRIDORS/
+ls
+cd DB_demo/
+ls
+exit

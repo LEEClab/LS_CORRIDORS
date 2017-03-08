@@ -25,7 +25,7 @@
  It can also be found at: https://github.com/LEEClab/LS_CORRIDORS
  
  To run LSCorridors:
- python LS_corridors_v1_0_0.py
+ python LS_corridors_v1_0.py
  
  To run tests:
  python test_LS_corridors.py
@@ -56,7 +56,7 @@ import os, sys, re, platform
 from datetime import datetime
 
 # LS Corridors Version:
-VERSION = 'v. 1.0.0'
+VERSION = 'v. 1.0'
 
 #----------------------------------------------------------------------------------
 # Auxiliary functions
