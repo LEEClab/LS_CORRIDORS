@@ -1392,19 +1392,19 @@ class Corridors(wx.Panel):
                     
                     #---------- RANDOM TARGET POINT -------#
                     # Defines a random target point inside the input/target region
-                    grass.run_command('r.mask',raster='target')
-                    grass.run_command('g.region', vect='target_shp',verbose=False,overwrite = True)
+                    grass.run_command('r.mask', raster='target')
+                    grass.run_command('g.region', vect='target_shp', verbose=False, overwrite = True)
                     # Select a random target point
                     self.ChecktTry=True
                     while self.ChecktTry==True:
                       try:
                         # Generates random points
-                        grass.run_command('v.random', output='temp_point1_t',n=30 ,overwrite = True)
+                        grass.run_command('v.random', output='temp_point1_t', n=30, overwrite = True)
                         # Selects random points that overlap with target region
-                        grass.run_command('v.select',ainput='temp_point1_t',binput='target_shp',output='temp_point2_t',operator='overlap',overwrite = True)
+                        grass.run_command('v.select', ainput='temp_point1_t', binput='target_shp', output='temp_point2_t', operator='overlap', overwrite = True)
                         # Creates attribute table and connects to the random points inside target region
-                        grass.run_command('v.db.addtable', map='temp_point2_t',columns="temp double precision")
-                        grass.run_command('v.db.connect',flags='p',map='temp_point2_t')
+                        grass.run_command('v.db.addtable', map='temp_point2_t', columns="temp double precision")
+                        grass.run_command('v.db.connect', flags='p', map='temp_point2_t')
                         
                         # List of such random points inside Python
                         self.frag_list2=grass.vector_db_select('temp_point2_t', columns = 'cat')['values']
@@ -1412,7 +1412,7 @@ class Corridors(wx.Panel):
     
                         # Selects the first (a random) point of the list
                         self.selct="cat="+`self.frag_list2[0]`                
-                        grass.run_command('v.extract',input='temp_point2_t',output='pnts_aleat_T',where=self.selct,overwrite = True)  
+                        grass.run_command('v.extract', input='temp_point2_t', output='pnts_aleat_T', where=self.selct, overwrite = True)  
                         
                         if len(self.frag_list2)>0:
                           self.ChecktTry=False
@@ -1468,7 +1468,7 @@ class Corridors(wx.Panel):
                           # Multiply resistance map by random noise map
                           self.form_07='resist_aux = mapa_resist * aleat2'
                           grass.mapcalc(self.form_07, overwrite = True, quiet = True)
-                          # Sets null cells as vistually infinite resistance
+                          # Sets null cells as visually infinite resistance
                           self.form_07='resist_aux2 = if(isnull(resist_aux), 10000000, resist_aux)'
                           grass.mapcalc(self.form_07, overwrite = True, quiet = True)
                           
@@ -1501,6 +1501,8 @@ class Corridors(wx.Panel):
                           
                     # Multiply corridor map (binary - 0/1) by the original resistance map
                     # Now we get a raster with the cost of each pixel along the corridor
+                    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    #!!!!!! CHECK THIS self.listafinal[0] OR self.listafinal[cont]
                     self.form_09='custo_aux_cost_drain_sum = custo_aux_cost_drain * '+self.listafinal[0]
                     grass.mapcalc(self.form_09, overwrite = True, quiet = True)  
                    
