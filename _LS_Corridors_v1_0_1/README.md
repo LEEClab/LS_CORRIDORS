@@ -1,7 +1,7 @@
 # Main LSCorridors code
 
 Here the main pieces of the LSCorridors stable code are located. You may find: 
-   1. `LS_corridors_v1_0_0.py`: main script.
+   1. `LS_corridors_v1_0_1.py`: main script.
    2. `test_LS_corridors.py`: testing script.
    3. `script_calculate_connectivity_index.R`: an R script for calculating the connectivity index of landscapes based on 
    the corridors simulated on them, using LSCorridors.
