@@ -660,3 +660,14 @@ ls
 cd DB_demo/
 ls
 exit
+r.import input=/home/leecb/Github/LS_CORRIDORS/DB_demo/Resistance_map1.img output=Resistance_map1
+r.import input=/home/leecb/Github/LS_CORRIDORS/DB_demo/ST_map1.img output=ST_map1
+cd Github/LS_CORRIDORS/
+cd _LS_Corridors_v1_0_1/
+python r.ls.corridors.py 
+python r.ls.corridors.py --help
+python r.ls.corridors.py resistancemap=Resistance_map1 stmap=ST_map1 stlist=1,2,3,4,5,6 output_prefix=teste simulations=2 method=MP,MLavg output_folder=/home/leecb/teste_addon_lscorr 
+exit
+g.remove rast patt=*
+g.remove rast patt=* -f
+exit

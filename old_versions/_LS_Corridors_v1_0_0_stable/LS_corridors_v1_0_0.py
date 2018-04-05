@@ -959,7 +959,7 @@ class Corridors(wx.Panel):
           # Tests if the length of the ST list is > 1
           if  self.lenlist <= 1: 
             d= wx.MessageDialog(self, "Incorrect list\n"+
-                                "List length is smaller than 1!\n"+
+                                "List length is smaller than 2!\n"+
                                 "Please check the list.\n", "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
@@ -1527,6 +1527,7 @@ class Corridors(wx.Panel):
                     self.form_10=self.mapa_corredores_sem0+'_'+self.M+' = if(mapa_corredores_'+self.M+' == 0, null(), mapa_corredores_'+self.M+')'
                     grass.mapcalc(self.form_10, overwrite = True, quiet = True)
                     
+                    grass.run_command('g.region', rast=self.OutArqResist, verbose=False)
                     # CALCULATES CORRIDOR LENGTH using corridor map (with NULL values)
                     self.length = grass.read_command('r.univar', map='custo_aux_cost_drain')
                     # List of statistics
@@ -1573,7 +1574,7 @@ class Corridors(wx.Panel):
                     cont=cont+1
                     
                     #--------------------------------------------------#
-                    # Opens he log file and writes the errors in the log
+                    # Opens the log file and writes the errors in the log
                     # Output directory
                     os.chdir(self.OutDir_files_TXT)
                   
