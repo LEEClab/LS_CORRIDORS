@@ -135,6 +135,9 @@ def main(resistancemap, stmap, stlist, output_prefix, output_folder, variability
         grass.fatal(_('GRASS GIS cannot access the folder '+output_folder+'. Please check if the folder exists'+
                       'and its access permissions.'))
     corr.OutDir_files_TXT = corr.path
+
+    # Guarantee that the GUI won't open asking for a new output folder or when the simulations end
+    corr.perform_tests = True
     
     #---------------------
     # Check if the resistance map and ST map are inside the GRASS GIS mapset
