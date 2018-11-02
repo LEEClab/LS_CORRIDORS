@@ -130,6 +130,7 @@ def combine_st(st_map):
     has a 'plain' form. E.g.: 1,2,5,7 shows two combinations of points: 1-2 and 5-7
   '''
   # define reginon for processing
+  # 
   grass.run_command('g.region', rast=st_map, verbose=False)
   
   listRstats=grass.read_command('r.stats', input=st_map, flags='n', separator='space')
