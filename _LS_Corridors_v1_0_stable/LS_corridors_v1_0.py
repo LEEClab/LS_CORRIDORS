@@ -158,10 +158,22 @@ def combine_st(st_map):
 
 #----------------------------------------------------------------------------------
 # Corridors is the main class, in which the software is initialized and runs
-   
-class Corridors(wx.Panel):
+class StaticText(object):
+  def __init__(self, parent, id):
+    pass
+    
+  def main(self):
+    #__________________________________________________________________________________________                
+    self.quote = wx.StaticText(self, id=-1, label="Import Maps:", pos=wx.Point(20,95))    
+    font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
+    self.quote.SetForegroundColour("red")
+    self.quote.SetFont(font)    
+  
+
+class Corridors(wx.Panel,StaticText):
     def __init__(self, parent, id):
         wx.Panel.__init__(self, parent, id)
+        StaticText.__init__(self, parent, id)
         
         # Takes the current mapset and looks for maps only inside it
         self.current_mapset = grass.read_command('g.mapset', flags = 'p').replace('\n','').replace('\r','')
@@ -393,12 +405,12 @@ class Corridors(wx.Panel):
         #self.quote.SetForegroundColour("blue")
         #self.quote.SetFont(font)
         
-        #__________________________________________________________________________________________                
-        self.quote = wx.StaticText(self, id=-1, label="Import Maps:", pos=wx.Point(20,95))
-        
-        font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
-        self.quote.SetForegroundColour("red")
-        self.quote.SetFont(font)   
+        #__________________________________________________________________________________________ 
+        StaticText.main(self)
+        #self.quote = wx.StaticText(self, id=-1, label="Import Maps:", pos=wx.Point(20,95))    
+        #font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
+        #self.quote.SetForegroundColour("red")
+        #self.quote.SetFont(font)   
                 
         #__________________________________________________________________________________________                
         self.quote = wx.StaticText(self, id=-1, label="Using Maps Already Imported:", pos=wx.Point(20,150))
