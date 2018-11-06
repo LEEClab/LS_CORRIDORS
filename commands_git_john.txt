@@ -1,0 +1,2 @@
+sincronizando fork com repositorio principal.
+https://github.com/grupy-sp/encontros/wiki/Como-sincronizar-o-seu-Fork-com-o-repo-principal

@@ -25,7 +25,7 @@
  It can also be found at: https://github.com/LEEClab/LS_CORRIDORS
  
  To run LSCorridors:
- python LS_corridors_v1_0.py
+ python LS_corridors_v1_0_0.py
  
  To run tests:
  python test_LS_corridors.py
@@ -56,7 +56,7 @@ import os, sys, re, platform
 from datetime import datetime
 
 # LS Corridors Version:
-VERSION = 'v. 1.0'
+VERSION = 'v. 1.0.0'
 
 #----------------------------------------------------------------------------------
 # Auxiliary functions
@@ -129,8 +129,7 @@ def combine_st(st_map):
   - patchid_list_output: string with all possible combinations of STs. The list
     has a 'plain' form. E.g.: 1,2,5,7 shows two combinations of points: 1-2 and 5-7
   '''
-  # define reginon for processing
-  # 
+  
   grass.run_command('g.region', rast=st_map, verbose=False)
   
   listRstats=grass.read_command('r.stats', input=st_map, flags='n', separator='space')
@@ -156,16 +155,12 @@ def combine_st(st_map):
   return patchid_list_output
    
 
-def  StaticText(self):
-  self.quote = wx.StaticText(self, id=-1, label="Import Maps:", pos=wx.Point(20,95))    
-  font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
-  self.quote.SetForegroundColour("red")
-  self.quote.SetFont(font)   
-
+#----------------------------------------------------------------------------------
+# Corridors is the main class, in which the software is initialized and runs
+   
 class Corridors(wx.Panel):
     def __init__(self, parent, id):
         wx.Panel.__init__(self, parent, id)
-        
         
         # Takes the current mapset and looks for maps only inside it
         self.current_mapset = grass.read_command('g.mapset', flags = 'p').replace('\n','').replace('\r','')
@@ -397,12 +392,12 @@ class Corridors(wx.Panel):
         #self.quote.SetForegroundColour("blue")
         #self.quote.SetFont(font)
         
-        #__________________________________________________________________________________________ 
-        StaticText(self)
-        #self.quote = wx.StaticText(self, id=-1, label="Import Maps:", pos=wx.Point(20,95))    
-        #font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
-        #self.quote.SetForegroundColour("red")
-        #self.quote.SetFont(font)   
+        #__________________________________________________________________________________________                
+        self.quote = wx.StaticText(self, id=-1, label="Import Maps:", pos=wx.Point(20,95))
+        
+        font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
+        self.quote.SetForegroundColour("red")
+        self.quote.SetFont(font)   
                 
         #__________________________________________________________________________________________                
         self.quote = wx.StaticText(self, id=-1, label="Using Maps Already Imported:", pos=wx.Point(20,150))
@@ -921,9 +916,10 @@ class Corridors(wx.Panel):
           grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)
                       
           # Second, reading map resolution
-          self.res = grass.parse_command('g.region', rast=self.OutArqResist, flags='m')
-          
-          self.res3 = float(self.res['ewres'])
+          self.res = grass.read_command('g.region', rast=self.OutArqResist, flags='m')
+          self.res2 = self.res.split('\n')
+          self.res3 = self.res2[5]
+          self.res3 = float(self.res3.replace('ewres=',''))
           
           # Third, calculate window size (landscape scale x 2) in number of pixels
           self.escalas_pixels = [float(i)*2/self.res3 for i in self.escalas]
@@ -963,7 +959,7 @@ class Corridors(wx.Panel):
           # Tests if the length of the ST list is > 1
           if  self.lenlist <= 1: 
             d= wx.MessageDialog(self, "Incorrect list\n"+
-                                "List length is smaller than 1!\n"+
+                                "List length is smaller than 2!\n"+
                                 "Please check the list.\n", "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
@@ -1073,8 +1069,10 @@ class Corridors(wx.Panel):
             grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)
             
             # Reading map resolution
-            self.res = grass.parse_command('g.region', flags='m')
-            self.res3 = float(self.res['ewres'])
+            self.res = grass.read_command('g.region', flags='m')
+            self.res2 = self.res.split('\n')
+            self.res3 = self.res2[5]
+            self.res3 = float(self.res3.replace('ewres=',''))
             
             # This variables are used to define whether simulations for method MP were already 
             #  performed when there is more than one scale; in this case, there's no need to 
@@ -1187,7 +1185,7 @@ class Corridors(wx.Panel):
               
               # For each ST pair in the list:
               while (len(self.patch_id_list)>1):
-                grass.run_command('g.region', rast=self.OutArqResist, verbose=False)
+                
                 # List of number of corridors already simulated - to be updated as simulations run
                 self.simulated = [1, 1, 1, 1]                              
                 
@@ -1394,19 +1392,19 @@ class Corridors(wx.Panel):
                     
                     #---------- RANDOM TARGET POINT -------#
                     # Defines a random target point inside the input/target region
-                    grass.run_command('r.mask',raster='target')
-                    grass.run_command('g.region', vect='target_shp',verbose=False,overwrite = True)
+                    grass.run_command('r.mask', raster='target')
+                    grass.run_command('g.region', vect='target_shp', verbose=False, overwrite = True)
                     # Select a random target point
                     self.ChecktTry=True
                     while self.ChecktTry==True:
                       try:
                         # Generates random points
-                        grass.run_command('v.random', output='temp_point1_t',n=30 ,overwrite = True)
+                        grass.run_command('v.random', output='temp_point1_t', n=30, overwrite = True)
                         # Selects random points that overlap with target region
-                        grass.run_command('v.select',ainput='temp_point1_t',binput='target_shp',output='temp_point2_t',operator='overlap',overwrite = True)
+                        grass.run_command('v.select', ainput='temp_point1_t', binput='target_shp', output='temp_point2_t', operator='overlap', overwrite = True)
                         # Creates attribute table and connects to the random points inside target region
-                        grass.run_command('v.db.addtable', map='temp_point2_t',columns="temp double precision")
-                        grass.run_command('v.db.connect',flags='p',map='temp_point2_t')
+                        grass.run_command('v.db.addtable', map='temp_point2_t', columns="temp double precision")
+                        grass.run_command('v.db.connect', flags='p', map='temp_point2_t')
                         
                         # List of such random points inside Python
                         self.frag_list2=grass.vector_db_select('temp_point2_t', columns = 'cat')['values']
@@ -1414,7 +1412,7 @@ class Corridors(wx.Panel):
     
                         # Selects the first (a random) point of the list
                         self.selct="cat="+`self.frag_list2[0]`                
-                        grass.run_command('v.extract',input='temp_point2_t',output='pnts_aleat_T',where=self.selct,overwrite = True)  
+                        grass.run_command('v.extract', input='temp_point2_t', output='pnts_aleat_T', where=self.selct, overwrite = True)  
                         
                         if len(self.frag_list2)>0:
                           self.ChecktTry=False
@@ -1470,7 +1468,7 @@ class Corridors(wx.Panel):
                           # Multiply resistance map by random noise map
                           self.form_07='resist_aux = mapa_resist * aleat2'
                           grass.mapcalc(self.form_07, overwrite = True, quiet = True)
-                          # Sets null cells as vistually infinite resistance
+                          # Sets null cells as visually infinite resistance
                           self.form_07='resist_aux2 = if(isnull(resist_aux), 10000000, resist_aux)'
                           grass.mapcalc(self.form_07, overwrite = True, quiet = True)
                           
@@ -1503,6 +1501,8 @@ class Corridors(wx.Panel):
                           
                     # Multiply corridor map (binary - 0/1) by the original resistance map
                     # Now we get a raster with the cost of each pixel along the corridor
+                    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    #!!!!!! CHECK THIS self.listafinal[0] OR self.listafinal[cont]
                     self.form_09='custo_aux_cost_drain_sum = custo_aux_cost_drain * '+self.listafinal[0]
                     grass.mapcalc(self.form_09, overwrite = True, quiet = True)  
                    
@@ -1527,6 +1527,7 @@ class Corridors(wx.Panel):
                     self.form_10=self.mapa_corredores_sem0+'_'+self.M+' = if(mapa_corredores_'+self.M+' == 0, null(), mapa_corredores_'+self.M+')'
                     grass.mapcalc(self.form_10, overwrite = True, quiet = True)
                     
+                    grass.run_command('g.region', rast=self.OutArqResist, verbose=False)
                     # CALCULATES CORRIDOR LENGTH using corridor map (with NULL values)
                     self.length = grass.read_command('r.univar', map='custo_aux_cost_drain')
                     # List of statistics
@@ -1573,7 +1574,7 @@ class Corridors(wx.Panel):
                     cont=cont+1
                     
                     #--------------------------------------------------#
-                    # Opens he log file and writes the errors in the log
+                    # Opens the log file and writes the errors in the log
                     # Output directory
                     os.chdir(self.OutDir_files_TXT)
                   

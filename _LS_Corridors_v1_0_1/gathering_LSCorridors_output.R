@@ -2,6 +2,9 @@
 #
 # Gathering LSCorridors output text files 
 #  for different source-target pairs
+#
+# This is suitable for old (before 1.0.0) version of
+#  LSCorridors
 # 
 # Felipe Martello - felipemartello at gmail.com
 #

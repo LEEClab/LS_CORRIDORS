@@ -1,0 +1,10 @@
+# List of to-do for LSCorridors
+
+1) Create GoogleGroups - lscorridors-users
+2) Update all problems that have occurred with LSCorridors - all users, versions, GRASS versions
+3) OS, GRASS version, LSCorridors version - check in which this is running
+4) Separate LSCorridors simulations from the graphical interface
+5) Think about other ways of creating the GUI
+
+6) LSCorridors within R
+7) Tutorial videos in pt and eng
