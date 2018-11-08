@@ -1,4 +1,4 @@
-<<<<<<< HEAD:_LS_Corridors_v1_0_stable/LS_corridors_v1_0.py
+
 #!/c/Python25 python
 #---------------------------------------------------------------------------------------
 """
@@ -3688,4 +3688,4 @@ if __name__ == "__main__":
     frame.Show(1)
     
     app.MainLoop()
->>>>>>> upstream/master:_LS_Corridors_v1_0_1/LS_corridors_v1_0_1.py
+
