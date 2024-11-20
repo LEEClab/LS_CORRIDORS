@@ -1,0 +1,9 @@
+Mon Nov 11 12:02:54 2024
+MSP_Resistance_map1_img_var_2_0_scale_100_S_00011_T_00012_MLmax
+PERMANENT
+TPDI
+raster
+
+
+gerado por r.mapcalc
+if(mapa_corredores_MLmax == 0, null(), mapa_corredores_MLmax)

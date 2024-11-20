@@ -1,0 +1,3 @@
+COMMAND: r.to.vect --overwrite input="custo_aux_cost_drain" output="MSP_Resistance_map1_img_var_2_0_scale_100_S_00011_T_00012_MLavg_SM_006" type="line" column="value"
+GISDBASE: C:\_____dados\Space__Gits\LS_CORRIDORS\GIS_DB_Demo_location
+LOCATION: newLocation MAPSET: PERMANENT USER: TPDI DATE: Fri Nov 08 14:10:24 2024

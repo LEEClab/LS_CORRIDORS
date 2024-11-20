@@ -1,0 +1,11 @@
+name: Africa_Albers_Equal_Area_Conic
+datum: wgs84
+ellps: wgs84
+proj: aea
+lat_0: 0
+lon_0: 25
+lat_1: 20
+lat_2: -23
+x_0: 0
+y_0: 0
+no_defs: defined

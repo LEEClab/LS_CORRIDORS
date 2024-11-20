@@ -1,0 +1,11 @@
+Thu Nov 07 14:23:14 2024
+ST_map1_img
+PERMANENT
+TPDI
+raster
+
+
+gerado por r.in.gdal
+r.in.gdal --overwrite -o input="C:\_____dados\Space__Gits\LS_CORRIDO\
+RS\DB_demo\ST_map1.img" output="ST_map1_img" memory=300 offset=0 num\
+_digits=0

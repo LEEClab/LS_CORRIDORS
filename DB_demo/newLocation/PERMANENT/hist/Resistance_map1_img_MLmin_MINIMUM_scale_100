@@ -1,0 +1,10 @@
+Mon Nov 18 15:48:52 2024
+Resistance_map1_img_MLmin_MINIMUM_scale_100
+PERMANENT
+TPDI
+raster
+
+
+gerado por r.neighbors
+r.neighbors --overwrite input="Resistance_map1_img" output="Resistan\
+ce_map1_img_MLmin_MINIMUM_scale_100" method="minimum" size=7

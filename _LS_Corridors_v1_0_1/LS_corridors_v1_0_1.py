@@ -73,7 +73,7 @@ def selectdirectory():
   
   dialog = wx.DirDialog(None, "Select a file or folder:",style=wx.DD_DEFAULT_STYLE | wx.DD_NEW_DIR_BUTTON)
   if dialog.ShowModal() == wx.ID_OK:
-    #print ">>..................",dialog.GetPath()
+    print (">>..................",dialog.GetPath())
     return dialog.GetPath()
   
 def selectfile():
@@ -86,9 +86,9 @@ def selectfile():
   '''  
   
   wildcard = "All files (*.*)|*.*"
-  dialog = wx.FileDialog(None, "Choose a file", os.getcwd(), "", wildcard, wx.OPEN)
+  dialog = wx.FileDialog(None, "Choose a file", os.getcwd(), "", wildcard, wx.FD_OPEN)
   if dialog.ShowModal() == wx.ID_OK:
-    print ">>..................",dialog.GetPath()
+    print (">>..................",dialog.GetPath())
     return dialog.GetPath() 
 
 def defineregion(mapa1, mapa2, influenceprocess):
@@ -138,7 +138,7 @@ def combine_st(st_map):
   b=[]
   b=listRstats.split('\n')
   del b[-1]
-  print b
+  print (b)
   patchid_list=','.join(b)
     
   patchid_list_aux = patchid_list.split(",")
@@ -233,7 +233,7 @@ class Corridors(wx.Panel):
         
         self.escalas=[100] # Animal movement scale, in meters
         
-        self.Nsimulations=0 # Total number of simulations (independent of method)
+        self.Nsimulations =0 # Total number of simulations (independent of method)
         self.Nsimulations1=15 # Number of simulation of method MP
         self.Nsimulations2=15 # Number of simulation of method MLmin (minimum)
         self.Nsimulations3=15 # Number of simulation of method MLavg (average)
@@ -695,7 +695,9 @@ class Corridors(wx.Panel):
           # Sends confirmation message
           self.logger.AppendText('Waiting... \n')
           
-          d = wx.MessageDialog(self, "Simulate all possible ("+`self.lenlist_b`+") combinations?\n", "", wx.YES_NO)
+          #d = wx.MessageDialog(self, "Simulate all possible ("+`self.lenlist_b`+") combinations?\n", "", wx.YES_NO)
+
+          d = wx.MessageDialog(self, "Simulate all possible{}combinations?\n".format(self.lenlist_b), "", wx.YES_NO)
           retCode = d.ShowModal() # Shows
           d.Close(True)  # Close the frame. 
           
@@ -708,7 +710,7 @@ class Corridors(wx.Panel):
             # Backup of the list of ST patches
             self.patch_id_list_bkp = self.patch_id_list            
           else:
-              print ""
+              print ("")
               self.logger.AppendText('\nList not created. \n')
           d.Destroy()
 
@@ -862,7 +864,7 @@ class Corridors(wx.Panel):
           
           # Prints list of ST combinations
           #print self.patch_id_list
-          self.logger.AppendText("TXT Combinations:\n"+`self.patch_id_list`+"\n")
+          self.logger.AppendText("TXT Combinations:\n{}\n".format(self.patch_id_list))
           
 
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -933,8 +935,8 @@ class Corridors(wx.Panel):
           #  (this only matters if methods MLmin, MLavg, or MLmax are going to be simulated)
           if any(i < 2.0 for i in self.escalas_pixels) and (self.Nsimulations2 > 0 or self.Nsimulations3 > 0 or self.Nsimulations4 > 0): 
             d= wx.MessageDialog(self, "There may a problem with scale parameter. \n"+
-                                "Input map resolution is "+`round(self.res3,1)`+" m, scale should be greater than that!\n"+
-                                "Please check the parameter(s).\n", "", wx.OK) # Create a message dialog box
+                                "Input map resolution is m, scale should be greater than that!\n"+
+                                "Please check the parameter(s).\n".format(round(self.res3,1)), "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
             self.logger.AppendText()
@@ -1003,10 +1005,11 @@ class Corridors(wx.Panel):
             # Start running
             self.logger.AppendText("Running...:\n")
             
-          self.logger.AppendText("\nList of source-targets: \n"+`self.patch_id_list`+'\n') 
+          self.logger.AppendText('\nList of source-targets: \n{}\n'.format(round(self.res3,1)))
+
           d = wx.MessageDialog(self,"Click OK and wait for simulation processing;\n"+
                               "A message will warn you at the end of simulations.\n"+
-                              "Thank you.","", wx.OK)
+                              "Thank you.".format(),"", wx.OK)
           
           if not self.perform_tests:
             retCode=d.ShowModal() # Shows 
@@ -1030,7 +1033,8 @@ class Corridors(wx.Panel):
           os.chdir(self.OutDir_files_TXT)
           
           # Starting log file
-          self.header_log="___Log_Year_"+`self.year_start`+"-Month"+`self.month_start`+"-Day_"+`self.day_start`+"_Time_"+`self.hour_start`+"_"+`self.minuts_start`+"_"+`self.second_start`
+          #self.header_log="___Log_Year_"+`self.year_start`+"-Month"+`self.month_start`+"-Day_"+`self.day_start`+"_Time_"+`self.hour_start`+"_"+`self.minuts_start`+"_"+`self.second_start`
+          self.header_log = "___Log_Year_" "-Month{}-Day_{}_Time_{}_{}_{}".format(self.year_start,self.month_start,self.day_start,self.hour_start,self.minuts_start,self.second_start)
           self.txt_log=open(self.header_log+".txt","w")       
           self.txt_log.write("LS Corridors log file\n")
           self.txt_log.write("---------------------\n\n")
@@ -1038,14 +1042,14 @@ class Corridors(wx.Panel):
           self.txt_log.write("Inputs: \n")
           self.txt_log.write("	Resistance map                                                : "+self.OutArqResist+"\n")
           self.txt_log.write("	Source-Target map                                             : "+self.OutArqST+"\n")
-          self.txt_log.write("	Resistance map resolution (m)                                 : "+`self.res3`+"\n")
+          self.txt_log.write("	Resistance map resolution (m)                                 : {}\n".format(self.res3))
           self.txt_log.write("	Variability factor(s)                                         : "+', '.join(str(i) for i in self.ruidos_float)+"\n")
           self.txt_log.write("	Scale(s) of influence (m)                                     : "+', '.join(str(i) for i in self.escalas)+"\n")
-          self.txt_log.write("	Number of simulations MP    (without landcape influence)      : "+`self.Nsimulations1`+"\n")
-          self.txt_log.write("	Number of simulations MLmin (with landscape influence-minimum): "+`self.Nsimulations2`+"\n")
-          self.txt_log.write("	Number of simulations MLavg (with landscape influence-average): "+`self.Nsimulations3`+"\n")
-          self.txt_log.write("	Number of simulations MLmax (with landscape influence-maximum): "+`self.Nsimulations4`+"\n")
-          self.txt_log.write("	Source-Target pairs simulated                                 : "+`', '.join(str(i) for i in self.patch_id_list_bkp)`+"\n")
+          self.txt_log.write("	Number of simulations MP    (without landcape influence)      : {}\n".format(self.Nsimulations1))
+          self.txt_log.write("	Number of simulations MLmin (with landscape influence-minimum): {}\n".format(self.Nsimulations2))
+          self.txt_log.write("	Number of simulations MLavg (with landscape influence-average): {}\n".format(self.Nsimulations3))
+          self.txt_log.write("	Number of simulations MLmax (with landscape influence-maximum): {}\n".format(self.Nsimulations4))
+          self.txt_log.write("	Source-Target pairs simulated                                 : {}\n".format(', '.join(str(i) for i in self.patch_id_list_bkp)))
         
           self.txt_log.write("Output prefix: \n")
           self.txt_log.write("	"+self.NEXPER_FINAL+"\n\n")          
@@ -1068,7 +1072,7 @@ class Corridors(wx.Panel):
           # A series of simulations for each value of variability defined by the user
           for ruido_float in self.ruidos_float:
           
-            self.logger.AppendText("Running corridors for variability = "+`ruido_float`+".\n")
+            self.logger.AppendText("Running corridors for variability = {}.\n".format(ruido_float))
             
             # Defining GRASS GIS region as output map region
             grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)
@@ -1086,12 +1090,12 @@ class Corridors(wx.Panel):
             # A series of simulations for each landscape scale value defined by the user
             for esc in self.escalas:
               
-              self.logger.AppendText("Running corridors for landscape scale = "+`esc`+".\n")
+              self.logger.AppendText("Running corridors for landscape scale = {}.\n".format(esc))
               
               # Names of input maps for each scale and each method
-              self.C2=self.OutArqResist+'_'+self.C2_pre+'_scale_'+`esc`
-              self.C3=self.OutArqResist+'_'+self.C3_pre+'_scale_'+`esc`
-              self.C4=self.OutArqResist+'_'+self.C4_pre+'_scale_'+`esc`
+              self.C2=self.OutArqResist+'_'+self.C2_pre+'_scale_{}'.format(esc)
+              self.C3=self.OutArqResist+'_'+self.C3_pre+'_scale_{}'.format(esc)
+              self.C4=self.OutArqResist+'_'+self.C4_pre+'_scale_{}'.format(esc)
               
               # Refreshing the list of methods to be simulated, and outputs
               self.methods = []
@@ -1180,7 +1184,8 @@ class Corridors(wx.Panel):
               self.Nsimulations = self.Nsimulations1_tobe_realized + self.Nsimulations2 + self.Nsimulations3 + self.Nsimulations4
               
               # Transforming list of STs in integers (for recongnizing them in the map)       
-              self.patch_id_list=map(int,self.patch_id_list_bkp)
+              self.patch_id_list=list(map(int,self.patch_id_list_bkp))
+              print(self.patch_id_list)
               
               #---------------------------------------------#
               #--------------- START SIMULATIONS -----------#
@@ -1202,9 +1207,9 @@ class Corridors(wx.Panel):
                     # Selects from the beginning to the end of the list
                     self.S1=self.patch_id_list[0]
                     self.T1=self.patch_id_list[1]
-                    self.S1FORMAT='000000'+`self.S1`
+                    self.S1FORMAT='000000{}'.format(self.S1)
                     self.S1FORMAT=self.S1FORMAT[-5:]
-                    self.T1FORMAT='000000'+`self.T1`
+                    self.T1FORMAT='000000{}'.format(self.T1)
                     self.T1FORMAT=self.T1FORMAT[-5:]
                     
                     # Selects pair and delete it from the original ST combination list
@@ -1216,9 +1221,9 @@ class Corridors(wx.Panel):
                     self.T1=(int(str(self.T1)))
                     
                     # Generates rasters with only the region of the source and terget points
-                    self.form_02='source = if('+self.OutArqST+' != '+`self.S1`+', null(), '+`self.S1`+ ')'
+                    self.form_02='source = if('+self.OutArqST+' != {}, null(), {})'.format(self.S1,self.S1)
                     grass.mapcalc(self.form_02, overwrite = True, quiet = True)
-                    self.form_03='target = if('+self.OutArqST+' != '+`self.T1`+', null(), '+`self.T1`+ ')'
+                    self.form_03='target = if('+self.OutArqST+' != {}, null(), {} )'.format(self.T1,self.T1)
                     grass.mapcalc(self.form_03, overwrite = True, quiet = True)
                     
                     # Transform source and target rasters into vectors
@@ -1254,7 +1259,7 @@ class Corridors(wx.Panel):
                     self.second_now=self.time.second # Error second
                     
                     # Updates Log file
-                    self.listErrorLog.append("[Error ->-> :] <- Rasterize ST, Add cols, Get x,y coord : "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
+                    self.listErrorLog.append("[Error ->-> :] <- Rasterize ST, Add cols, Get x,y coord : "+self.ARQSAIDA+" -> ---{}-{}-{} --- time : {}:{}").format(self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now)
                     self.listErrorLog.append("[Error ->-> :] <- Skip STS: " + self.ARQSAIDA)
                     
                     # Finishes the simulation process if there are no more ST pairs
@@ -1344,7 +1349,7 @@ class Corridors(wx.Panel):
                       self.simulated[3] = self.simulated[3] + 1
                     
                     # Message in dialog box
-                    self.logger.AppendText('=======> Running simulation '+`c`+ '\n')
+                    self.logger.AppendText('=======> Running simulation {}\n'.format(c))
                     
                     #---------- RANDOM SOURCE POINT -------#
                     # Defines a random source point inside the input/source region
@@ -1353,6 +1358,7 @@ class Corridors(wx.Panel):
                     
                     # Select a random source point
                     self.ChecktTry=True
+                    
                     while self.ChecktTry==True:
                       try:
                         # Generates random points
@@ -1366,7 +1372,7 @@ class Corridors(wx.Panel):
                         self.frag_list2=grass.vector_db_select('temp_point2_s', columns = 'cat')['values']
                         self.frag_list2=list(self.frag_list2)
                         # Selects the first (a random) point of the list
-                        self.selct="cat="+`self.frag_list2[0]`
+                        self.selct="cat={}".format(self.frag_list2[0])
                         grass.run_command('v.extract', input='temp_point2_s', output='pnts_aleat_S', where=self.selct, overwrite = True)
                         
                         if len(self.frag_list2)>0:
@@ -1387,7 +1393,7 @@ class Corridors(wx.Panel):
                         self.hour_now=self.time.hour # Error hour
                         self.minuts_now=self.time.minute # Error minute
                         self.second_now=self.time.second # Error second
-                        self.listErrorLog.append("[Error ->-> :] <- Randomize source points: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
+                        self.listErrorLog.append("[Error ->-> :] <- Randomize source points: "+self.ARQSAIDA+" -> ---{}-{} --- time : {}:{}".format(self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now))
                         
                     
                     # Removing mask
@@ -1414,7 +1420,7 @@ class Corridors(wx.Panel):
                         self.frag_list2=list(self.frag_list2)
     
                         # Selects the first (a random) point of the list
-                        self.selct="cat="+`self.frag_list2[0]`                
+                        self.selct="cat={}".format(self.frag_list2[0])                
                         grass.run_command('v.extract',input='temp_point2_t',output='pnts_aleat_T',where=self.selct,overwrite = True)  
                         
                         if len(self.frag_list2)>0:
@@ -1435,8 +1441,8 @@ class Corridors(wx.Panel):
                         self.hour_now=self.time.hour # Error hour
                         self.minuts_now=self.time.minute # Error minute
                         self.second_now=self.time.second # Error second
-                        self.listErrorLog.append("[Error ->-> :] <- Randomize target points: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
-    
+                        self.listErrorLog.append("[Error ->-> :] <- Randomize source points: "+self.ARQSAIDA+" -> ---{}-{} --- time : {}:{}".format(self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now))
+                               
                     # Removing mask
                     grass.run_command('r.mask',flags='r')
                     
@@ -1466,7 +1472,7 @@ class Corridors(wx.Panel):
                           grass.mapcalc(self.form_06, seed=random.randint(1, 10000), overwrite = True, quiet = True)
                           # Transforms raster map of random values to the range [0.1*noise, noise), where "noise" is
                           #  the variability factor defined by the user (variable ruido_float)
-                          self.form_06="aleat2 = aleat/100.0 * "+`ruido_float`+" + 1.0"
+                          self.form_06="aleat2 = aleat/100.0 * {} + 1.0".format(ruido_float)
                           grass.mapcalc(self.form_06, overwrite = True, quiet = True)
                           # Multiply resistance map by random noise map
                           self.form_07='resist_aux = mapa_resist * aleat2'
@@ -1500,7 +1506,7 @@ class Corridors(wx.Panel):
                           self.hour_now=self.time.hour # Error hour
                           self.minuts_now=self.time.minute # Error minute
                           self.second_now=self.time.second # Error second
-                          self.listErrorLog.append("[Error ->-> :] <- Methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- Time : "+`self.hour_now `+":"+`self.second_now`)
+                          self.listErrorLog.append("[Error ->-> :] <- Methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series: "+self.ARQSAIDA+" -> ---{}-{}-{} --- Time : {}:{}").format(self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now)
                           
                     # Multiply corridor map (binary - 0/1) by the original resistance map
                     # Now we get a raster with the cost of each pixel along the corridor
@@ -1545,7 +1551,8 @@ class Corridors(wx.Panel):
                     self.euclidean_b = self.euclidean_a**0.5         
                          
                     # Produces information for one corridor - to be appended to the output text file
-                    self.linha=self.listafinal[cont].replace("@PERMANENT",'')+','+`ruido_float`+','+`esc`+','+self.M+','+`c_method`+','+`self.S1`+','+`self.T1`+','+ `self.var_dist_line`+','+ `self.var_cost_sum`+','+ `self.euclidean_b`+','+ `self.var_source_x`+','+ `self.var_source_y`+','+ `self.var_target_x`+','+ `self.var_target_y`+ "\n"
+                    self.linha=self.listafinal[cont].replace("@PERMANENT",'')+',{},{},{},{},{},{},{},{},{},{},{},{},{}'.format(
+                        ruido_float,esc,self.M,c_method,self.S1,self.T1,self.var_dist_line,self.var_cost_sum,self.euclidean_b,self.var_source_x,self.var_source_y,self.var_target_x,self.var_target_y)
                     self.linha=self.linha.replace('\'','')
                     
                     # Output directory
@@ -1557,7 +1564,7 @@ class Corridors(wx.Panel):
                     self.arquivo.close()
                     
                     # Generates a vector line map for each corridor (vectorizing raster map)
-                    self.outline1='000000'+`c_method`  
+                    self.outline1='000000{}'.format(c_method)
                     self.outline1=self.outline1[-3:]
                     self.outline1=self.mapa_corredores_sem0+'_'+self.M+"_SM_"+self.outline1
                     
@@ -1569,7 +1576,7 @@ class Corridors(wx.Panel):
                     grass.read_command ('v.to.db', map=self.outline1, option='length', type='line', col='dist', units='me', overwrite = True)
                     # Exports output vector
                     os.chdir(self.outdir)
-                    grass.run_command('v.out.ogr', input=self.outline1, dsn=self.outline1+'.shp',verbose=False,type='line')              
+                    grass.run_command('v.out.ogr', input=self.outline1, output=self.outline1+'.shp',verbose=False,type='line')              
                     grass.run_command('g.remove', type="vect", name=self.outline1, flags='f')              
                     cont=cont+1
                     
@@ -1633,7 +1640,7 @@ class Corridors(wx.Panel):
                 elif method == 'MLmax':
                   Nsims = self.Nsimulations4
                 else:
-                  print 'No method selected for generating synthesis maps!'
+                  print ('No method selected for generating synthesis maps!')
                   break
                   
                 self.listExport
@@ -1697,11 +1704,18 @@ class Corridors(wx.Panel):
           minutes, seconds = divmod(self.difference_time.seconds, 60)
           hours, minutes = divmod(minutes, 60)          
           
-          self.txt_log.write("Start time       : Year "+`self.year_start`+"-Month "+`self.month_start`+"-Day "+`self.day_start`+" ---- time: "+`self.hour_start`+":"+`self.minuts_start`+":"+`self.second_start`+"\n")                   
-          self.txt_log.write("End time         : Year "+`self.year_end`+"-Month "+`self.month_end`+"-Day "+`self.day_end`+" ---- Time: "+`self.hour_end`+":"+`self.minuts_end`+":"+`self.second_end`+"\n")
+          self.txt_log.write("Start time       : Year {}-Month {}-Day {} ---- time: {}:{}:{}\n") .format(
+              self.year_start,self.month_start,self.day_start,self.hour_start,self.minuts_start,self.second_start
+          )
+
+          self.txt_log.write("End time         : Year {}-Month {}-Day {} ---- Time: {}:{}:{}\n").format(
+              self.year_end,self.month_end,self.day_end,self.hour_end,self.minuts_end,self.second_end
+          )
           
           # Simulation time
-          self.difference_time=`weeks`+" Weeks - "+`days`+" Days - "+" Time: "+`hours`+":"+`minutes`+":"+`seconds`
+          self.difference_time="{} Weeks - {} Days - "+" Time: {}:{}:{}".format(
+              weeks,days,hours,minutes,seconds
+          )
           
           # Writes log file
           self.txt_log.write("Processing time: "+self.difference_time+"\n\n")
@@ -1748,7 +1762,7 @@ class Corridors(wx.Panel):
             self.logger.AppendText('Variability factor(s): \n'+','.join(str(i) for i in self.ruidos_float)+ '\n')
           except:
             self.ruidos_float = [-1.0]
-            print "Could not convert at least one of the variability values to a float."
+            print ("Could not convert at least one of the variability values to a float.")
           
         """
         ID 186: Defines the scale of influence for methods MLmin, MLavg, and MLmax
@@ -1762,7 +1776,7 @@ class Corridors(wx.Panel):
             self.logger.AppendText('Landscape scale(s): \n'+','.join(str(i) for i in self.escalas)+ '\n')            
           except:
             self.escalas = [-1]
-            print "Could not convert at least one of the scale values to an integer."
+            print ("Could not convert at least one of the scale values to an integer.")
 
         """
         ID 185: Reads output map name
@@ -1841,7 +1855,7 @@ if __name__ == "__main__":
     frame.Show(1)
     
     app.MainLoop()
-=======
+#=======
 #!/c/Python27 python
 #---------------------------------------------------------------------------------------
 """
@@ -1931,8 +1945,8 @@ def selectfile():
   wildcard = "All files (*.*)|*.*"
   dialog = wx.FileDialog(None, "Choose a file", os.getcwd(), "", wildcard, wx.OPEN)
   if dialog.ShowModal() == wx.ID_OK:
-    print ">>..................",dialog.GetPath()
-    return dialog.GetPath() 
+    print (">>.................."),dialog.GetPath()
+    return dialog.GetPath()
 
 def defineregion(mapa1, mapa2, influenceprocess):
   '''
@@ -1980,7 +1994,7 @@ def combine_st(st_map):
   b=[]
   b=listRstats.split('\n')
   del b[-1]
-  print b
+  print (b)
   patchid_list=','.join(b)
     
   patchid_list_aux = patchid_list.split(",")
@@ -2533,7 +2547,7 @@ class Corridors(wx.Panel):
           # Sends confirmation message
           self.logger.AppendText('Waiting... \n')
           
-          d = wx.MessageDialog(self, "Simulate all possible ("+`self.lenlist_b`+") combinations?\n", "", wx.YES_NO)
+          d = wx.MessageDialog(self, "Simulate all possible ({}) combinations?\n".format(self.lenlist_b), "", wx.YES_NO)
           retCode = d.ShowModal() # Shows
           d.Close(True)  # Close the frame. 
           
@@ -2546,7 +2560,7 @@ class Corridors(wx.Panel):
             # Backup of the list of ST patches
             self.patch_id_list_bkp = self.patch_id_list            
           else:
-              print ""
+              print ("")
               self.logger.AppendText('\nList not created. \n')
           d.Destroy()
 
@@ -2700,7 +2714,7 @@ class Corridors(wx.Panel):
           
           # Prints list of ST combinations
           #print self.patch_id_list
-          self.logger.AppendText("TXT Combinations:\n"+`self.patch_id_list`+"\n")
+          self.logger.AppendText("TXT Combinations:\n{}").format(self.patch_id_list)
           
 
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -2774,8 +2788,8 @@ class Corridors(wx.Panel):
           #  (this only matters if methods MLmin, MLavg, or MLmax are going to be simulated)
           if any(i < 2.0 for i in self.escalas_pixels) and (self.Nsimulations2 > 0 or self.Nsimulations3 > 0 or self.Nsimulations4 > 0): 
             d= wx.MessageDialog(self, "There may a problem with scale parameter. \n"+
-                                "Input map resolution is "+`round(self.res3,1)`+" m, scale should be greater than that!\n"+
-                                "Please check the parameter(s).\n", "", wx.OK) # Create a message dialog box
+                                "Input map resolution is {} m, scale should be greater than that!\n"+
+                                "Please check the parameter(s).\n".format(round(self.res3,1)), "", wx.OK) # Create a message dialog box
             d.ShowModal() # Shows it
             d.Destroy() # Finally destroy it when finished.
             self.logger.AppendText()
@@ -2844,7 +2858,7 @@ class Corridors(wx.Panel):
             # Start running
             self.logger.AppendText("Running...:\n")
             
-          self.logger.AppendText("\nList of source-targets: \n"+`self.patch_id_list`+'\n') 
+          self.logger.AppendText('\nList of source-targets: \n{}\n').format(self.patch_id_list)
           d = wx.MessageDialog(self,"Click OK and wait for simulation processing;\n"+
                               "A message will warn you at the end of simulations.\n"+
                               "Thank you.","", wx.OK)
@@ -2871,7 +2885,9 @@ class Corridors(wx.Panel):
           os.chdir(self.OutDir_files_TXT)
           
           # Starting log file
-          self.header_log="___Log_Year_"+`self.year_start`+"-Month"+`self.month_start`+"-Day_"+`self.day_start`+"_Time_"+`self.hour_start`+"_"+`self.minuts_start`+"_"+`self.second_start`
+          self.header_log="___Log_Year_{}-Month{}-Day_{}_Time_{}_{}_{}".format(
+              self.year_start,self.month_start,self.day_start,self.hour_start,self.minuts_start,self.second_start
+          )
           self.txt_log=open(self.header_log+".txt","w")       
           self.txt_log.write("LS Corridors log file\n")
           self.txt_log.write("---------------------\n\n")
@@ -2879,14 +2895,14 @@ class Corridors(wx.Panel):
           self.txt_log.write("Inputs: \n")
           self.txt_log.write("	Resistance map                                                : "+self.OutArqResist+"\n")
           self.txt_log.write("	Source-Target map                                             : "+self.OutArqST+"\n")
-          self.txt_log.write("	Resistance map resolution (m)                                 : "+`self.res3`+"\n")
+          self.txt_log.write("	Resistance map resolution (m)                                 : {}\n").format(self.res3)
           self.txt_log.write("	Variability factor(s)                                         : "+', '.join(str(i) for i in self.ruidos_float)+"\n")
           self.txt_log.write("	Scale(s) of influence (m)                                     : "+', '.join(str(i) for i in self.escalas)+"\n")
-          self.txt_log.write("	Number of simulations MP    (without landcape influence)      : "+`self.Nsimulations1`+"\n")
-          self.txt_log.write("	Number of simulations MLmin (with landscape influence-minimum): "+`self.Nsimulations2`+"\n")
-          self.txt_log.write("	Number of simulations MLavg (with landscape influence-average): "+`self.Nsimulations3`+"\n")
-          self.txt_log.write("	Number of simulations MLmax (with landscape influence-maximum): "+`self.Nsimulations4`+"\n")
-          self.txt_log.write("	Source-Target pairs simulated                                 : "+`', '.join(str(i) for i in self.patch_id_list_bkp)`+"\n")
+          self.txt_log.write("	Number of simulations MP    (without landcape influence)      : {}\n").format(self.Nsimulations1)
+          self.txt_log.write("	Number of simulations MLmin (with landscape influence-minimum): {}\n").format(self.Nsimulations2)
+          self.txt_log.write("	Number of simulations MLavg (with landscape influence-average): {}\n").format(self.Nsimulations3)
+          self.txt_log.write("	Number of simulations MLmax (with landscape influence-maximum): {}\n").format(self.Nsimulations4)
+          self.txt_log.write("	Source-Target pairs simulated                                 : {}\n").format(', '.join(str(i) for i in self.patch_id_list_bkp))
         
           self.txt_log.write("Output prefix: \n")
           self.txt_log.write("	"+self.NEXPER_FINAL+"\n\n")          
@@ -2909,7 +2925,7 @@ class Corridors(wx.Panel):
           # A series of simulations for each value of variability defined by the user
           for ruido_float in self.ruidos_float:
           
-            self.logger.AppendText("Running corridors for variability = "+`ruido_float`+".\n")
+            self.logger.AppendText("Running corridors for variability = {}.\n").format(ruido_float)
             
             # Defining GRASS GIS region as output map region
             grass.run_command('g.region', rast=self.OutArqResist)#, res=self.res3)
@@ -2931,12 +2947,12 @@ class Corridors(wx.Panel):
             # A series of simulations for each landscape scale value defined by the user
             for esc in self.escalas:
               
-              self.logger.AppendText("Running corridors for landscape scale = "+`esc`+".\n")
+              self.logger.AppendText("Running corridors for landscape scale = {}.\n").format(esc)
               
               # Names of input maps for each scale and each method
-              self.C2=self.OutArqResist+'_'+self.C2_pre+'_scale_'+`esc`
-              self.C3=self.OutArqResist+'_'+self.C3_pre+'_scale_'+`esc`
-              self.C4=self.OutArqResist+'_'+self.C4_pre+'_scale_'+`esc`
+              self.C2=self.OutArqResist+'_'+self.C2_pre+'_scale_{}'.format(esc)
+              self.C3=self.OutArqResist+'_'+self.C3_pre+'_scale_{}'.format(esc)
+              self.C4=self.OutArqResist+'_'+self.C4_pre+'_scale_{}'.format(esc)
               
               # Refreshing the list of methods to be simulated, and outputs
               self.methods = []
@@ -3047,9 +3063,9 @@ class Corridors(wx.Panel):
                     # Selects from the beginning to the end of the list
                     self.S1=self.patch_id_list[0]
                     self.T1=self.patch_id_list[1]
-                    self.S1FORMAT='000000'+`self.S1`
+                    self.S1FORMAT='000000{}'.format(self.S1)
                     self.S1FORMAT=self.S1FORMAT[-5:]
-                    self.T1FORMAT='000000'+`self.T1`
+                    self.T1FORMAT='000000{}'.format(self.T1)
                     self.T1FORMAT=self.T1FORMAT[-5:]
                     
                     # Selects pair and delete it from the original ST combination list
@@ -3061,9 +3077,9 @@ class Corridors(wx.Panel):
                     self.T1=(int(str(self.T1)))
                     
                     # Generates rasters with only the region of the source and terget points
-                    self.form_02='source = if('+self.OutArqST+' != '+`self.S1`+', null(), '+`self.S1`+ ')'
+                    self.form_02='source = if('+self.OutArqST+' != {}, null(), {})'.format(self.S1,self.S1)
                     grass.mapcalc(self.form_02, overwrite = True, quiet = True)
-                    self.form_03='target = if('+self.OutArqST+' != '+`self.T1`+', null(), '+`self.T1`+ ')'
+                    self.form_03='target = if('+self.OutArqST+' != {}, null(), {})'.format(self.T1,self.T1)
                     grass.mapcalc(self.form_03, overwrite = True, quiet = True)
                     
                     # Transform source and target rasters into vectors
@@ -3099,7 +3115,9 @@ class Corridors(wx.Panel):
                     self.second_now=self.time.second # Error second
                     
                     # Updates Log file
-                    self.listErrorLog.append("[Error ->-> :] <- Rasterize ST, Add cols, Get x,y coord : "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
+                    self.listErrorLog.append("[Error ->-> :] <- Rasterize ST, Add cols, Get x,y coord : "+self.ARQSAIDA+" -> ---{}-{}-{} --- time : {}:{}").format(
+                        self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now
+                    )
                     self.listErrorLog.append("[Error ->-> :] <- Skip STS: " + self.ARQSAIDA)
                     
                     # Finishes the simulation process if there are no more ST pairs
@@ -3189,7 +3207,7 @@ class Corridors(wx.Panel):
                       self.simulated[3] = self.simulated[3] + 1
                     
                     # Message in dialog box
-                    self.logger.AppendText('=======> Running simulation '+`c`+ '\n')
+                    self.logger.AppendText('=======> Running simulation {}\n').format(c)
                     
                     #---------- RANDOM SOURCE POINT -------#
                     # Defines a random source point inside the input/source region
@@ -3198,41 +3216,40 @@ class Corridors(wx.Panel):
                     
                     # Select a random source point
                     self.ChecktTry=True
-                    while self.ChecktTry==True:
-                      try:
-                        # Generates random points
-                        grass.run_command('v.random', output='temp_point1_s', n=30, overwrite = True)
-                        # Selects random points that overlap with source region
-                        grass.run_command('v.select', ainput='temp_point1_s', binput='source_shp', output='temp_point2_s', operator='overlap', overwrite = True)
-                        # Creates attribute table and connects to the random points inside source region
-                        grass.run_command('v.db.addtable', map='temp_point2_s', columns="temp double precision")
-                        grass.run_command('v.db.connect', flags='p', map='temp_point2_s')
-                        # List of such random points inside Python
-                        self.frag_list2=grass.vector_db_select('temp_point2_s', columns = 'cat')['values']
-                        self.frag_list2=list(self.frag_list2)
-                        # Selects the first (a random) point of the list
-                        self.selct="cat="+`self.frag_list2[0]`
-                        grass.run_command('v.extract', input='temp_point2_s', output='pnts_aleat_S', where=self.selct, overwrite = True)
-                        
-                        if len(self.frag_list2)>0:
-                          self.ChecktTry=False
-                        else:
-                          self.ChecktTry=True
-                          
-                      # If an error in selecting a random source point occurs, this is registered here and a new random point is selected
-                      except:
-                        self.ChecktTry=True
-                        # Error message on GRASS GIS console
-                        print ("Error Randomize source points...")                    
-                        # Registering error in logfile
-                        self.time = datetime.now() # INSTANCE
-                        self.day_now=self.time.day # Error day
-                        self.month_now=self.time.month # Error month
-                        self.year_now=self.time.year # Error year
-                        self.hour_now=self.time.hour # Error hour
-                        self.minuts_now=self.time.minute # Error minute
-                        self.second_now=self.time.second # Error second
-                        self.listErrorLog.append("[Error ->-> :] <- Randomize source points: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
+                    
+                      
+                    # Generates random points
+                    grass.run_command('v.random', output='temp_point1_s', n=30, overwrite = True)                       
+                    # Selects random points that overlap with source region
+                    grass.run_command('v.select', ainput='temp_point1_s', binput='source_shp', output='temp_point2_s', operator='overlap', overwrite = True)
+                    
+                    # Creates attribute table and connects to the random points inside source region
+                    grass.run_command('v.db.addtable', map='temp_point2_s', columns="temp double precision")
+                    grass.run_command('v.db.connect', flags='p', map='temp_point2_s')
+                    # List of such random points inside Python
+                    self.frag_list2=grass.vector_db_select('temp_point2_s', columns = 'cat')['values']
+                    self.frag_list2=list(self.frag_list2)
+                    # Selects the first (a random) point of the list
+                    self.selct="cat={}".format(self.frag_list2[0])
+                    grass.run_command('v.extract', input='temp_point2_s', output='pnts_aleat_S', where=self.selct, overwrite = True)
+                    
+                   
+                      
+                  # If an error in selecting a random source point occurs, this is registered here and a new random point is selected
+                  
+                    self.ChecktTry=True
+                    # Error message on GRASS GIS console           
+                    # Registering error in logfile
+                    self.time = datetime.now() # INSTANCE
+                    self.day_now=self.time.day # Error day
+                    self.month_now=self.time.month # Error month
+                    self.year_now=self.time.year # Error year
+                    self.hour_now=self.time.hour # Error hour
+                    self.minuts_now=self.time.minute # Error minute
+                    self.second_now=self.time.second # Error second
+                    self.listErrorLog.append("[Error ->-> :] <- Randomize source points: "+self.ARQSAIDA+" -> ---{}-{}-{} --- time : {}:{}").format(
+                    self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now
+                        )
                         
                     
                     # Removing mask
@@ -3244,43 +3261,39 @@ class Corridors(wx.Panel):
                     grass.run_command('g.region', vect='target_shp', verbose=False, overwrite = True)
                     # Select a random target point
                     self.ChecktTry=True
-                    while self.ChecktTry==True:
-                      try:
-                        # Generates random points
-                        grass.run_command('v.random', output='temp_point1_t', n=30, overwrite = True)
-                        # Selects random points that overlap with target region
-                        grass.run_command('v.select', ainput='temp_point1_t', binput='target_shp', output='temp_point2_t', operator='overlap', overwrite = True)
-                        # Creates attribute table and connects to the random points inside target region
-                        grass.run_command('v.db.addtable', map='temp_point2_t', columns="temp double precision")
-                        grass.run_command('v.db.connect', flags='p', map='temp_point2_t')
+                    # Generates random points
+                    grass.run_command('v.random', output='temp_point1_t', n=30, overwrite = True)
+                    # Selects random points that overlap with target region
+                    grass.run_command('v.select', ainput='temp_point1_t', binput='target_shp', output='temp_point2_t', operator='overlap', overwrite = True)
+                    # Creates attribute table and connects to the random points inside target region
+                    grass.run_command('v.db.addtable', map='temp_point2_t', columns="temp double precision")
+                    grass.run_command('v.db.connect', flags='p', map='temp_point2_t')
+                    
+                    # List of such random points inside Python
+                    self.frag_list2=grass.vector_db_select('temp_point2_t', columns = 'cat')['values']
+                    self.frag_list2=list(self.frag_list2)
+
+                    # Selects the first (a random) point of the list
+                    self.selct="cat={}".format(self.frag_list2[0])
+                    grass.run_command('v.extract', input='temp_point2_t', output='pnts_aleat_T', where=self.selct, overwrite = True)  
                         
-                        # List of such random points inside Python
-                        self.frag_list2=grass.vector_db_select('temp_point2_t', columns = 'cat')['values']
-                        self.frag_list2=list(self.frag_list2)
-    
-                        # Selects the first (a random) point of the list
-                        self.selct="cat="+`self.frag_list2[0]`                
-                        grass.run_command('v.extract', input='temp_point2_t', output='pnts_aleat_T', where=self.selct, overwrite = True)  
-                        
-                        if len(self.frag_list2)>0:
-                          self.ChecktTry=False
-                        else:
-                          self.ChecktTry=True
+                   
                           
-                      # If an error in selecting a random target point occurs, this is registered here and a new random point is selected
-                      except:
-                        self.ChecktTry=True
-                        # Error message on GRASS GIS console
-                        print ("Error Randomize target points...")                     
-                        # Registering error in logfile
-                        self.time = datetime.now() # INSTANCE
-                        self.day_now=self.time.day # Error day
-                        self.month_now=self.time.month # Error month
-                        self.year_now=self.time.year # Error year
-                        self.hour_now=self.time.hour # Error hour
-                        self.minuts_now=self.time.minute # Error minute
-                        self.second_now=self.time.second # Error second
-                        self.listErrorLog.append("[Error ->-> :] <- Randomize target points: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- time : "+`self.hour_now `+":"+`self.second_now`)
+                    # If an error in selecting a random target point occurs, this is registered here and a new random point is selected
+                    
+                    # Error message on GRASS GIS console
+                    print ("Error Randomize target points...")                     
+                    # Registering error in logfile
+                    self.time = datetime.now() # INSTANCE
+                    self.day_now=self.time.day # Error day
+                    self.month_now=self.time.month # Error month
+                    self.year_now=self.time.year # Error year
+                    self.hour_now=self.time.hour # Error hour
+                    self.minuts_now=self.time.minute # Error minute
+                    self.second_now=self.time.second # Error second
+                    self.listErrorLog.append("[Error ->-> :] <- Randomize target points: "+self.ARQSAIDA+" -> ---{}-{}-{} --- time : {}:{}").format(
+                        self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now
+                        )
     
                     # Removing mask
                     grass.run_command('r.mask',flags='r')
@@ -3311,7 +3324,7 @@ class Corridors(wx.Panel):
                           grass.mapcalc(self.form_06, seed=random.randint(1, 10000), overwrite = True, quiet = True)
                           # Transforms raster map of random values to the range [0.1*noise, noise), where "noise" is
                           #  the variability factor defined by the user (variable ruido_float)
-                          self.form_06="aleat2 = aleat/100.0 * "+`ruido_float`+" + 1.0"
+                          self.form_06="aleat2 = aleat/100.0 * {} + 1.0".format(ruido_float)
                           grass.mapcalc(self.form_06, overwrite = True, quiet = True)
                           # Multiply resistance map by random noise map
                           self.form_07='resist_aux = mapa_resist * aleat2'
@@ -3345,7 +3358,9 @@ class Corridors(wx.Panel):
                           self.hour_now=self.time.hour # Error hour
                           self.minuts_now=self.time.minute # Error minute
                           self.second_now=self.time.second # Error second
-                          self.listErrorLog.append("[Error ->-> :] <- Methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series: "+self.ARQSAIDA+" -> ---"+`self.year_now`+"-"+ `self.month_now` + "-"+ `self.day_now`+" --- Time : "+`self.hour_now `+":"+`self.second_now`)
+                          self.listErrorLog.append("[Error ->-> :] <- Methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series: "+self.ARQSAIDA+" -> ---{}-{}-{} --- Time : {}:{}").format(
+                              self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now
+                          )
                           
                     # Multiply corridor map (binary - 0/1) by the original resistance map
                     # Now we get a raster with the cost of each pixel along the corridor
@@ -3392,9 +3407,11 @@ class Corridors(wx.Panel):
                     self.euclidean_b = self.euclidean_a**0.5         
                          
                     # Produces information for one corridor - to be appended to the output text file
-                    self.linha=self.listafinal[cont].replace("@PERMANENT",'')+','+`ruido_float`+','+`esc`+','+self.M+','+`c_method`+','+`self.S1`+','+`self.T1`+','+ `self.var_dist_line`+','+ `self.var_cost_sum`+','+ `self.euclidean_b`+','+ `self.var_source_x`+','+ `self.var_source_y`+','+ `self.var_target_x`+','+ `self.var_target_y`+ "\n"
                     self.linha=self.linha.replace('\'','')
-                    
+                    self.linha=self.listafinal[cont].replace("@PERMANENT",'')+',{},{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(
+                        ruido_float,esc,self.M,c_method,self.S1,self.T1,self.var_dist_line,self.var_cost_sum,self.euclidean_b,self.var_source_x,self.var_source_y,self.var_target_x,self.var_target_y
+                    )
+
                     # Output directory
                     os.chdir(self.OutDir_files_TXT)                    
                     
@@ -3404,7 +3421,7 @@ class Corridors(wx.Panel):
                     self.arquivo.close()
                     
                     # Generates a vector line map for each corridor (vectorizing raster map)
-                    self.outline1='000000'+`c_method`  
+                    self.outline1='000000{}'.format(c_method)
                     self.outline1=self.outline1[-3:]
                     self.outline1=self.mapa_corredores_sem0+'_'+self.M+"_SM_"+self.outline1
                     
@@ -3416,7 +3433,7 @@ class Corridors(wx.Panel):
                     grass.read_command ('v.to.db', map=self.outline1, option='length', type='line', col='dist', units='me', overwrite = True)
                     # Exports output vector
                     os.chdir(self.outdir)
-                    grass.run_command('v.out.ogr', input=self.outline1, dsn=self.outline1+'.shp',verbose=False,type='line')              
+                    grass.run_command('v.out.ogr', input=self.outline1, output=self.outline1+'.shp',verbose=False,type='line')              
                     grass.run_command('g.remove', type="vect", name=self.outline1, flags='f')              
                     cont=cont+1
                     
@@ -3480,7 +3497,7 @@ class Corridors(wx.Panel):
                 elif method == 'MLmax':
                   Nsims = self.Nsimulations4
                 else:
-                  print 'No method selected for generating synthesis maps!'
+                  print ('No method selected for generating synthesis maps!')
                   break
                   
                 self.listExport
@@ -3544,11 +3561,17 @@ class Corridors(wx.Panel):
           minutes, seconds = divmod(self.difference_time.seconds, 60)
           hours, minutes = divmod(minutes, 60)          
           
-          self.txt_log.write("Start time       : Year "+`self.year_start`+"-Month "+`self.month_start`+"-Day "+`self.day_start`+" ---- time: "+`self.hour_start`+":"+`self.minuts_start`+":"+`self.second_start`+"\n")                   
-          self.txt_log.write("End time         : Year "+`self.year_end`+"-Month "+`self.month_end`+"-Day "+`self.day_end`+" ---- Time: "+`self.hour_end`+":"+`self.minuts_end`+":"+`self.second_end`+"\n")
+          self.txt_log.write("Start time       : Year {}-Month {}-Day {} ---- time: :{}:{}\n").format(
+              self.year_start,self.month_start,self.day_start,self.hour_start,self.minuts_start,self.second_start
+          )
+          self.txt_log.write("End time         : Year {}-Month {}-Day {} ---- Time: {}:{}:{}\n").format(
+              self.year_end,self.month_end,self.day_end,self.hour_end,self.minuts_end,self.second_end
+          )
           
           # Simulation time
-          self.difference_time=`weeks`+" Weeks - "+`days`+" Days - "+" Time: "+`hours`+":"+`minutes`+":"+`seconds`
+          self.difference_time="{} Weeks - {} Days - "+" Time: {}:{}:{}".format(
+              weeks,days,hours,minutes,seconds
+          )
           
           # Writes log file
           self.txt_log.write("Processing time: "+self.difference_time+"\n\n")
@@ -3595,7 +3618,7 @@ class Corridors(wx.Panel):
             self.logger.AppendText('Variability factor(s): \n'+','.join(str(i) for i in self.ruidos_float)+ '\n')
           except:
             self.ruidos_float = [-1.0]
-            print "Could not convert at least one of the variability values to a float."
+            print ("Could not convert at least one of the variability values to a float.")
           
         """
         ID 186: Defines the scale of influence for methods MLmin, MLavg, and MLmax
@@ -3609,7 +3632,7 @@ class Corridors(wx.Panel):
             self.logger.AppendText('Landscape scale(s): \n'+','.join(str(i) for i in self.escalas)+ '\n')            
           except:
             self.escalas = [-1]
-            print "Could not convert at least one of the scale values to an integer."
+            print ("Could not convert at least one of the scale values to an integer.")
 
         """
         ID 185: Reads output map name
