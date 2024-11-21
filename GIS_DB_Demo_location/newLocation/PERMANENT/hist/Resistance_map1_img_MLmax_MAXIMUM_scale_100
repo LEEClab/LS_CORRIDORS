@@ -1,0 +1,10 @@
+Thu Nov 07 14:23:36 2024
+Resistance_map1_img_MLmax_MAXIMUM_scale_100
+PERMANENT
+TPDI
+raster
+
+
+gerado por r.neighbors
+r.neighbors --overwrite input="Resistance_map1_img" output="Resistan\
+ce_map1_img_MLmax_MAXIMUM_scale_100" method="maximum" size=7

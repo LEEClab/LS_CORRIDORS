@@ -1,0 +1,9 @@
+Fri Nov 08 14:23:08 2024
+MSP_john_var_2_0_scale_100_S_00015_T_00016_MP
+PERMANENT
+TPDI
+raster
+
+
+gerado por r.mapcalc
+if(mapa_corredores_MP == 0, null(), mapa_corredores_MP)

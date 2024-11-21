@@ -1,0 +1,10 @@
+Thu Nov 07 14:23:35 2024
+Resistance_map1_img_MLavg_AVERAGE_scale_100
+PERMANENT
+TPDI
+raster
+
+
+gerado por r.neighbors
+r.neighbors --overwrite input="Resistance_map1_img" output="Resistan\
+ce_map1_img_MLavg_AVERAGE_scale_100" method="average" size=7
