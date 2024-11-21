@@ -1,9 +1,0 @@
-Mon Nov 18 18:16:39 2024
-MSP_ST_map1_img_var_2_0_scale_100_S_00011_T_00012_MP
-PERMANENT
-TPDI
-raster
-
-
-gerado por r.mapcalc
-if(mapa_corredores_MP == 0, null(), mapa_corredores_MP)
