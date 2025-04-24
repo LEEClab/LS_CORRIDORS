@@ -1133,7 +1133,10 @@ class Corridors(wx.Panel):
             # This variables are used to define whether simulations for method MP were already 
             #  performed when there is more than one scale; in this case, there's no need to 
             #  simulate it again for method MP, only for methods MLmin, MLavg, and MLmax
+            
             self.n_scales = len(self.escalas) # Number of scales
+
+            
             self.scale_counter = 1 # Scale counter
             
             # A series of simulations for each landscape scale value defined by the user
@@ -1240,7 +1243,7 @@ class Corridors(wx.Panel):
               #--------------- START SIMULATIONS -----------#
               #---------------------------------------------#
               #definy_Gproj() # corrigindo as informacoes de datum
-              grass.run_command('g.proj',flags='c',epsg=29193)
+              
               # For each ST pair in the list:
               while (len(self.patch_id_list)>1):
                 grass.run_command('g.region', rast=self.OutArqResist, verbose=False)
@@ -1530,10 +1533,7 @@ class Corridors(wx.Panel):
                           # Sets null cells as vistually infinite resistance
                           self.form_07='resist_aux2 = if(isnull(resist_aux), 10000000, resist_aux)'
                           grass.mapcalc(self.form_07, overwrite = True, quiet = True)
-                          
-                          # Sets GRASS region
-                          defineregion("source_shp","target_shp", self.influenceprocess)
-                          
+                  
                           # Generating cumulative cost raster map for linking S and T points
                           grass.run_command('r.cost', flags='k', input='resist_aux2', output='custo_aux_cost', start_points='pnts_aleat_S', stop_points='pnts_aleat_T', overwrite = True)
                           # Tracing the least cost path (corridor) - the flow based on cumulative cost map
@@ -1556,7 +1556,7 @@ class Corridors(wx.Panel):
                           self.hour_now=self.time.hour # Error hour
                           self.minuts_now=self.time.minute # Error minute
                           self.second_now=self.time.second # Error second
-                          self.listErrorLog.append("[Error ->-> :] <- Methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series: "+self.ARQSAIDA+" -> ---{}-{}-{} --- Time : {}:{}").format(self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now)
+                          self.listErrorLog.append("[Error ->-> :] <- Methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series: "+self.ARQSAIDA+" -> ---{}-{}-{} --- Time : {}:{}".format(self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now))
                           
                     # Multiply corridor map (binary - 0/1) by the original resistance map
                     # Now we get a raster with the cost of each pixel along the corridor
@@ -1833,6 +1833,8 @@ class Corridors(wx.Panel):
           # and turns these numbers into floating point values
           try:
             self.escalas = map(int, event.GetString().split(','))
+            self.escalas = list(self.escalas)
+            print('escalas:,,,,,,,,,,,,,,,,,,,',len(self.escalas))    
             self.logger.AppendText('Landscape scale(s): \n'+','.join(str(i) for i in self.escalas)+ '\n')            
           except:
             self.escalas = [-1]
@@ -2049,7 +2051,6 @@ def combine_st(st_map):
   '''
   
   grass.run_command('g.region', rast=st_map, verbose=False)
-  
   listRstats=grass.read_command('r.stats', input=st_map, flags='n', separator='space')
   b=[]
   b=listRstats.split('\n')
@@ -3175,9 +3176,7 @@ class Corridors(wx.Panel):
                     self.second_now=self.time.second # Error second
                     
                     # Updates Log file
-                    self.listErrorLog.append("[Error ->-> :] <- Rasterize ST, Add cols, Get x,y coord : "+self.ARQSAIDA+" -> ---{}-{}-{} --- time : {}:{}").format(
-                        self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now
-                    )
+                    self.listErrorLog.append("[Error ->-> :] <- Rasterize ST, Add cols, Get x,y coord : "+self.ARQSAIDA+" -> ---{}-{}-{} --- time : {}:{}".format(self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now))
                     self.listErrorLog.append("[Error ->-> :] <- Skip STS: " + self.ARQSAIDA)
                     
                     # Finishes the simulation process if there are no more ST pairs
@@ -3307,9 +3306,7 @@ class Corridors(wx.Panel):
                     self.hour_now=self.time.hour # Error hour
                     self.minuts_now=self.time.minute # Error minute
                     self.second_now=self.time.second # Error second
-                    self.listErrorLog.append("[Error ->-> :] <- Randomize source points: "+self.ARQSAIDA+" -> ---{}-{}-{} --- time : {}:{}").format(
-                    self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now
-                        )
+                    self.listErrorLog.append("[Error ->-> :] <- Randomize source points: "+self.ARQSAIDA+" -> ---{}-{}-{} --- time : {}:{}".format(self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now))
                         
                     
                     # Removing mask
@@ -3351,9 +3348,7 @@ class Corridors(wx.Panel):
                     self.hour_now=self.time.hour # Error hour
                     self.minuts_now=self.time.minute # Error minute
                     self.second_now=self.time.second # Error second
-                    self.listErrorLog.append("[Error ->-> :] <- Randomize target points: "+self.ARQSAIDA+" -> ---{}-{}-{} --- time : {}:{}").format(
-                        self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now
-                        )
+                    self.listErrorLog.append("[Error ->-> :] <- Randomize target points: "+self.ARQSAIDA+" -> ---{}-{}-{} --- time : {}:{}".format(self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now))
     
                     # Removing mask
                     grass.run_command('r.mask',flags='r')
@@ -3418,9 +3413,7 @@ class Corridors(wx.Panel):
                           self.hour_now=self.time.hour # Error hour
                           self.minuts_now=self.time.minute # Error minute
                           self.second_now=self.time.second # Error second
-                          self.listErrorLog.append("[Error ->-> :] <- Methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series: "+self.ARQSAIDA+" -> ---{}-{}-{} --- Time : {}:{}").format(
-                              self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now
-                          )
+                          self.listErrorLog.append("[Error ->-> :] <- Methods: aleat, aleat2, resist_aux, r.cost, r.drain, r.series: "+self.ARQSAIDA+" -> ---{}-{}-{} --- Time : {}:{}".format(self.year_now,self.month_now,self.day_now,self.hour_now,self.second_now))
                           
                     # Multiply corridor map (binary - 0/1) by the original resistance map
                     # Now we get a raster with the cost of each pixel along the corridor
